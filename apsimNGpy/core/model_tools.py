@@ -312,7 +312,21 @@ def _find_model(model_name: str, model_namespace=Models, target_type=CLASS_MODEL
 
     return None
 
-
+desc = dict(Salib='Fraction of incoming solar radiation',
+                        WinterU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
+                        SummerU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
+                        PSIDul='Matric Potential at DUL (cm)',
+                        CNCov='Cover for maximum curve number reduction',
+                        DiffusSlope='effect of soil water storage above the lower limit on on soil water diffusivity (mm)',
+                        DischargeWidth='Basal width of the down slope boundary of the catchment for lateral flow calculations',
+                        SummerCona='Drying coefficient for stage 2 soil water evaporation in summer',
+                        DiffusConst='Constant in soil water diffusivity calculations',
+                        CN2Bare='Run off curve number ofr bare soil with average moisture',
+                        CatchmentArea='Catchment area flow calculations (m2)',
+                        WinterDate='Start date to switch to winter parameters',
+                        WinterCona='Drying coefficient for stage 2 soil water evaporation in winter',
+                        SummerDate='Start date to switch to summer parameters',
+                        )
 def find_model(model_name: str):
     model_type = _find_model(model_name)
     if model_type:
@@ -409,6 +423,8 @@ def _general_extractor(model_instance, parameters):
             continue
         except CLR.System.NotImplementedException:
             continue
+        except CLR.System.Exception:
+            continue
         if callable(val):
             continue
         if attr in {'Node'}:
@@ -420,8 +436,8 @@ def _general_extractor(model_instance, parameters):
         else:
             df[attr] = val
 
-            if attr == 'Parent' and hasattr(val, 'FullPath'):
-                df[attr] = val.FullPath
+            # if attr == 'Parent' and hasattr(val, 'FullPath'):
+            #     df['ParentFullPath'] = val.FullPath
 
         if attr == 'Children':
             # df[attr] = [i.FullPath for i in df[attr]]
@@ -429,7 +445,6 @@ def _general_extractor(model_instance, parameters):
             for child in df[attr]:
                 try:
                     cv = extract_value(child)
-                    print(child)
                     children_att.append(cv)
                 except AttributeError:
                     children_att.append(child)
@@ -450,7 +465,8 @@ def extract_value(model_instance, parameters=None):
 
     match type(model_instance):
         case Models.Climate.Weather:
-            value = model_instance.FileName
+            value  =_general_extractor(model_instance, parameters)
+            #value = model_instance.FileName
         case Models.Clock:
             import datetime
             def __convert_to_datetime(dotnet_dt):
@@ -465,115 +481,37 @@ def extract_value(model_instance, parameters=None):
                 )
 
             validated = dict(End='End', Start='Start', end='End', start='Start', end_date='End', start_date='Start')
-            accepted_attributes = {'Start', 'End'}
-            selected_parameters = {validated.get(k) for k in parameters if
-                                   validated.get(k) in accepted_attributes} if parameters else set()
-            dif = accepted_attributes - selected_parameters
-            if dif == accepted_attributes and parameters:
-                raise ValueError(
-                    f"To inspect the 'Clock Model Parameters:\n, Parameters must be None or any of '{', '.join(validated.keys())}'")
-            attributes = selected_parameters or accepted_attributes
 
-            if len(attributes) == 1:
-                value = __convert_to_datetime(getattr(model_instance, *attributes))
-            else:
-                value = {atr: __convert_to_datetime(getattr(model_instance, atr)) for atr in attributes}
+            data = _general_extractor(model_instance, parameters=parameters)
+            clock = {}
+            for d, vv in validated.items():
+                v = data.get(vv)
+
+                if parameters:
+                    if vv in parameters:
+                        clock[d] = __convert_to_datetime(v)
+                else:
+                    clock[d] = __convert_to_datetime(v)
+                if len(clock) == 2:
+                    break
+            value = data | clock
 
         case Models.Manager:
-            selected_parameters = parameters if parameters else set()
+            value = _general_extractor(model_instance, parameters=parameters)
+            params = value['Parameters']
+            value['Parameters'] = {param.Key: param.Value for param in params }
 
-            if selected_parameters:
-                value = {param.Key: param.Value for param in model_instance.Parameters if
-                         param.Key in selected_parameters}
-            else:
-                value = {param.Key: param.Value for param in model_instance.Parameters}
         case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute | Models.Report \
              | Models.PMF.Organs.ReproductiveOrgan | Models.PMF.Organs.Root | Models.PMF.Phen.Phenology \
              | Models.PMF.Plant | Models.Soils.SwimSubsurfaceDrain \
              | Models.Soils.LayerStructure | Models.Soils.Swim3 | Models.Soils.SoilTemp.SoilTemperature | Models.Storage.DataStore | Models.Morris:
             value = _general_extractor(parameters=parameters, model_instance=model_instance)
         case Models.WaterModel.WaterBalance:
-            to_descr = {}
-            desc = dict(Salib='Fraction of incoming solar radiation',
-                        WinterU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
-                        SummerU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
-                        PSIDul='Matric Potential at DUL (cm)',
-                        CNCov='Cover for maximum curve number reduction',
-                        DiffusSlope='effect of soil water storage above the lower limit on on soil water diffusivity (mm)',
-                        DischargeWidth='Basal width of the down slope boundary of the catchment for lateral flow calculations',
-                        SummerCona='Drying coefficient for stage 2 soil water evaporation in summer',
-                        DiffusConst='Constant in soil water diffusivity calculations',
-                        CN2Bare='Run off curve number ofr bare soil with average moisture',
-                        CatchmentArea='Catchment area flow calculations (m2)',
-                        WinterDate='Start date to switch to winter parameters',
-                        WinterCona='Drying coefficient for stage 2 soil water evaporation in winter',
-                        SummerDate='Start date to switch to summer parameters',
-                        )
-            collections = {}
-            list_params = {'KLAT', 'Depth', 'SWCON'}
-            non_list = {'Salb', 'Water', 'WinterU', 'WinterDate', 'WinterCona', 'SummerCona', 'SummerDate',
-                        'PrecipitationInterception',
-                        'PoreInteractionIndex',
-                        'SummerU', 'DiffusSlope',
-                        'DischargeWidth',
-                        'DiffusConst',
-                        'CN2Bare',
-                        'CatchmentArea',
-                        'CNCov',
-                        'PSIDul',
-                        'SummerCona',
-                        'SWmm',
-                        'Runoff',
-                        'PotentialInfiltration'}
-
-            if not parameters:
-                parameters = list_params.union(non_list)
-            if parameters:
-                for p in parameters:
-                    hasattr(model_instance, p)
-                    if p in list_params:
-                        attrib_val = getattr(model_instance, p)
-                        collections[p] = list(attrib_val) if attrib_val is not None else None
-                    else:
-                        collections[p] = getattr(model_instance, p)
-                        to_descr[p] = desc.get(p)
-            collections['dictionary'] = desc
-            value = collections
-
-        # case Models.PMF.Cultivar:
-        #     selected_parameters = set(parameters) if parameters else set()
-        #     params = {}
-        #     for cmd in model_instance.Command:
-        #         if cmd:
-        #             if '=' in cmd:
-        #                 key, val = cmd.split('=', 1)
-        #                 params[key.strip()] = val.strip()
-        #     if selected_parameters:
-        #         value = {k: v for k, v in params.items() if k in selected_parameters}
-        #         if not value:
-        #             raise ValueError(
-        #                 f"None of '{selected_parameters}' was found. Available parameters are: '{', '.join(params.keys())}'")
-        #     else:
-        #         value = params
-        case Models.Surface.SurfaceOrganicMatter:
-            selected_parameters = set(parameters) if parameters else set()
-            accepted_attributes = {'LyingWt', 'N', 'NH4', 'NO3', 'LabileP', 'SurfOM', 'P', "C", 'Cover',
-                                   'InitialCPR', 'InitialResidueMass', 'StandingWt',
-                                   'InitialCNR', 'InitialCPR'}
-            dif = accepted_attributes - selected_parameters
-            if len(dif) == len(accepted_attributes) and parameters:
-                raise ValueError(f"Parameters must be none or any of '{', '.join(accepted_attributes)}'")
-            params = {}
-            attributes = selected_parameters or accepted_attributes
-            for attrib in attributes:
-                x_attrib = getattr(model_instance, attrib)
-                params[attrib] = x_attrib
-
-            value = params
+            value  = _general_extractor(model_instance,parameters=parameters)
 
         case _:
             value = _general_extractor(model_instance, parameters)
-           # raise NotImplementedError(f"No inspect input method implemented for model type: {type(model_instance)}")
+        # raise NotImplementedError(f"No inspect input method implemented for model type: {type(model_instance)}")
     return value
 
 
@@ -1426,3 +1364,8 @@ if __name__ == "__main__":
         maize.inspect_model_parameters(Models.PMF.Organ, 'Root')
         maize.inspect_model_parameters('Models.Report', 'Report')
         maize.inspect_model_parameters('Models.PMF.Cultivar', 'B_110')
+        maize.inspect_model_parameters('Models.Clock', 'Clock')
+        maize.inspect_model_parameters('Models.WaterModel.WaterBalance', 'SoilWater')
+        maize.inspect_model_parameters('Models.Manager', 'Sow using a variable rule')
+        maize.inspect_model_parameters('Weather', 'Weather')
+        maize.inspect_model_parameters('Models.Surface.SurfaceOrganicMatter', "SurfaceOrganicMatter")

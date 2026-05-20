@@ -36,6 +36,7 @@ class TestCoreModel(BaseTester):
     def helper_nested_sims(self, model):
         pa = model.inspect_model_parameters(model_type='Models.Manager', model_name='AutomaticIrrigation',
                                             simulations='Seasonal')
+        pa = pa['Parameters']
         # by default manager parameters are integers
         self.assertEqual(pa['maximumAmount'], '21')
         self.assertEqual(pa['returndays'], '3')
@@ -45,6 +46,7 @@ class TestCoreModel(BaseTester):
             model.edit_model(model_type='Models.Manager', model_name='AutomaticIrrigation', simulations='Seasonal',
                              returndays=3, maximumAmount=21)
             self.helper_nested_sims(model)
+
 
     def test_edit_nested_simulations_by_path(self):
         with apsim.ApsimModel('Report') as model:

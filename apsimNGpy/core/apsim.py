@@ -2111,7 +2111,7 @@ if __name__ == '__main__':
     mp.save()
 
 
-    @timer
+
     def edit_cultivar(self, commands, template, parent_plant, rename=None):
         match commands:
             case dict():

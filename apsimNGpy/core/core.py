@@ -4076,7 +4076,7 @@ class CoreModel(PlotManager):
             Changing weather data with non-matching start and end dates in the simulation will lead to RuntimeErrors.
             To avoid this, first check the start and end date before proceeding as follows:
 
-              >>> dt = model.inspect_model_parameters(model_class='Clock', model_name='Clock', simulations='Simulation')
+              >>> dt = model.inspect_model_parameters(model_type='Clock', model_name='Clock', simulations='Simulation')
               >>> start, end = dt['Start'].year, dt['End'].year
               # output: 1990, 2000
             """
@@ -4084,7 +4084,7 @@ class CoreModel(PlotManager):
         # start, end = self.inspect_model_parameters(model_class='Clock', model_name='Clock', start=start, end=end)
         file_name = filename or f"{Path(self._model).stem}_{source}_{start}_{end}.met"
 
-        name = filename or file_name  # if filename is not None, use filename. Otherwise, file_name.
+        name = filename or file_name
         file = get_weather(lonlat, start=start, end=end, source=source, filename=name)
 
         self.get_weather_from_file(weather_file=file, simulations=simulations)

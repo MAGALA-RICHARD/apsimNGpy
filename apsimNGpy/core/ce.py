@@ -220,7 +220,9 @@ class CreatNewCultivar:
     @lru_cache(maxsize=200)  # templates are the same
     def inspect_commands(self):
         try:
-            commands = self.model.inspect_model_parameters('Cultivar', self.template)
+            commands = self.model.inspect_model_parameters('Cultivar', self.template)['Command']
+            com = (i.split("=") for i in commands)
+            commands = {i[0]: i[1] for i in com}
         except NotImplementedError:
             raise NodeNotFoundError(f'Template Cultivar name `{self.template}` not found')
         return commands
@@ -247,7 +249,7 @@ class CreatNewCultivar:
         NodeNotFoundError
             If the specified cultivar or manager script cannot be found.
         """
-        # Manager provided as full path
+        # Manager provided as a full path
         if manager in self.model.inspect_model('Models.Manager', fullpath=True):
             self.model.edit_model_by_path(
                 path=manager,
@@ -306,6 +308,7 @@ class CreatNewCultivar:
         metas = self._load_plant_context()
         path, node, tpc = metas
         exp_new_cultivar_path = f"{node.FullPath}.{name}"
+
         if not self.model.has_node(exp_new_cultivar_path, node_type='Models.PMF.Cultivar', scope=node)['ok']:
             clt = CLR.Models.PMF.Cultivar()
             clt.Name = name
@@ -333,7 +336,6 @@ class CreatNewCultivar:
         cmds = self._format_cmds(cmds)
         clt.Command = cmds
         self.model.save()
-
 
     def edit_by_cmd_pairs(self, commands: dict, name: str = None, ):
         """
@@ -520,7 +522,8 @@ if __name__ == "__main__":
     apsim = ApsimModel('Maize', 'llmodel.apsimx')
     obj = CreatNewCultivar(model=apsim, template='Laila', plant='Maize')
 
-    ed = apsim.inspect_model_parameters('Cultivar', 'Laila')
+    ed = apsim.inspect_model_parameters('Models.PMF.Cultivar', 'Laila')
+    apsim.open_in_gui()
     # apsim.open_in_gui()
     # test dict like command
     test1 = edit_cultivar_with_new_name('Dekalb_XL82', jtf=100, cmd_mtd=dict)

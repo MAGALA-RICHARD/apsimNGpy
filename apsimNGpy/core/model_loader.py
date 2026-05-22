@@ -413,17 +413,21 @@ def get_node_by_path(node, node_path, cast_as=None):
             if n.get_FullNameAndPath() == node_path:
                 if cast_as is None:
                     return n
-                elif cast_as.lower() == 'auto':
+                elif isinstance(cast_as, str) and cast_as.lower() == 'auto':
                     nod = getattr(n, 'Model', node)
-                    n = CastHelpers.CastAs[nod.GetType()](nod)
+                    node_type = nod.GetType()
+                    print(node_type)
+                    n = CastHelpers.CastAs[node_type](nod)
+                    if not n:
+                        raise TypeError(f'{n} can not be auto to {node_type}')
+                    return n
+                elif not isinstance(cast_as, str):
+                    n = CastHelpers.CastAs[cast_as](getattr(n, 'Model', node))
                     if not n:
                         raise TypeError(f'{n} can not be converted to{cast_as}')
                     return n
                 else:
-                    n= CastHelpers.CastAs[cast_as](getattr(n, 'Model', node))
-                    if not n:
-                        raise TypeError(f'{n} can not be converted to{cast_as}')
-                    return n
+                    raise TypeError(f'{n} can not be converted to {cast_as} un supported cast type')
 
     else:
         raise AttributeError(f"Node supplied has no attribute: Walk")
@@ -508,6 +512,11 @@ def get_attributes(obj):
     return attributes
 
 
+def convert_to_dict(node):
+    import json
+    return json.loads(to_json_string(node))
+
+
 if __name__ == '__main__':
     pat = load_crop_from_disk('Maize', out='ap')
     load = load_apsim_model('Maize', 'ap')
@@ -516,6 +525,6 @@ if __name__ == '__main__':
 
     # getattr(Models.Core.ApsimFile, "FileFormat", None)
     # set_apsim_bin_path(r'/Applications/APSIM2025.2.7670.0.app/Contents/Resources/bin')
-    to_json_string(model2)
+    json_string = to_json_string(model2)
     m_and_type = get_node_and_type(load.Simulations, '.Simulations.Simulation')
     print(m_and_type)

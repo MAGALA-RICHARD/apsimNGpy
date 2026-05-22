@@ -22,10 +22,8 @@ from typing import Any
 from typing import Union
 
 import pandas as pd
-from System import *
-
 from apsimNGpy.starter.starter import CLR
-
+from System import *
 # from System import InvalidOperationException, ArgumentOutOfRangeException
 KeyValuePair = CLR.System.Collections.Generic.KeyValuePair
 String = CLR.System.String
@@ -188,6 +186,18 @@ class CoreModel(PlotManager):
         self.save(reload=True)
         return len(self.simulations)
 
+    def member_wise_cone(self, sim, rename):
+        sim = self.get_sim_by_name_or_index(sim)
+        sim.Name = rename
+        return sim.MemberwiseClone()
+
+    def append(self, sim):
+        """
+        Adds a simulation to the Simulation list
+        :param sim: Simulation (Models.Core.Simulation)
+        """
+        ModelTools.ADD(sim, self.Simulations)
+
     def __getitem__(self, name_or_index: Union[int, str]):
         """
         Fetch an APSIM simulation by index or by simulation name.
@@ -210,7 +220,9 @@ class CoreModel(PlotManager):
         KeyError
             If the provided simulation name does not exist.
         """
+        return self.get_sim_by_name_or_index(name_or_index)
 
+    def get_sim_by_name_or_index(self, name_or_index: Union[int, str]):
         self.save(reload=True)
         if len(self) < 1:
             raise KeyError(f"No simulations is present under {self.Simulations.Name}")
@@ -233,6 +245,116 @@ class CoreModel(PlotManager):
                 raise TypeError(
                     f"name_or_index must be str or int, got {type(name_or_index).__name__}"
                 )
+
+    def _edit_model_obj(self, model_instance,scope, verbose=False, **kwargs):
+        model_name = model_instance.Name
+        match type(model_instance):
+            case Models.WaterModel.WaterBalance:
+                try:
+                    ModelTools.edit_instance(model_instance, **kwargs)
+                except AttributeError as ate:
+                    accepted_attributes = self.inspect_settable_attributes(Models.WaterModel.WaterBalance)
+                    ap = '\n'.join(accepted_attributes)
+                    logger.info(f'some of the accepted attributes are {ap}')
+                    raise AttributeError(
+                        f"{str(ate)}. Allowed {model_instance} attributes are: {ap}"
+                    ) from ate
+
+            case Models.Climate.Weather:
+                self._set_weather_path(model_instance, param_values=kwargs, verbose=verbose)
+            case Models.Clock:
+                self._set_clock_vars(model_instance, param_values=kwargs, verbose=verbose)
+
+            case Models.Manager:
+                self.update_manager(scope=scope, manager_name=model_name, **kwargs)
+
+            case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
+                try:
+                    # Accept key word arguments
+                    ModelTools.edit_instance(model_instance, **kwargs)
+                except AttributeError as ate:
+
+                    lp = [attr[len('set_'):] for attr in dir(model_instance) if attr.startswith('set_')]
+                    accepted_attributes = '\n'.join(lp)
+                    logger.info(f'some of the accepted attributes are {accepted_attributes}')
+                    raise AttributeError(
+                        f"{str(ate)}. Allowed {model_instance} attributes are: {accepted_attributes}"
+                    ) from ate
+                # self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
+            case Models.Surface.SurfaceOrganicMatter:
+                try:
+                    ModelTools.edit_instance(model_instance, **kwargs)
+                except AttributeError as ate:
+                    accepted_attributes = self.inspect_settable_attributes(Models.Surface.SurfaceOrganicMatter)
+                    # Provide user with acceptable attributes
+                    accept = "\n".join(accepted_attributes)
+                    logger.info(f'some of the accepted attributes are {accept}')
+                    raise AttributeError(
+                        f"{str(ate)}. Allowed {model_instance} attributes are: {accept}"
+                    ) from ate
+                # self._set_surface_organic_matter(model_instance, param_values=kwargs, verbose=verbose)
+
+            case Models.Report:
+                self._set_report_vars(model_instance, param_values=kwargs, verbose=verbose)
+
+            case Models.MicroClimate:
+                try:
+                    ModelTools.edit_instance(model_instance, **kwargs)
+                except AttributeError as e:
+                    attribs = self.inspect_settable_attributes(model_type=Models.MicroClimate)
+                    at = ', '.join(attribs)
+
+                    # Log helpful information BEFORE raising the error
+                    logger.error(
+                        f"Invalid attribute in MicroClimate model. "
+                        f"Allowed attributes include: {at}"
+                    )
+
+                    # Re-raise with additional context
+                    raise AttributeError(
+                        f"{str(e)}. Allowed MicroClimate attributes are: {at}"
+                    ) from e
+
+            case Models.PMF.Cultivar:
+                plant_name = kwargs.get('plant')
+                if plant_name is None:
+                    raise ValueError(
+                        f'Please specify the plant name e.g., Maize, Soybean etc hosting the suggested cultivar: {model_name}')
+                rename = kwargs.get('rename', f"e_{plant_name}_{model_name}")
+
+                cc = CreatNewCultivar(model=self, template=model_name, plant=plant_name)
+                commands = kwargs.get('commands')
+                match commands:
+                    case dict():
+                        cc.edit_by_cmd_pairs(name=rename, commands=commands)
+
+                    case list() | tuple() | ValuesView() | KeysView():
+                        values = kwargs.get("values", [])
+
+                        if not values:
+                            cc.edit_by_cmd_iterable(rename, commands=commands)
+
+                        else:
+                            cc.edit_by_cmd_values(rename, commands=commands, values=values)
+
+                    case _:
+                        raise TypeError(
+                            f"Unsupported type for 'commands': {type(commands).__name__}. "
+                            "Expected dict, list, or tuple."
+                        )
+
+                mp = kwargs.get('manager_path', None) or kwargs.get('managers')
+                sowed = kwargs.get('sowed', False)
+                if not isinstance(mp, dict) and not sowed:
+                    raise ValueError(
+                        f"For Cultivar managers, expected a dict, but got {type(mp).__name__}. "
+                        "Please provide a dictionary where keys are manager paths or names "
+                        "and values are parameter names. Example: `{'Sow using a variable rule':'CultivarName'}"
+                    )
+                for k, v in mp.items():
+                    cc.attach_cultivar(name=rename, manager=k, param_name=v)
+            case _:
+                raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
 
     def _initialize_model(self):
         """Load model, clone it, initialize datastore and metadata."""
@@ -868,6 +990,7 @@ class CoreModel(PlotManager):
                     pass
 
             # Run APSIM externally replaced run_model_externally with run_apsim_by_path
+
             res = run_apsim_by_path(
                 # we run using the copied file
                 self.path,
@@ -1756,7 +1879,7 @@ class CoreModel(PlotManager):
                                 )
 
                             cmd_dict = dict(zip(commands, values))
-                            cc.edit_by_cmd_pairs( commands=cmd_dict, name=rename)
+                            cc.edit_by_cmd_pairs(commands=cmd_dict, name=rename)
 
                     case _:
                         raise TypeError(
@@ -2063,16 +2186,20 @@ class CoreModel(PlotManager):
         """
         if isinstance(exclude, str):
             exclude = {exclude}
+
         elif not exclude:
             exclude = set()
+
         if simulations == 'all' or simulations is None or simulations == MissingOption:
             simulations = self.inspect_model('Models.Core.Simulation', fullpath=False)
             simulations = [str(i) for i in simulations if i not in exclude]
 
         model_type_class = validate_model_obj(model_type)
         replace_ments = self.get_replacements_node()
-        edit_candidate_objects = self.find_simulations(simulations)
-        # TODO add unittest when replacement node is available
+        if isinstance(simulations, Models.Core.Simulation):
+            edit_candidate_objects = [simulations]
+        else:
+            edit_candidate_objects = self.find_simulations(simulations)
         if replace_ments is not None:
             edit_candidate_objects.append(replace_ments)
 

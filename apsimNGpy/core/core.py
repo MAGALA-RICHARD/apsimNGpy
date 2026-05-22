@@ -24,6 +24,7 @@ from typing import Union
 import pandas as pd
 from apsimNGpy.starter.starter import CLR
 from System import *
+
 # from System import InvalidOperationException, ArgumentOutOfRangeException
 KeyValuePair = CLR.System.Collections.Generic.KeyValuePair
 String = CLR.System.String
@@ -246,7 +247,7 @@ class CoreModel(PlotManager):
                     f"name_or_index must be str or int, got {type(name_or_index).__name__}"
                 )
 
-    def _edit_model_obj(self, model_instance,scope, verbose=False, **kwargs):
+    def _edit_model_obj(self, model_instance, scope, verbose=False, **kwargs):
         model_name = model_instance.Name
         match type(model_instance):
             case Models.WaterModel.WaterBalance:
@@ -5855,3 +5856,12 @@ if __name__ == '__main__':
     # fixed_model.open_in_gui()
     model.has_node('Maize', node_type='Plant')
     print(fixed_model.results.Yield.mean())
+    sim = fixed_model.member_wise_cone(0, 'new_sim')
+
+    from apsimNGpy.core.model_tools import ModelTools
+    import APSIM.Core as core
+
+    cloned = core.Node.Clone(sim.Node)
+    cloned.Name = 'clone'
+    fixed_model.append(cloned.Model)
+    fixed_model.open_in_gui()

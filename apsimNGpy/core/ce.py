@@ -221,8 +221,8 @@ class CreatNewCultivar:
     def inspect_commands(self):
         try:
             commands = self.model.inspect_model_parameters('Cultivar', self.template)['Command']
-            com = (i.split("=") for i in commands)
-            commands = {i[0]: i[1] for i in com}
+            # com = (i.split("=") for i in commands)
+            # commands = {i[0]: i[1] for i in com}
         except NotImplementedError:
             raise NodeNotFoundError(f'Template Cultivar name `{self.template}` not found')
         return commands
@@ -480,7 +480,7 @@ class CreatNewCultivar:
                # the next part is to attach our new cultivar to whatever manager is sowing the cultivar
                ec.attach_cultivar('eB_100', manager='Sow using a variable rule, param_name='CultivarName')
            """
-        cmds = _check_cmds(commands)
+        cmds = _check_cmds(tuple(commands))
         self._update_cmds(cmds=cmds, name=name)
 
 

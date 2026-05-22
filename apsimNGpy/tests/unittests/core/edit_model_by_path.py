@@ -36,17 +36,16 @@ class TestEditModelByPath(unittest.TestCase):
     # ---------------------------------------------------
     def test_edit_cultivar_path_sowed_true(self):
         with ApsimModel('Maize') as model:
-            model.edit_model_by_path(
-                path=cultivar_path_for_sowed_maize,
-                commands='[Grain].MaximumGrainsPerCob.FixedValue',
-                values=20,
-                sowed=True,
-                rename='edm'
-            )
+            with self.assertRaises(ValueError):
+                model.edit_model_by_path(
+                    path=cultivar_path_for_sowed_maize,
+                    commands='[Grain].MaximumGrainsPerCob.FixedValue',
+                    values=20,
+                    sowed=True,
+                    rename='edm'
+                )
 
-            # Verify rename
-            edited = model.inspect_model_parameters_by_path(cultivar_path)
-            self.assertIsNotNone(edited)
+
 
     # ---------------------------------------------------
     # Test multiple parameter edits on the main model
@@ -63,7 +62,7 @@ class TestEditModelByPath(unittest.TestCase):
             # Inspect updated values
             organic_params = apsim.inspect_model_parameters_by_path(Organic)
             self.assertIn('Carbon', organic_params)
-            self.assertAlmostEqual(organic_params['Carbon'].iloc[0], 1.23, places=2)
+            self.assertAlmostEqual(organic_params['Carbon'][0], 1.23, places=2)
 
             # Verify replacements node exists
             node = apsim.get_replacements_node()
@@ -72,12 +71,12 @@ class TestEditModelByPath(unittest.TestCase):
             # Test dict unpacking
             apsim.edit_model_by_path(**dict(path=Organic, Carbon=1.20))
             cc = apsim.inspect_model_parameters_by_path(Organic)
-            self.assertAlmostEqual(cc['Carbon'].iloc[0], 1.20, places=2)
+            self.assertAlmostEqual(cc['Carbon'][0], 1.20, places=2)
 
             # Test set_params interface
             apsim.set_params(dict(path=Organic, Carbon=1.58))
             updated = apsim.inspect_model_parameters_by_path(Organic)
-            self.assertAlmostEqual(updated['Carbon'].iloc[0], 1.58, places=2)
+            self.assertAlmostEqual(updated['Carbon'][0], 1.58, places=2)
 
     # ---------------------------------------------------
     # Test editing multiple params at once but with mixed unfounded attributes
@@ -129,9 +128,9 @@ class TestEditModelByPath(unittest.TestCase):
             model.tree(cultivar=True)
             model.edit_model_by_path(
                 path='.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82',
-                commands='[Grain].MaximumGrainsPerCob.FixedValue',
-                values=50,
-                sowed=True,
+                commands=[f'[Grain].MaximumGrainsPerCob.FixedValue={50}'],
+                plant='Maize',
+                managers= {'.Simulations.Simulation.Field.Sow using a variable rule': 'CultivarName'},
                 rename='edit-added')
             self.assertIn('edit-added', model.inspect_model('Models.PMF.Cultivar', fullpath=False),
                           msg='edited cultivar edit-added was not added to the replacement')
@@ -143,14 +142,13 @@ class TestEditModelByPath(unittest.TestCase):
         with ApsimModel('Maize') as model:
             model.edit_model_by_path(
                 path=cultivar_path,
-                commands='[Grain].MaximumGrainsPerCob.FixedValue',
-                values=50,
+                commands={'[Grain].MaximumGrainsPerCob.FixedValue':50},
+                plant='Maize',
                 sowed=False,
-                manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
-                manager_param='CultivarName',
+                managers={'.Simulations.Simulation.Field.Sow using a variable rule':'CultivarName'},
                 rename='edit-added')
             self.assertIn('edit-added', model.inspect_model_parameters_by_path(
-                '.Simulations.Simulation.Field.Sow using a variable rule').values())
+                '.Simulations.Simulation.Field.Sow using a variable rule')['Parameters'].values())
         # ---------------------------------------------------
         # Ensure edited cultivar is updated in the manager script
         # ---------------------------------------------------
@@ -159,14 +157,13 @@ class TestEditModelByPath(unittest.TestCase):
         with ApsimModel('Soybean') as model:
             model.edit_model_by_path(
                 path=cultivar_path_soybean,
-                commands='[Grain].MaximumGrainsPerCob.FixedValue',
-                values=50,
+                commands={f'[Grain].MaximumGrainsPerCob.FixedValue':50},
+                plant='Soybean',
                 sowedr=False,
-                manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
-                manager_param='CultivarName',
+                managers={'.Simulations.Simulation.Field.Sow using a variable rule':'CultivarName'},
                 rename='edit-added')
             self.assertIn('edit-added', model.inspect_model_parameters_by_path(
-                '.Simulations.Simulation.Field.Sow using a variable rule').values())
+                '.Simulations.Simulation.Field.Sow using a variable rule')['Parameters'].values())
 
     # ---------------------------------------------------
     # Ensure if updating a cultivar path to manger is given but not the parameter holder, raise values error
@@ -206,14 +203,14 @@ class TestEditModelByPath(unittest.TestCase):
         with ApsimModel('Maize') as model:
             model.edit_model_by_path(
                 path=cultivar_path,
-                commands='[Grain].MaximumGrainsPerCob.FixedValue',
-                values=505,
+                plant='Maize',
+                commands=[f'[Grain].MaximumGrainsPerCob.FixedValue={505}'],
                 update_manager=False,
-                manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
-                manager_param='CultivarName',
+                manager_path={'.Simulations.Simulation.Field.Sow using a variable rule':'CultivarName'},
                 rename='edit-added')
             model.save()
             params = model.inspect_model_parameters('Models.PMF.Cultivar', 'edit-added')
+            params =params['Command']
 
             self.assertIn(
                 "[Grain].MaximumGrainsPerCob.FixedValue", params.keys(), 'Edited model not reflect reflecting'
@@ -228,14 +225,15 @@ class TestEditModelByPath(unittest.TestCase):
         with ApsimModel('Soybean') as model:
             model.edit_model_by_path(
                 path=cultivar_path_soybean,
-                commands='[Grain].MaximumGrainsPerCob.FixedValue',
-                values=50,
+                plant='Soybean',
+                commands=[f'[Grain].MaximumGrainsPerCob.FixedValue={50}'],
+
                 sowed=False,
-                manager_path='.Simulations.Simulation.Field.Sow using a variable rule',
-                manager_param='CultivarName',
+                managers={'.Simulations.Simulation.Field.Sow using a variable rule': 'CultivarName'},
                 rename='edit-added')
             model.save()
             params = model.inspect_model_parameters('Models.PMF.Cultivar', 'edit-added')
+            params = params['Command']
 
             self.assertIn(
                 "[Grain].MaximumGrainsPerCob.FixedValue", params.keys(), 'Edited model not reflect reflecting'

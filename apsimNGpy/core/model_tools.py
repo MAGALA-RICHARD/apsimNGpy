@@ -508,6 +508,13 @@ def extract_value(model_instance, parameters=None):
             value = _general_extractor(parameters=parameters, model_instance=model_instance)
         case Models.WaterModel.WaterBalance:
             value  = _general_extractor(model_instance,parameters=parameters)
+        case Models.PMF.Cultivar:
+            value = _general_extractor(model_instance, parameters=None)
+            comm = value['Command']
+            if isinstance(comm, list):
+                coms = (i.split('=') for i in comm)
+                cmd = {i[0]:i[1] for i in coms}
+                value['Command'] = cmd
 
         case _:
             value = _general_extractor(model_instance, parameters)

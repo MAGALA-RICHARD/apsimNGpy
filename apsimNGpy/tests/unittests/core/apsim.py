@@ -47,7 +47,6 @@ class TestCoreModel(BaseTester):
                              returndays=3, maximumAmount=21)
             self.helper_nested_sims(model)
 
-
     def test_edit_nested_simulations_by_path(self):
         with apsim.ApsimModel('Report') as model:
             model.edit_model_by_path('.Simulations.Grouping.Seasonal.Field.AutomaticIrrigation', returndays=3,
@@ -298,7 +297,8 @@ class TestCoreModel(BaseTester):
             mo.run()
             self.assertFalse(mo.results.empty)
             swim_yield = float(mo.results.Yield.mean())
-            self.assertNotEqual(swat_yield, swim_yield, msg='Both swim3 and SWAT yield are the same meaning the changes were not successfully implemented')  # there is no way both models can agree with similar precission
+            self.assertNotEqual(swat_yield, swim_yield,
+                                msg='Both swim3 and SWAT yield are the same meaning the changes were not successfully implemented')  # there is no way both models can agree with similar precission
 
         print(swim)
 

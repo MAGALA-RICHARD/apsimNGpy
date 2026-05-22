@@ -25,6 +25,35 @@ class TestCoreModel(BaseTester):
         self.out = f'test_edit_model{self._testMethodName}.apsimx'
         self.paths = {self.out_path}
 
+    def test_append(self):
+        with ApsimModel('Maize') as apsim:
+            apsim.append(apsim[0], rename='clone')
+            with self.assertRaises(ValueError):
+                # in case same name is accidentally added to the simulation
+                apsim.append(apsim[0], rename='clone')
+            self.assertEqual(len(apsim), 2)
+
+    def test_append_run(self):
+        with ApsimModel('Maize') as model:
+            model.append(model[0], rename='clone')
+            model.run()
+            self.assertFalse(model.results.empty)
+
+    def test_append_run_member_wise_clone(self):
+        with ApsimModel('Maize') as model:
+            mc = model.member_wise_cone(0)
+            model.append(mc, rename='clone')
+            model.run()
+            self.assertFalse(model.results.empty)
+
+    def test_append_run_member_wise_cone_with_replacements(self):
+        with ApsimModel('Maize') as model:
+            model.add_crop_replacements()
+            mc = model.member_wise_cone(0)
+            model.append(mc, rename='clone')
+            model.run()
+            self.assertFalse(model.results.empty)
+
     def test_edit_soil_organic_matter_module(self):
         toPCarb = 1.233
         self.model.edit_model(model_type='Organic', model_name='Organic', simulations=SIMULATION, Carbon=toPCarb)
@@ -186,7 +215,7 @@ class TestCoreModel(BaseTester):
     def test_edit_model_sim_is_models_core_simulations(self):
         """Testing if editing models, with real simulation object specified works"""
         with ApsimModel("Maize") as model:
-            model.edit_model(model_type='Report', model_name='Report', simulations= model[0], variable_spec=[
+            model.edit_model(model_type='Report', model_name='Report', simulations=model[0], variable_spec=[
                 '[Maize].AboveGround.Wt as abw',
                 '[Maize].Grain.Total.Wt as grain_weight'])
             out = model.inspect_model_parameters('Models.Report', 'Report')

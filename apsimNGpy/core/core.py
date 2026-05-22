@@ -190,18 +190,44 @@ class CoreModel(PlotManager):
     def member_wise_cone(self, sim: Union[str, int]):
         sim = self.get_sim_by_name_or_index(sim)
         return sim.MemberwiseClone()
-    @timer
-    def append(self, sim: Union[str, int], rename: str):
-        """
-        Adds a simulation to the Simulation list
-        :param sim: Simulation (Models.Core.Simulation)
-        """
-        if rename not in {im.Name for im in self}:
-            ModelTools.ADD(sim, self.Simulations)
-            cloned_sim = self[-1]
-            cloned_sim.Name = rename
-            self.save()
 
+    def append(self, sim: Union[Models.Core.Simulation], rename: str) -> None:
+        """
+        Add a simulation to the simulations collection.
+
+        Parameters
+        ----------
+        sim : Union[str, int]
+            Simulation object or identifier to append.
+
+        rename : str
+            Unique name assigned to the appended simulation.
+
+        Raises
+        ------
+        ValueError
+            If a simulation with the same name already exists.
+        """
+
+        existing_names = {s.Name for s in self}
+
+        if rename in existing_names:
+            raise ValueError(
+                f"Simulation '{rename}' already exists. "
+                "Choose a unique simulation name."
+            )
+
+        # Add simulation
+        ModelTools.ADD(sim, self.Simulations)
+
+        # Retrieve newly added simulation
+        cloned_sim = self[-1]
+
+        # Rename safely
+        cloned_sim.Name = rename
+
+        # Persist changes
+        self.save()
     def __getitem__(self, name_or_index: Union[int, str]):
         """
         Fetch an APSIM simulation by index or by simulation name.

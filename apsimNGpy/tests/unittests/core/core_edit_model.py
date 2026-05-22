@@ -184,9 +184,19 @@ class TestCoreModel(BaseTester):
         self.assertEqual(length, 2, "duplicates are appearing in the report ")
 
     def test_edit_model_sim_is_models_core_simulations(self):
-        """testing if editing models, with treal simulation object specified works"""
+        """Testing if editing models, with real simulation object specified works"""
         with ApsimModel("Maize") as model:
             model.edit_model(model_type='Report', model_name='Report', simulations= model[0], variable_spec=[
+                '[Maize].AboveGround.Wt as abw',
+                '[Maize].Grain.Total.Wt as grain_weight'])
+            out = model.inspect_model_parameters('Models.Report', 'Report')
+            self.assertIn('[Maize].AboveGround.Wt as abw', out['VariableNames'])
+            self.assertIn('[Maize].Grain.Total.Wt as grain_weight', out['VariableNames'])
+
+    def test_edit_model_sim_is_models_core_simulations2(self):
+        """Testing if editing models, with real simulation object specified works"""
+        with ApsimModel("Maize") as model:
+            model.edit_model(model_type='Report', model_name='Report', simulations=model['Simulation'], variable_spec=[
                 '[Maize].AboveGround.Wt as abw',
                 '[Maize].Grain.Total.Wt as grain_weight'])
             out = model.inspect_model_parameters('Models.Report', 'Report')

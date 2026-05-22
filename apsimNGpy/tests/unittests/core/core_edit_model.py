@@ -54,6 +54,21 @@ class TestCoreModel(BaseTester):
             model.run()
             self.assertFalse(model.results.empty)
 
+    def test_appended_sim_run_works(self):
+        "Ensure that appended simulations can be edited"
+        toPCarb = 1.233
+        with ApsimModel('Maize') as model:
+            sim = model[0]
+            model.append(sim, rename='clone')
+            model.edit_model(model_type='Organic', model_name='Organic', simulations=model[1], Carbon=toPCarb)
+            out = model.inspect_model_parameters(
+                model_type='Organic',
+                simulations='clone',
+                model_name='Organic',
+                parameters='Carbon' )
+            self.assertEqual(out['Carbon'][0], toPCarb, msg='Organic carbon not successfully '
+                                                            'updated to target top layer after appending cloned')
+
     def test_edit_soil_organic_matter_module(self):
         toPCarb = 1.233
         self.model.edit_model(model_type='Organic', model_name='Organic', simulations=SIMULATION, Carbon=toPCarb)

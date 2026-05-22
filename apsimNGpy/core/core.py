@@ -2226,7 +2226,9 @@ class CoreModel(PlotManager):
 
         model_type_class = validate_model_obj(model_type)
         replace_ments = self.get_replacements_node()
-        if isinstance(simulations, Models.Core.Simulation):
+        if (isinstance(simulations, Models.Core.Simulation) or
+                # if model is in the replacement folder
+                isinstance(simulations, Models.Core.Folder) and simulations.Name =='Replacements'):
             edit_candidate_objects = [simulations]
         else:
             edit_candidate_objects = self.find_simulations(simulations)

@@ -36,7 +36,7 @@ class TestCoreModel(BaseTester):
 
         )
         self.assertEqual(out['Carbon'][0], toPCarb, msg='Organic carbon not successfully '
-                                                             'updated to target top layer')
+                                                        'updated to target top layer')
 
     def test_edit_soil_multiple_soil_layers(self):
         """
@@ -55,7 +55,7 @@ class TestCoreModel(BaseTester):
 
         )
         self.assertEqual(out['Carbon'][1], toPCarbList[1], msg='carbon  not successfully '
-                                                                    'updated by a list')
+                                                               'updated by a list')
 
     def test_edit_solute_nh4(self):
         """
@@ -66,7 +66,7 @@ class TestCoreModel(BaseTester):
 
     def test_editing_lower_layer(self):
         """
-            Edit NH4 soil top layer 
+            Edit NH4 soil top layer
             """
         initialValues = 0.34
         self.model.edit_model(model_type='Solute', model_name='NH4', simulations=SIMULATION,
@@ -78,7 +78,7 @@ class TestCoreModel(BaseTester):
 
         )
         self.assertEqual(out['InitialValues'][-1], initialValues, msg='InitialValues for NH4 not successfully '
-                                                                           'updated to the target bottom layer')
+                                                                      'updated to the target bottom layer')
 
     def test_edit_solute_urea(self):
         """"edits urea module"""
@@ -165,6 +165,34 @@ class TestCoreModel(BaseTester):
         self.model.edit_model(model_type='Report', model_name='Report', simulations=SIMULATION, variable_spec=[
             '[Maize].AboveGround.Wt as abw',
             '[Maize].Grain.Total.Wt as grain_weight'])
+        out = self.model.inspect_model_parameters('Models.Report', 'Report')
+
+        self.assertIn('[Maize].AboveGround.Wt as abw', out['VariableNames'])
+        self.assertIn('[Maize].Grain.Total.Wt as grain_weight', out['VariableNames'])
+        # avoid duplicates
+        self.model.edit_model(model_type='Report', model_name='Report', simulations=SIMULATION, variable_spec=[
+            '[Maize].AboveGround.Wt as abw',
+            '[Maize].Grain.Total.Wt as grain_weight'])
+        out = self.model.inspect_model_parameters('Models.Report', 'Report')
+        vs = out['VariableNames']
+        iv = '[Maize].AboveGround.Wt as abw', '[Maize].Grain.Total.Wt as grain_weight'
+        data = []
+        for i in vs:
+            if i in iv:
+                data.append(i)
+        length = len(data)
+        self.assertEqual(length, 2, "duplicates are appearing in the report ")
+
+    def test_edit_model_sim_is_models_core_simulations(self):
+        """testing if editing models, with treal simulation object specified works"""
+        with ApsimModel("Maize") as model:
+            model.edit_model(model_type='Report', model_name='Report', simulations= model[0], variable_spec=[
+                '[Maize].AboveGround.Wt as abw',
+                '[Maize].Grain.Total.Wt as grain_weight'])
+            out = model.inspect_model_parameters('Models.Report', 'Report')
+            self.assertIn('[Maize].AboveGround.Wt as abw', out['VariableNames'])
+            self.assertIn('[Maize].Grain.Total.Wt as grain_weight', out['VariableNames'])
+            pass
 
     def test_run_model(self):
         """finally run model"""

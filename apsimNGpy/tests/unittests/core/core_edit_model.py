@@ -35,7 +35,7 @@ class TestCoreModel(BaseTester):
             parameters='Carbon'
 
         )
-        self.assertEqual(out['Carbon'].iloc[0], toPCarb, msg='Organic carbon not successfully '
+        self.assertEqual(out['Carbon'][0], toPCarb, msg='Organic carbon not successfully '
                                                              'updated to target top layer')
 
     def test_edit_soil_multiple_soil_layers(self):
@@ -54,7 +54,7 @@ class TestCoreModel(BaseTester):
             parameters='Carbon'
 
         )
-        self.assertEqual(out['Carbon'].iloc[1], toPCarbList[1], msg='carbon  not successfully '
+        self.assertEqual(out['Carbon'][1], toPCarbList[1], msg='carbon  not successfully '
                                                                     'updated by a list')
 
     def test_edit_solute_nh4(self):
@@ -77,7 +77,7 @@ class TestCoreModel(BaseTester):
             simulations=SIMULATION,
 
         )
-        self.assertEqual(out['InitialValues'].iloc[-1], initialValues, msg='InitialValues for NH4 not successfully '
+        self.assertEqual(out['InitialValues'][-1], initialValues, msg='InitialValues for NH4 not successfully '
                                                                            'updated to the target bottom layer')
 
     def test_edit_solute_urea(self):
@@ -90,7 +90,7 @@ class TestCoreModel(BaseTester):
             simulations=SIMULATION,
 
         )
-        self.assertEqual(out['InitialValues'].iloc[0], urea, msg='InitialValues for Urea not successfully updated')
+        self.assertEqual(out['InitialValues'][0], urea, msg='InitialValues for Urea not successfully updated')
 
     def test_edit_manager_script(self):
         """edits manager_script module"""
@@ -101,8 +101,9 @@ class TestCoreModel(BaseTester):
             model_type='Models.Manager',
             model_name='Sow using a variable rule',
             simulations=SIMULATION,
-            parameters='Population'
+
         )
+        out = out['Parameters']
         self.assertEqual(float(out['Population']), population,
                          msg=f'Population; {population} not successfully updated ')
 

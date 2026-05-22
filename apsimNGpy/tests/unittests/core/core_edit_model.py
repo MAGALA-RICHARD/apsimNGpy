@@ -197,10 +197,10 @@ class TestCoreModel(BaseTester):
         """Testing if editing models, with real simulation object specified works"""
         with ApsimModel("Maize") as model:
             model.edit_model(model_type='Report', model_name='Report', simulations=model['Simulation'], variable_spec=[
-                '[Maize].AboveGround.Wt as abw',
+                '[Maize].AboveGround.Wt as ABW',
                 '[Maize].Grain.Total.Wt as grain_weight'])
             out = model.inspect_model_parameters('Models.Report', 'Report')
-            self.assertIn('[Maize].AboveGround.Wt as abw', out['VariableNames'])
+            self.assertIn('[Maize].AboveGround.Wt as ABW', out['VariableNames'])
             self.assertIn('[Maize].Grain.Total.Wt as grain_weight', out['VariableNames'])
             pass
 

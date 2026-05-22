@@ -5861,5 +5861,5 @@ if __name__ == '__main__':
     print(fixed_model.results.Yield.mean())
     sim = fixed_model.member_wise_cone(0)
 
-    fixed_model.append(sim, rename='clone')
+    fixed_model.append(fixed_model[0], rename='clone')
     fixed_model.open_in_gui()

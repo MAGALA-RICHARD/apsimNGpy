@@ -7,7 +7,7 @@ from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 wd = Path.cwd() / "test_apsim"
 wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
-from apsimNGpy import Apsim
+from apsimNGpy import ApsimModel, Apsim
 
 apsim = Apsim()
 
@@ -17,7 +17,7 @@ class TestCoreModel(BaseTester):
 
         self.out_path = Path(f"{self._testMethodName}.apsimx")
         self.wd = wd
-        self.test_ap_sim = apsim.ApsimModel("Maize", out_path=self.out_path)
+        self.test_ap_sim = ApsimModel("Maize", out_path=self.out_path)
         self.mock_sim_path_name = Path(f"__mock__{self._testMethodName}.apsimx")
         self.thickness_sequence_test_values = [100, 200, 200, 200, 300, 250, 400, 450]
         self.expect_ts_auto = [50.0, 50.0, 50.0, 316.0, 318.0, 319.0, 321.0, 322.0, 324.0, 325.0]
@@ -27,9 +27,15 @@ class TestCoreModel(BaseTester):
         self.assertTrue(self.test_ap_sim.ran_ok)
         self.test_ap_sim.clean_up(db=True)
 
+    def test_append(self):
+        with Apsim('Maize') as apsim:
+            apsim.append(apsim[0], rename='clone')
+            apsim.append(apsim[0], rename='clone')
+            self.assertEqual(len(apsim), 2)
+
     def test_ensures_all_simulations_are_loaded(self):
         # this has about 4 simulations
-        with apsim.ApsimModel('Report') as model:
+        with ApsimModel('Report') as model:
             sims = model.simulations_list
             self.assertGreater(len(model), 1)
 
@@ -42,13 +48,13 @@ class TestCoreModel(BaseTester):
         self.assertEqual(pa['returndays'], '3')
 
     def test_editing_nested_simulations(self):
-        with apsim.ApsimModel('Report') as model:
+        with ApsimModel('Report') as model:
             model.edit_model(model_type='Models.Manager', model_name='AutomaticIrrigation', simulations='Seasonal',
                              returndays=3, maximumAmount=21)
             self.helper_nested_sims(model)
 
     def test_edit_nested_simulations_by_path(self):
-        with apsim.ApsimModel('Report') as model:
+        with ApsimModel('Report') as model:
             model.edit_model_by_path('.Simulations.Grouping.Seasonal.Field.AutomaticIrrigation', returndays=3,
                                      maximumAmount=21)
             self.helper_nested_sims(model)
@@ -58,7 +64,7 @@ class TestCoreModel(BaseTester):
         Test that we can graphically represent the model tree elements
 
         """
-        with apsim.ApsimModel('Report') as model:
+        with ApsimModel('Report') as model:
             con = model.tree(console=False)
             false = dict(con) == dict()
             self.assertFalse(false)
@@ -68,12 +74,12 @@ class TestCoreModel(BaseTester):
         test if all clocks for each simulation are successfully inspected by inspect_model method
 
         """
-        with apsim.ApsimModel('Report') as model:
+        with ApsimModel('Report') as model:
             clk_str = model.inspect_model('Models.Clock')
             self.assertEqual(len(clk_str), len(model))
 
     def test_set_params_cultivar(self):
-        with apsim.ApsimModel('Maize') as model:
+        with ApsimModel('Maize') as model:
             model.run()
             # mean 1
             mn1 = model.results.mean(numeric_only=True)
@@ -95,7 +101,7 @@ class TestCoreModel(BaseTester):
     def test_evaluate_simulated_output(self):
         from apsimNGpy.tests.unittests.test_factory import obs
 
-        with apsim.ApsimModel('Maize') as model:
+        with ApsimModel('Maize') as model:
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
             model.run()
             metrics = model.evaluate(ref_data=obs, table='Report', index_col=['year'],

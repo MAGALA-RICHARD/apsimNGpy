@@ -187,17 +187,20 @@ class CoreModel(PlotManager):
         self.save(reload=True)
         return len(self.simulations)
 
-    def member_wise_cone(self, sim, rename):
+    def member_wise_cone(self, sim: Union[str, int]):
         sim = self.get_sim_by_name_or_index(sim)
-        sim.Name = rename
         return sim.MemberwiseClone()
-
-    def append(self, sim):
+    @timer
+    def append(self, sim: Union[str, int], rename: str):
         """
         Adds a simulation to the Simulation list
         :param sim: Simulation (Models.Core.Simulation)
         """
-        ModelTools.ADD(sim, self.Simulations)
+        if rename not in {im.Name for im in self}:
+            ModelTools.ADD(sim, self.Simulations)
+            cloned_sim = self[-1]
+            cloned_sim.Name = rename
+            self.save()
 
     def __getitem__(self, name_or_index: Union[int, str]):
         """
@@ -5856,12 +5859,7 @@ if __name__ == '__main__':
     # fixed_model.open_in_gui()
     model.has_node('Maize', node_type='Plant')
     print(fixed_model.results.Yield.mean())
-    sim = fixed_model.member_wise_cone(0, 'new_sim')
+    sim = fixed_model.member_wise_cone(0)
 
-    from apsimNGpy.core.model_tools import ModelTools
-    import APSIM.Core as core
-
-    cloned = core.Node.Clone(sim.Node)
-    cloned.Name = 'clone'
-    fixed_model.append(cloned.Model)
+    fixed_model.append(sim, rename='clone')
     fixed_model.open_in_gui()

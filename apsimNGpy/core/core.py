@@ -246,7 +246,7 @@ class CoreModel(PlotManager):
         self.Simulations.Children.Add(simulation)
 
         # Retrieve newly added simulation
-        cloned_sim = self[-1]
+        cloned_sim = self.simulations[-1]
 
         # Rename safely
         cloned_sim.Name = rename

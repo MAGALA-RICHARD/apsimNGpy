@@ -193,7 +193,7 @@ class CoreModel(PlotManager):
         sim = self.get_sim_by_name_or_index(sim)
         return sim.MemberwiseClone()
 
-    @timer
+
     def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str,
                           payload: Union[dict, tuple, list] = None) -> None:
         """

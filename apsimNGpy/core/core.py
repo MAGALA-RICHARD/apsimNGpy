@@ -192,8 +192,10 @@ class CoreModel(PlotManager):
 
         sim = self.get_sim_by_name_or_index(sim)
         return sim.MemberwiseClone()
+
     @timer
-    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str, payload: Union[dict, tuple, list]=None) -> None:
+    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str,
+                          payload: Union[dict, tuple, list] = None) -> None:
         """
         Add a simulation to the simulations collection.
 
@@ -246,16 +248,16 @@ class CoreModel(PlotManager):
         self.Simulations.Children.Add(simulation)
 
         # Retrieve newly added simulation
-        cloned_sim = self.simulations[-1]
+        # cloned_sim = self.simulations[-1]
 
         # Rename safely
-        cloned_sim.Name = rename
+        simulation.Name = rename
         # Persist changes
         self.save()
         if payload:
             # payload is from one node
             if isinstance(payload, dict):
-                payload['simulations'] = self[-1]
+                payload['simulations'] = rename
                 self.edit_model(**payload)
             # multiple nodes enclosed in an iterabale, each defined in a dict
             else:
@@ -2263,7 +2265,7 @@ class CoreModel(PlotManager):
         replace_ments = self.get_replacements_node()
         if (isinstance(simulations, Models.Core.Simulation) or
                 # if model is in the replacement folder
-                isinstance(simulations, Models.Core.Folder) and simulations.Name =='Replacements'):
+                isinstance(simulations, Models.Core.Folder) and simulations.Name == 'Replacements'):
             edit_candidate_objects = [simulations]
         else:
             edit_candidate_objects = self.find_simulations(simulations)
@@ -5925,5 +5927,6 @@ if __name__ == '__main__':
     sim = fixed_model.member_wise_cone(0)
 
     fixed_model.append_simulation(fixed_model[0], rename='clone1', payload=dict(model_type='Models.Manager',
-                                                                               model_name = 'Sow using a variable rule', Population =12))
+                                                                                model_name='Sow using a variable rule',
+                                                                                Population=12))
     fixed_model.open_in_gui()

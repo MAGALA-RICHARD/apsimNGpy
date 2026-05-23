@@ -98,6 +98,7 @@ class TestCoreModel(BaseTester):
                                           payload=dict(model_type='Models.Manager',
                                                        model_name='Sow using a variable rule',
                                                        Population=12))
+            self.assertIn('clone1', fixed_model.inspect_model("Models.Core.Simulation", fullpath=False))
             out = fixed_model.inspect_model_parameters('Models.Manager', model_name='Sow using a variable rule')
             # because they are more than one simulations
             out = out['clone1']['Parameters']
@@ -118,6 +119,7 @@ class TestCoreModel(BaseTester):
                                           payload=dict(model_type='Models.Manager',
                                                        model_name='Sow using a variable rule',
                                                        Population=12))
+            self.assertIn('clone1', fixed_model.inspect_model("Models.Core.Simulation", fullpath=False))
             out = fixed_model.inspect_model_parameters('Models.Manager', model_name='Sow using a variable rule')
             # because they are more than one simulations
             out = out['clone1']['Parameters']

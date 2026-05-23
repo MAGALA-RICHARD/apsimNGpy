@@ -404,7 +404,7 @@ if __name__ == '__main__':
                 import Models
 
                 cc = collect_classes(Models)
-                cc.append(Models.Functions.Constant)
+                cc.append_simulation(Models.Functions.Constant)
                 bg = []
                 for i in set(cc):
                     try:

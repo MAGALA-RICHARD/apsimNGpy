@@ -3,6 +3,68 @@ Version 1.5.3
 
 API improvements
 --------------------------
+* **``append_simulation`` method**
+
+  Added a new ``append_simulation`` method for appending simulations
+  into the current ``ApsimModel`` instance. Unlike
+  ``clone_simulation``, this method supports transferring simulations
+  from external ``ApsimModel`` objects in addition to duplicating
+  simulations already present within the current model instance.
+
+  Key features:
+
+  - Append simulations from external ``ApsimModel`` objects
+  - Duplicate existing simulations within the current model
+  - Optional renaming of appended simulations
+  - Improved flexibility for simulation aggregation and scenario
+    construction workflows
+  - Supports cross-model simulation transfer
+
+  Basic example::
+
+      from apsimNGpy import ApsimModel
+      base_model =ApsimModel('Maize')
+      other_simulation  = ApsimModel("Soybean")[0] # gets the first simulation
+
+      base_model.append_simulation(
+          simulation=other_simulation,
+          rename="Simulation2"
+      )
+
+  Duplicating an existing simulation::
+
+      from apsimNGpy import ApsimModel
+      model =ApsimModel('Maize')
+      model.append_simulation(
+      model[0]
+          rename="Simulation_copy"
+      )
+# Edit the added simulation on the fly::
+
+        with ApsimModel('Maize') as model:
+            model.append_simulation(simulation=model[0], rename='pop12',
+                                          payload=dict(model_type='Models.Manager',
+                                                       model_name='Sow using a variable rule',
+                                                       Population=12))
+
+
+  .. note::
+
+     This method should not be used with ``ExperimentManager`` objects,
+     even though ``ExperimentManager`` inherits from ``ApsimModel``.
+     Experiment-related simulation structures are managed differently
+     and may produce unintended behavior when appended directly.
+
+     Normally you may need to edit the newly edited simulation surgically to make it unique from the existing simulation but
+     the method allows editing via key word payload which could be a dict or a list of dicts as follows::
+     model.append_simulation(fixed_model[0], rename='clone1', payload=dict(model_type='Models.Manager',
+                                                                                        model_name='Sow using a variable rule',
+                                                                                        Population=12))
+
+
+  For additional usage examples and implementation details see::
+
+      help(model.append_simulation)
 - **add_node_from method**
 
   Added a utility for transferring nodes between APSIM models with improved

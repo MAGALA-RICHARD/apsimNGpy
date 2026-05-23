@@ -53,7 +53,7 @@ class Tree:
             return self.Children.append(IOderedDict(obj))
 
     def add_model(self, model_type):
-        return self.Children.append(IOderedDict(obj))
+        return self.Children.append_simulation(IOderedDict(obj))
 
     def build_tree(self):
         return json.dumps(obj=self.__dict__,
@@ -696,7 +696,7 @@ class Solute:
     ReadOnly: bool = False
 
     def add(self, obj):
-        return self.Children.append(IOderedDict(obj))
+        return self.Children.append_simulation(IOderedDict(obj))
 
 
 if __name__ == '__main__':

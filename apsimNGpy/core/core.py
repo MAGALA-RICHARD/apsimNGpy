@@ -188,29 +188,54 @@ class CoreModel(PlotManager):
         return len(self.simulations)
 
     def member_wise_cone(self, sim: Union[str, int]):
+        self.save(reload=True)
+
         sim = self.get_sim_by_name_or_index(sim)
         return sim.MemberwiseClone()
 
-    def append(self, sim: Union[Models.Core.Simulation], rename: str) -> None:
+    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str, payload: Union[dict, tuple, list]=None) -> None:
         """
         Add a simulation to the simulations collection.
 
         Parameters
         ----------
-        sim : Union[str, int]
+        simulation : Union[str, int]
             Simulation object or identifier to append.
 
         rename : str
             Unique name assigned to the appended simulation.
 
+        payload: list[dict] or dict
+            list of edits following the edit_model methods that should be applied to the appended simulations. exception is that no ned to specify the simulation
+
         Raises
         ------
         ValueError
             If a simulation with the same name already exists.
+
+        Unlike ``clone_simulation``, the ``append_simulation` method supports appending
+        external simulations originating from other ``ApsimModel`` objects,
+        making it more flexible for workflows involving cross-model simulation
+        transfer and aggregation. In addition to external simulations,
+        ``append`` can also duplicate or append existing simulations already
+        present within the current ``ApsimModel`` instance.
+
+        .. note::
+
+           This method should not be used with ``ExperimentManager`` objects,
+           even though ``ExperimentManager`` inherits from ``ApsimModel``.
+           Experiment-related simulation structures are managed differently and
+           may produce unintended behavior when appended directly.
+
+           If you want to test 2–10 different model input combinations, this
+            method is typically fast because APSIM executes simulations using
+            threads internally. However, it may not be efficient for large-scale
+            parameter permutations or factorial experiment designs. For such
+            workflows, please use ``ExperimentManager`` instead.
         """
 
         existing_names = {s.Name for s in self}
-
+        rename = rename.strip()
         if rename in existing_names:
             raise ValueError(
                 f"Simulation '{rename}' already exists. "
@@ -218,16 +243,26 @@ class CoreModel(PlotManager):
             )
 
         # Add simulation
-        ModelTools.ADD(sim, self.Simulations)
+        ModelTools.ADD(simulation, self.Simulations)
 
         # Retrieve newly added simulation
         cloned_sim = self[-1]
 
         # Rename safely
         cloned_sim.Name = rename
-
         # Persist changes
         self.save()
+        if payload:
+            # payload is from one node
+            if isinstance(payload, dict):
+                payload['simulations'] = self[-1]
+                self.edit_model(**payload)
+            # multiple nodes enclosed in an iterabale, each defined in a dict
+            else:
+                for params in payload:
+                    params['simulations'] = rename
+                    self.edit_model(**params)
+
     def __getitem__(self, name_or_index: Union[int, str]):
         """
         Fetch an APSIM simulation by index or by simulation name.
@@ -1612,7 +1647,7 @@ class CoreModel(PlotManager):
         set_event_names = param_values.get('set_event_names')
         report_name = model_instance.Name
 
-        vs = param_values.get("variable_spec")
+        vs = param_values.get("variable_spec") or param_values.get("VariableNames")
         if not vs:
             raise ValueError("Please specify a report name using key word 'variable_spec'")
         self.add_report_variable(variable_spec=vs, set_event_names=set_event_names, report_name=report_name)
@@ -5875,19 +5910,20 @@ if __name__ == '__main__':
     # fm.open_in_gui()
     fixed_model.edit_model(model_type='Models.PMF.Cultivar',
                            model_name='B_100', plant='Maize',
-                           commands=['[Phenology].Juvenile.Target.FixedValue'], simulations='Simulation',
-                           values=[200], managers={'Sow using a variable rule': 'CultivarName'})
+                           commands=[f'[Phenology].Juvenile.Target.FixedValue=200'], simulations='Simulation',
+                           managers={'Sow using a variable rule': 'CultivarName'})
     fixed_model.run()
     print(fixed_model.results.Yield.mean())
     fixed_model.edit_model(model_type='Models.PMF.Cultivar',
                            model_name='B_100', plant='Maize',
-                           commands=['[Phenology].Juvenile.Target.FixedValue'], simulations='Simulation',
-                           values=[100], managers={'Sow using a variable rule': 'CultivarName'})
+                           commands=[f'[Phenology].Juvenile.Target.FixedValue =100'], simulations='Simulation',
+                           managers={'Sow using a variable rule': 'CultivarName'})
     fixed_model.run()
     # fixed_model.open_in_gui()
     model.has_node('Maize', node_type='Plant')
     print(fixed_model.results.Yield.mean())
     sim = fixed_model.member_wise_cone(0)
 
-    fixed_model.append(fixed_model[0], rename='clone')
+    fixed_model.append_simulation(fixed_model[0], rename='clone1', payload=dict(model_type='Models.Manager',
+                                                                               model_name = 'Sow using a variable rule', Population =12))
     fixed_model.open_in_gui()

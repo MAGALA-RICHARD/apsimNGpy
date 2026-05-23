@@ -988,7 +988,7 @@ class ApsimModel(CoreModel):
                 if len(ss_user) == 0:
                     logger.warning(
                         f'ss_tile_drainage {ss_user} dict provided is empty, switching to all defaults')
-                invalid  =[]
+                invalid = []
 
                 for k, v in ss_user.items():
                     if k not in ss_default:
@@ -1165,6 +1165,16 @@ class ApsimModel(CoreModel):
             # node is identified by either name or full path but does not exist
             raise NodeNotFoundError(f"suggested node type '{node_type}'  named '{node_id}' not found.")
         return node_loc
+
+    def independent_clone(self, simulation ):
+        """
+        Independent clone, clone the existing model and return
+        @return:
+        """
+        self.save(reload=True)
+        with CoreModel(self.path) as base_model:
+            # just extract the simulation by name or index
+            return base_model.get_sim_by_name_or_index(simulation)
 
     @staticmethod
     @cache
@@ -2111,7 +2121,6 @@ if __name__ == '__main__':
     mp.save()
 
 
-
     def edit_cultivar(self, commands, template, parent_plant, rename=None):
         match commands:
             case dict():
@@ -2176,12 +2185,12 @@ if __name__ == '__main__':
     with ApsimModel('Maize') as mo:
         # mo.clear_water_model('soil water')
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={},swim_model_params={}
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={}, swim_model_params={}
                               )
         mo.run()
         mo.save()
         sp = mo.inspect_model(Models.WaterModel.WaterBalance)
         print(mo.results.Yield.mean())
-       # mo.open_in_gui(watch=True)
+        # mo.open_in_gui(watch=True)
         print(sp)
     node = NodeInfo('Simulations')

@@ -27,22 +27,22 @@ class TestCoreModel(BaseTester):
 
     def test_append(self):
         with ApsimModel('Maize') as apsim:
-            apsim.append(apsim[0], rename='clone')
+            apsim.append_simulation(apsim[0], rename='clone')
             with self.assertRaises(ValueError):
                 # in case same name is accidentally added to the simulation
-                apsim.append(apsim[0], rename='clone')
+                apsim.append_simulation(apsim[0], rename='clone')
             self.assertEqual(len(apsim), 2)
 
     def test_append_run(self):
         with ApsimModel('Maize') as model:
-            model.append(model[0], rename='clone')
+            model.append_simulation(model[0], rename='clone')
             model.run()
             self.assertFalse(model.results.empty)
 
     def test_append_run_member_wise_clone(self):
         with ApsimModel('Maize') as model:
             mc = model.member_wise_cone(0)
-            model.append(mc, rename='clone')
+            model.append_simulation(mc, rename='clone')
             model.run()
             self.assertFalse(model.results.empty)
 
@@ -50,7 +50,7 @@ class TestCoreModel(BaseTester):
         with ApsimModel('Maize') as model:
             model.add_crop_replacements()
             mc = model.member_wise_cone(0)
-            model.append(mc, rename='clone')
+            model.append_simulation(mc, rename='clone')
             model.run()
             self.assertFalse(model.results.empty)
 
@@ -59,15 +59,90 @@ class TestCoreModel(BaseTester):
         toPCarb = 1.233
         with ApsimModel('Maize') as model:
             sim = model[0]
-            model.append(sim, rename='clone')
+            model.append_simulation(sim, rename='clone')
             model.edit_model(model_type='Organic', model_name='Organic', simulations=model[1], Carbon=toPCarb)
             out = model.inspect_model_parameters(
                 model_type='Organic',
                 simulations='clone',
                 model_name='Organic',
-                parameters='Carbon' )
+                parameters='Carbon')
             self.assertEqual(out['Carbon'][0], toPCarb, msg='Organic carbon not successfully '
                                                             'updated to target top layer after appending cloned')
+
+    def test_if_we_can_add_simulation_externally(self):
+        with ApsimModel('Maize') as model:
+            with ApsimModel('Maize') as model2:
+                sim = model[0]
+                model2.append_simulation(sim, rename='clone2')
+                self.assertEqual(len(model2), 2, msg='simulation failed to be added from an external simulations')
+                # does it run
+                model2.run(verbose=False)
+                self.assertFalse(model2.results.empty)
+
+    def test_if_we_can_add_simulation_externally2(self):
+        with ApsimModel('Soybean') as model:
+            # model.edit_model('Models.Report', 'Report', Name='soybean')
+            with ApsimModel('Maize') as model2:
+                # adding a clock replacement, by the time of this writing, soybean has long simulation period which will raise
+                model2.add_replacements('.Simulations.Simulation.Clock')
+                sim = model[0]
+                model2.append_simulation(sim, rename='clone2')
+                self.assertEqual(len(model2), 2, msg='simulation failed to be added from an external simulations')
+                # does it run
+                model2.run(verbose=False, cpu_count=2)
+                self.assertFalse(model2.results.empty)
+
+    def test_payload_in_append(self):
+        with ApsimModel('Maize') as fixed_model:
+            fixed_model.append_simulation(simulation=fixed_model[0], rename='clone1',
+                                          payload=dict(model_type='Models.Manager',
+                                                       model_name='Sow using a variable rule',
+                                                       Population=12))
+            out = fixed_model.inspect_model_parameters('Models.Manager', model_name='Sow using a variable rule')
+            # because they are more than one simulations
+            out = out['clone1']['Parameters']
+
+            pop = out['Population']
+            pop = int(pop)
+            self.assertEqual(pop, 12, msg='population was not successfully edited')
+            fixed_model.run()
+            df = fixed_model.results.groupby('SimulationID')['Yield'].mean()
+            ans = list(df)
+            self.assertNotEqual(*ans, msg='population was not successfully updated for the append simulation')
+
+    def test_payload_with_external_simulation(self):
+        with ApsimModel('Maize') as fixed_model:
+            with ApsimModel('Maize') as model:
+                sim = model[0]
+            fixed_model.append_simulation(simulation=sim, rename='clone1',
+                                          payload=dict(model_type='Models.Manager',
+                                                       model_name='Sow using a variable rule',
+                                                       Population=12))
+            out = fixed_model.inspect_model_parameters('Models.Manager', model_name='Sow using a variable rule')
+            # because they are more than one simulations
+            out = out['clone1']['Parameters']
+
+            pop = out['Population']
+            pop = int(pop)
+            self.assertEqual(pop, 12, msg='population was not successfully edited')
+            fixed_model.run()
+            df = fixed_model.results.groupby('SimulationID')['Yield'].mean()
+            ans = list(df)
+            self.assertNotEqual(*ans, msg='population was not successfully')
+
+    def test_independent_clone(self):
+        with ApsimModel('Maize') as fixed_model:
+            sim = fixed_model.independent_clone(0)
+            fixed_model.append_simulation(simulation=sim, rename='pop12',
+                                          payload=dict(model_type='Models.Manager',
+                                                       model_name='Sow using a variable rule',
+                                                       Population=12))
+            fixed_model.run()
+            df = fixed_model.results.groupby('SimulationID')['Yield'].mean()
+            ans = list(df)
+            self.assertEqual(len(fixed_model), 2)
+            self.assertEqual(len(ans), 2)
+            self.assertNotEqual(*ans, msg='population was not successfully')
 
     def test_edit_soil_organic_matter_module(self):
         toPCarb = 1.233

@@ -767,7 +767,7 @@ class Models:
             return False
 
         def add(self, obj):
-            return self.Children.append(IOderedDict(obj))
+            return self.Children.append_simulation(IOderedDict(obj))
 
 
 if __name__ == '__main__':

@@ -194,7 +194,7 @@ class CoreModel(PlotManager):
         return sim.MemberwiseClone()
 
 
-    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str,
+    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str=None,
                           payload: Union[dict, tuple, list] = None) -> None:
         """
         Add a simulation to the simulations collection.
@@ -235,14 +235,14 @@ class CoreModel(PlotManager):
             parameter permutations or factorial experiment designs. For such
             workflows, please use ``ExperimentManager`` instead.
         """
-
-        existing_names = {s.Name for s in self}
-        rename = rename.strip()
-        if rename in existing_names:
-            raise ValueError(
-                f"Simulation '{rename}' already exists. "
-                "Choose a unique simulation name."
-            )
+        if rename:
+            existing_names = {s.Name for s in self}
+            rename = rename.strip()
+            if rename in existing_names:
+                raise ValueError(
+                    f"Simulation '{rename}' already exists. "
+                    "Choose a unique simulation name."
+                )
 
         # Add simulation
         self.Simulations.Children.Add(simulation)
@@ -251,18 +251,19 @@ class CoreModel(PlotManager):
         # cloned_sim = self.simulations[-1]
 
         # Rename safely
-        simulation.Name = rename
+        if rename:
+            simulation.Name = rename
         # Persist changes
         self.save()
         if payload:
             # payload is from one node
             if isinstance(payload, dict):
-                payload['simulations'] = rename
+                payload['simulations'] =simulation.Name
                 self.edit_model(**payload)
             # multiple nodes enclosed in an iterabale, each defined in a dict
             else:
                 for params in payload:
-                    params['simulations'] = rename
+                    params['simulations'] = simulation.Name
                     self.edit_model(**params)
 
     def __getitem__(self, name_or_index: Union[int, str]):

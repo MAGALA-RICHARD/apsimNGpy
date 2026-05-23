@@ -192,7 +192,7 @@ class CoreModel(PlotManager):
 
         sim = self.get_sim_by_name_or_index(sim)
         return sim.MemberwiseClone()
-
+    @timer
     def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str, payload: Union[dict, tuple, list]=None) -> None:
         """
         Add a simulation to the simulations collection.
@@ -243,7 +243,7 @@ class CoreModel(PlotManager):
             )
 
         # Add simulation
-        ModelTools.ADD(simulation, self.Simulations)
+        self.Simulations.Children.Add(simulation)
 
         # Retrieve newly added simulation
         cloned_sim = self[-1]

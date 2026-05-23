@@ -144,6 +144,7 @@ class TestCoreModel(BaseTester):
             self.assertEqual(len(ans), 2)
             self.assertNotEqual(*ans, msg='population was not successfully')
 
+
     def test_edit_soil_organic_matter_module(self):
         toPCarb = 1.233
         self.model.edit_model(model_type='Organic', model_name='Organic', simulations=SIMULATION, Carbon=toPCarb)

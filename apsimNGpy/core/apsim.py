@@ -324,6 +324,12 @@ class ApsimModel(CoreModel):
         # the rest of errors are handled by edit_model_path gracefully
 
         # Apply to model
+        if 'values' in pa and 'commands' in pa:
+            cmds, vals = pa['commands'],  pa['values']
+            if len(cmds) != len(vals):
+                raise ValueError(" values and commands must be equal")
+            pa['commands'] = dict(zip(cmds, vals))
+
 
         self.edit_model_by_path(**pa)
         self.save()
@@ -667,7 +673,7 @@ class ApsimModel(CoreModel):
         if soil_kwargs:
             soil_water_param_fill(self, **soil_kwargs)
         return self
-
+    @timer
     def remove_node(self, node):
         """
         Removes a node from the Simulating tree
@@ -1142,8 +1148,8 @@ class ApsimModel(CoreModel):
         ModelTools.ADD(sim, self.Simulations)
 
         # Retrieve last added simulation (the clone)
-        cloned_sim = self[-1]
-        cloned_sim.Name = rename
+        if rename:
+            sim.Name = rename
 
         self.save()
         return True
@@ -1166,7 +1172,7 @@ class ApsimModel(CoreModel):
             raise NodeNotFoundError(f"suggested node type '{node_type}'  named '{node_id}' not found.")
         return node_loc
 
-    def independent_clone(self, simulation ):
+    def independent_clone(self, simulation):
         """
         Independent clone, clone the existing model and return
         @return:

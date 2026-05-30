@@ -1,13 +1,13 @@
 from apsimNGpy.sensitivity.sensitivity import run_sensitivity, ConfigProblem
 
 if __name__ == "__main__":
-    params = {
-        ".Simulations.Simulation.Field.Sow using a variable rule?Population": (2, 10),
-         ".Simulations.Simulation.Field.Fertilise at sowing?Amount": (0, 300),
-        ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82@[Phenology].GrainFilling.Target.FixedValue": (400, 850),
-        ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82?[Leaf].Photosynthesis.RUE.FixedValue": (
-            1.2, 2.2),
-    }
+    params = [
+        {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
+        {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300), },
+        dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+             param="[Leaf].Photosynthesis.RUE.FixedValue", bounds=(
+                0.7, 2.2), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize')
+    ]
     runner = ConfigProblem(
         base_model="Maize",
         params=params,

@@ -45,7 +45,6 @@ class Tree:
         ReadOnly: bool = False
 
         def test(self):
-
             t = self.tree
             print(t)
 
@@ -696,10 +695,13 @@ class Solute:
     ReadOnly: bool = False
 
     def add(self, obj):
-        return self.Children.append_simulation(IOderedDict(obj))
+        return self.Children.append(IOderedDict(obj))
 
 
 if __name__ == '__main__':
+    import sys
+    print("Running Script", file=sys.stderr)
+
     Simulations = Tree()
     # sim = Simulation()
     #
@@ -709,3 +711,24 @@ if __name__ == '__main__':
     # Simulations.add(sim)
     # Simulations.build()
     # Simulations.save('ma.apsimx')
+    sm = """{
+      "$type": "Models.Core.Simulations, Models",
+      "Version": 213,
+      "Name": "Simulations",
+      "ResourceName": None,
+      "Children": [
+        {
+          "$type": "Models.Storage.DataStore, Models",
+          "CustomFileName": None,
+          "Name": "DataStore",
+          "ResourceName": None,
+          "Children": [],
+          "Enabled": True,
+          "ReadOnly": False
+        }
+      ],
+      "Enabled": True,
+      "ReadOnly": False
+    }"""
+    from apsimNGpy import ApsimModel
+

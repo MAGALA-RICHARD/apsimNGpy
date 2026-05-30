@@ -416,7 +416,7 @@ def get_node_by_path(node, node_path, cast_as=None):
                 elif isinstance(cast_as, str) and cast_as.lower() == 'auto':
                     nod = getattr(n, 'Model', node)
                     node_type = nod.GetType()
-                    print(node_type)
+
                     n = CastHelpers.CastAs[node_type](nod)
                     if not n:
                         raise TypeError(f'{n} can not be auto to {node_type}')
@@ -528,3 +528,36 @@ if __name__ == '__main__':
     json_string = to_json_string(model2)
     m_and_type = get_node_and_type(load.Simulations, '.Simulations.Simulation')
     print(m_and_type)
+    from apsimNGpy import ApsimModel
+
+
+    def trace(node, model_type):
+        data = []
+        if hasattr(node, 'Node'):
+            node = node.Node
+        if hasattr(node, 'Walk'):
+            for n in node.Walk():
+                nod = getattr(n, 'Model', node)
+                node_type = model_type # nod.GetType()
+                n = CastHelpers.CastAs[node_type](nod)
+                if n:
+                    data.append(n)
+                    print(n.FullPath)
+                    for i in dir(n):
+                        if i == 'get_FixedValue':
+                            print(n.get_FixedValue())
+                            n.set_FixedValue(400)
+                            print(n.FullPath, n.get_FixedValue())
+                   # print(*dir(n), sep='\n')
+        return data
+
+
+    with ApsimModel('Wheat', 'ap') as mm:
+       # mm.tree()
+        mm.add_crop_replacements()
+        maize = get_node_by_path(mm.Simulations, '.Simulations.Replacements.Wheat')
+        constants = trace(maize, Models.Functions.Constant)
+        names = [i.Name for i in constants]
+        fp = [i.FullPath for i in constants]
+        mm.open_in_gui(watch=True)
+        pass

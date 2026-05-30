@@ -1,5 +1,6 @@
 import gc
 import os
+import sys
 import unittest
 from pathlib import Path
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
@@ -27,10 +28,16 @@ class TestCoreModel(BaseTester):
         self.assertTrue(self.test_ap_sim.ran_ok)
         self.test_ap_sim.clean_up(db=True)
 
+    def test_remove_node(self):
+        with ApsimModel('Maize') as apsim:
+            before = apsim.inspect_model('Models.Summary', fullpath=False)
+            apsim.remove_node('.Simulations.Simulation.Summary')
+            self.assertIn('Summary', before)
+            self.assertNotIn('Summary', apsim.inspect_model('Models.Summary', fullpath=False))
+
     def test_append(self):
-        with Apsim('Maize') as apsim:
-            apsim.append(apsim[0], rename='clone')
-            apsim.append(apsim[0], rename='clone')
+        with ApsimModel('Maize') as apsim:
+            apsim.append_simulation(apsim[0], rename='clone')
             self.assertEqual(len(apsim), 2)
 
     def test_ensures_all_simulations_are_loaded(self):
@@ -84,10 +91,11 @@ class TestCoreModel(BaseTester):
             # mean 1
             mn1 = model.results.mean(numeric_only=True)
             rename = "edited_RUE"
-            model.set_params(values=[1.4], commands=['[Leaf].Photosynthesis.RUE.FixedValue'],
+            model.set_params(values=(1.4,), commands=('[Leaf].Photosynthesis.RUE.FixedValue',),
                              sowed=True, rename=rename, plant='Maize',
                              managers={'Sow using a variable rule': 'CultivarName'},
                              path=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82", )
+
             model.run()
             mn2 = model.results.mean(numeric_only=True)
             out = list(mn2 - mn1)
@@ -96,7 +104,7 @@ class TestCoreModel(BaseTester):
             out = all(out)
             self.assertFalse(out, msg='editing cultivar failed to change simulated values')
             sower = model.inspect_model_parameters(model_type='Models.Manager', model_name='Sow using a variable rule')
-            self.assertIn(rename, sower.values())
+            self.assertIn(rename, sower['Parameters'].values())
 
     def test_evaluate_simulated_output(self):
         from apsimNGpy.tests.unittests.test_factory import obs
@@ -112,7 +120,7 @@ class TestCoreModel(BaseTester):
     def test_evaluate_simulated_output_runtime_error(self):
         from apsimNGpy.tests.unittests.test_factory import obs
 
-        with apsim.ApsimModel('Maize') as model:
+        with ApsimModel('Maize') as model:
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
 
             with self.assertRaises(RuntimeError, msg="expected to raise runtime error"):
@@ -122,7 +130,7 @@ class TestCoreModel(BaseTester):
     def test_evaluate_simulated_output_direct_predicted_data_as_table(self):
         from apsimNGpy.tests.unittests.test_factory import obs
 
-        with apsim.ApsimModel('Maize') as model:
+        with ApsimModel('Maize') as model:
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
             model.run('Report')
             metrics = model.evaluate(ref_data=obs, table=model.results, index_col=['year'],
@@ -152,7 +160,7 @@ class TestCoreModel(BaseTester):
             self.assertTrue(Path(model.path).exists())
         self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working')
         self.assertFalse(datastore.exists(), msg=f'data store exists context manager not working')
-        print('context manager working in ApsimModel Class')
+        print('\nContext manager working in ApsimModel Class', file=sys.stderr)
 
     def test_model_editing_in_test_context_manager(self):
         """
@@ -176,7 +184,7 @@ class TestCoreModel(BaseTester):
             Ensure that saving apsimx file and reloading within the with block works correctly, and that the file will still be deleted
             """
 
-        with apsim.ApsimModel('Maize') as model:
+        with ApsimModel('Maize') as model:
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=4)
 
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
@@ -202,7 +210,7 @@ class TestCoreModel(BaseTester):
           which is intended to use a temporary working file and automatically delete it on exit. So, here we are just testing the expected behaviors
             """
 
-        with apsim.ApsimModel('Maize') as model:
+        with ApsimModel('Maize') as model:
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=4)
             model.edit_model('Models.Manager', 'Sow using a variable rule', Population=9.2)
             fname = f"{self._testMethodName}_with_block.apsimx"
@@ -245,7 +253,7 @@ class TestCoreModel(BaseTester):
         self.assertEqual(self.expect_ts_auto, ts)
 
     def test_add_simulations_from_name(self):
-        with apsim.ApsimModel('Maize') as model:
+        with ApsimModel('Maize') as model:
             RENAME = 'new_added'
             out = model.clone_simulation(rename=RENAME, base_simulation='Simulation')
             self.assertTrue(out, 'simulation was not cloned')
@@ -253,7 +261,7 @@ class TestCoreModel(BaseTester):
             self.assertIn(RENAME, sims, f'{RENAME} was not found {sims}')
 
     def test_add_simulations_from_index(self):
-        with apsim.ApsimModel('Maize') as model:
+        with ApsimModel('Maize') as model:
             RENAME = 'new_added2'
             out = model.clone_simulation(rename=RENAME, base_simulation=0)
             self.assertTrue(out, 'simulation was not cloned')
@@ -271,7 +279,7 @@ class TestCoreModel(BaseTester):
         self.assertEqual(ts, self.thickness_sequence_test_values)
 
     def test_switch_wm_tp_swim3(self):
-        mo = apsim.ApsimModel('Maize')
+        mo = ApsimModel('Maize')
         mo.run()
         swat_yield = float(mo.results.Yield.mean())
         from apsimNGpy.core.water import geometric_layers
@@ -331,7 +339,7 @@ class TestCoreModel(BaseTester):
             mock_sims.AddChild(i)
         casted_mock_sims = CastHelper.CastAs[Models.Core.Simulations](mock_sims.Model)
         casted_mock_sims.Write(str(self.mock_sim_path_name))
-        load_mocked = apsim.ApsimModel(self.mock_sim_path_name, out_path=self.out_path)
+        load_mocked = ApsimModel(self.mock_sim_path_name, out_path=self.out_path)
         # test it
         load_mocked.get_soil_from_web(simulations=None, lonlat=(-93.045, 42.0541),
                                       thickness_sequence=self.thickness_sequence_test_values)

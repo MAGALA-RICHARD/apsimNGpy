@@ -3,19 +3,25 @@ from __future__ import annotations
 import dataclasses
 import gc
 import os
+import sys
 from functools import partial
 from pathlib import Path
-from typing import Iterable, Mapping
+from typing import Iterable
 import numpy as np
+import pandas as pd
 import sqlalchemy
+
+from apsimNGpy import is_scalar
 from apsimNGpy.starter import CLR
-
-from apsimNGpy.core.model_loader import get_node_by_path
-
+from pydantic import BaseModel
+from typing import Optional
+from apsimNGpy.core.model_loader import get_node_by_path, Models
+from xlwings import view
 from apsimNGpy.sensitivity.helpers import (split_apsim_path_by_sep, group_candidate_params, default_n, define_problem,
                                            generate_default_db_path)
 from apsimNGpy.settings import logger
 from apsimNGpy.core.apsim import ApsimModel
+
 dataError = sqlalchemy.exc.OperationalError
 
 __all__ = ['ConfigProblem', 'run_sensitivity']
@@ -25,11 +31,10 @@ __all__ = ['ConfigProblem', 'run_sensitivity']
 class Params:
     grouped_pairs: dict
     others: dict
-    node_types:dict
+    node_types: dict
 
 
 def grouper(base_model, _params):
-
     from collections import defaultdict
     grouped_pairs = defaultdict(list)
     others = {}
@@ -103,11 +108,23 @@ class ConfigProblem:
             dist=dist,
             groups=groups,
         )
+        try:
+            self.param_keys = [
+                p["param"] for p in params
+            ]
+            self.num_vars = len(self.param_keys)
+        except TypeError as e:
+            msg = (
+                f"{e}\n"
+                "This may indicate that the sensitivity API has changed. "
+                "Please check the documentation."
+            )
 
-        self.param_keys = [
-            p["param"] for p in params
-        ]
-        self.num_vars = len(self.param_keys)
+            print(msg, file=sys.stderr)
+
+            logger.exception(msg)
+
+            raise
 
     # ---------------- Job generation ----------------
 
@@ -117,18 +134,25 @@ class ConfigProblem:
         """
         if not self.config_ok:
             grouped = grouper(self.base_model, self.params)  # Data class of Params
-            self.config_ok= True
+            self.config_ok = True
+            self.grouped = grouped
+        else:
+            grouped = self.grouped
 
         # grouped = group_candidate_params(self.params)
 
         for idx, row in enumerate(X):
+
+
             ############################################
             values = dict(zip(self.param_keys, row))
+
             inputs = []
             pairs = grouped.grouped_pairs
             for base, attrs in pairs.items():
                 others = grouped.others.get(base, {})
-                attributes ={a: values[a] for a in attrs}
+                attributes = {a: values[a] for a in attrs}
+
 
                 if not isinstance(grouped.node_types.get(base), CLR.Models.PMF.Cultivar):
                     inData = {
@@ -139,11 +163,10 @@ class ConfigProblem:
                 else:
                     inData = {
                         "path": base,
-                        'commands':attributes,
+                        'commands': attributes,
                         **others
                     }
                 inputs.append(inData)
-
 
             yield {
                 "model": self.base_model,
@@ -171,7 +194,8 @@ class ConfigProblem:
         from apsimNGpy.core.mult_cores import MultiCoreManager, core_count
         db_path = generate_default_db_path(table_prefix)
         n_cores = core_count(n_cores, threads=threads)
-
+        dF= pd.DataFrame(X)
+        view(dF)
         def run_in_multi_core(db):
 
             with MultiCoreManager(agg_func=agg_func, db_path=db, table_prefix=table_prefix) as mc:
@@ -188,15 +212,30 @@ class ConfigProblem:
                     chunk_size=chunk_size
                 )
                 df = mc.get_simulated_output(axis=0)
+
+                #################################################################
+                # The simulations are organized according to index_id to match with input variables samplesd by SALib
                 df.sort_values(self.index_id, inplace=True)
                 self.raw_results = df
                 self.incomplete_jobs = mc.incomplete_jobs
                 if mc.incomplete_jobs:
                     logger.warning(f"over {len(mc.incomplete_jobs)} incomplete were registered something went wrong")
-                if not isinstance(self.outputs, str) and len(self.outputs) == 1:
-                    self.outputs = self.outputs[0]
-                out = df[self.outputs].to_numpy()
+                # if not isinstance(self.outputs, str) and len(self.outputs) == 1:
+                #     self.outputs = self.outputs[0]
+                if is_scalar(self.outputs):
+                    self.outputs = [self.outputs]
+                out_df = pd.DataFrame()
+                for output in self.outputs:
+                    data = df.copy()
+                    data.dropna(subset=[output], inplace=True)
+                    data.reset_index(drop=True, inplace=True)
+                    data.sort_values(by=self.index_id, inplace=True)
+                    # from xlwings import view
+                    view(data)
+                    out_df[output] = data[output]
 
+                out = out_df.to_numpy()
+                del df
                 return out
 
         try:
@@ -205,7 +244,7 @@ class ConfigProblem:
             try:
                 db = Path(db_path).resolve()
                 os.remove(db) if db.exists() else None
-                print('database deleted')
+                print('database deleted', file=sys.stderr)
             except PermissionError:
                 pass
 
@@ -507,6 +546,7 @@ def run_sensitivity(
         ##########################################################################
         # check if there are no missing row wise values from the evaluated results
         #######################################################################
+
         if ans.results.shape[0] != ans.samples.shape[0]:
             logger.info('re-running results, lengths of samples and evaluated results were not the same')
             # evaluate and analyse again
@@ -518,19 +558,129 @@ def run_sensitivity(
         gc.collect()
 
 
+class Factor(BaseModel):
+    base: str
+    bounds: tuple
+    param: str
+    managers: Optional[dict] = None
+    name: Optional[str] = None
+    plant: Optional[str] = None
+
+    def hash(self):
+        if self.managers:
+            manager_p = tuple(sorted(self.managers.keys())), tuple(sorted(self.managers.values()))
+        else:
+            manager_p = ()
+        return abs(hash((self.base, self.param, self.name, manager_p, self.name)))
+
+
+class CustomSensitivityManager:
+
+    def __init__(self, base_model: str, response_vars):
+        self._factors: dict = {}
+        self.base_model = base_model
+        self.y = response_vars
+        self.runner = None
+
+    def add_sens_factor(self, *, base: str, param, bounds, managers=None, names=None, plant=None):
+        with ApsimModel(self.base_model) as model:
+            node = get_node_by_path(model.Simulations, node_path=base, cast_as='auto')
+
+        if isinstance(node, Models.PMF.Cultivar):
+
+            if not isinstance(managers, dict):
+                raise ValueError('managers must be a dictionary in order to update the cultivar ')
+            if not isinstance(plant, str):
+                raise ValueError(f'Please provide a plant hosting the cultivar: {base}')
+            fac = Factor(base=base, param=param, bounds=bounds, managers=managers, name=names, plant=plant)
+            hask_key = fac.hash()
+            if hask_key in self._factors:
+                raise ValueError(f"Duplicate {fac} detected. Factor already exist")
+            self._factors[hask_key] = fac.model_dump()
+        else:
+
+            fac = Factor(base=base, param=param, bounds=bounds, name=names)
+            dump_model = dict(fac.model_dump())
+            dump_model.pop('plant', None)
+            dump_model.pop('managers', None)
+            hask_key = fac.hash()
+            if hask_key in self._factors:
+                raise ValueError(f"Duplicate {fac} detected. factor already exist")
+            self._factors[hask_key] = dump_model
+
+    def get_list_sens_factors(self):
+        factors = dict(self._factors)
+        for fac in factors.values():
+            fac.pop('name', None)
+        return list(factors.values())
+
+    def config_problem(self,
+                       *,
+                       names: Iterable[str] | None = None,
+                       dist: list[str] | None = None,
+                       groups: list[int] | None = None,
+                       index_id: str = "ID", ):
+        _params = self.get_list_sens_factors()
+        bm = self.base_model
+        self.runner = ConfigProblem(base_model=bm, params=_params,
+                                    outputs=self.y, names=names,
+                                    dist=dist, groups=groups, index_id=index_id)
+
+    @property
+    def n_factors(self):
+        return len(self._factors)
+
+    def build_sense_model(self,
+                          *,
+                          method: str = 'morris',
+                          N: int | None = None,
+                          seed: int | None = 48,
+                          agg_func: str = "sum",
+                          n_cores: int = -2,
+                          retry_rate: int = 3,
+                          threads: bool = False,
+                          sample_options: dict | None = None,
+                          analyze_options: dict | None = None,
+                          engine='python',
+                          chunk_size: int = 100):
+        if not self.runner:
+            # run with defaults if not called by the user
+            self.config_problem()
+        if self.n_factors <= 1:
+            msg = f"Expected at least 2 sensitivity factors, but got {self.n_factors}."
+            raise ValueError(
+                msg
+            )
+        return run_sensitivity(
+            configured_prob=self.runner,
+            method=method, n_cores=n_cores,
+            N=N, seed=seed, agg_func=agg_func,
+            sample_options=sample_options,
+            analyze_options=analyze_options,
+            engine=engine, chunk_size=chunk_size,
+            retry_rate=retry_rate,
+            threads=threads
+        )
+
+
 if __name__ == "__main__":
+    cc = CustomSensitivityManager(base_model='Maize', response_vars=["Yield", "Maize.AboveGround.N"])
+    cc.add_sens_factor(
+        **{'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10),
+           'managers': {1: 2}})
+    cc.add_sens_factor(
+        **{"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300,)})
+    print(cc._factors)
+    print(cc.get_list_sens_factors())
     params = [
         {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
-        {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300), },
+        {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300),
+         },
         dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
              param="[Leaf].Photosynthesis.RUE.FixedValue", bounds=(
                 0.7, 2.2), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize')
     ]
-    runner = ConfigProblem(
-        base_model="Maize",
-        params=params,
-        outputs=["Yield", "Maize.AboveGround.N"],
-    )
+
     # custom
     # from SALib.sample import saltelli
     # from SALib.analyze import sobol
@@ -558,6 +708,23 @@ if __name__ == "__main__":
     #         "calc_second_order": True,
     #     },
     # )
+    ccMorris = cc.build_sense_model(method="morris", n_cores=10,
+                                    sample_options={
+                                        'seed': 42,
+                                        "num_levels": 6,
+                                        "optimal_trajectories": 6,
+                                    },
+                                    analyze_options={
+                                        'conf_level': 0.95,
+                                        "num_resamples": 1000,
+                                        "print_to_console": True,
+                                        'seed': 42
+                                    }, )
+    runner = ConfigProblem(
+        base_model="Maize",
+        params=params,
+        outputs=["Yield", "Maize.AboveGround.N"],
+    )
     Si_morris = run_sensitivity(
         runner,
         method="morris", n_cores=10,

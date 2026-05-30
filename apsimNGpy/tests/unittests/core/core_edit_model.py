@@ -146,7 +146,6 @@ class TestCoreModel(BaseTester):
             self.assertEqual(len(ans), 2)
             self.assertNotEqual(*ans, msg='population was not successfully')
 
-
     def test_edit_soil_organic_matter_module(self):
         toPCarb = 1.233
         self.model.edit_model(model_type='Organic', model_name='Organic', simulations=SIMULATION, Carbon=toPCarb)
@@ -159,6 +158,61 @@ class TestCoreModel(BaseTester):
         )
         self.assertEqual(out['Carbon'][0], toPCarb, msg='Organic carbon not successfully '
                                                         'updated to target top layer')
+
+    def test_edit_sensitivity_models(self):
+        "Test editing a soil related variable"
+        with ApsimModel('sobol') as sobol:
+            SIM = sobol[0].Name
+            toPCarb = 1.233
+            sobol.edit_model(model_type='Organic', model_name='Organic', simulations=SIM, Carbon=toPCarb)
+            out = sobol.inspect_model_parameters(
+                model_type='Organic',
+                simulations=SIM,
+                model_name='Organic',
+                parameters='Carbon'
+
+            )
+            self.assertEqual(out['Carbon'][0], toPCarb, msg='Organic carbon not successfully '
+                                                            'updated to target top layer for a sobol model')
+
+    @staticmethod
+    def check_param(parameters, name, lower, upper):
+        """Check parameters for morris and sobol model types"""
+        flag = False
+        for pa in parameters:
+            if pa.Name == name and pa.LowerBound == lower and pa.UpperBound == upper:
+                flag = True
+        return flag
+
+    def test_editing_sobol_or_morris_model(self):
+        # For Morris
+        with ApsimModel('Morris') as mmm:
+            mmm.edit_model(model_type='Models.Morris', model_name='FallowSensitivity', Parameters=[
+                dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
+            ])
+            params = mmm.inspect_model_parameters('Models.Morris', model_name='FallowSensitivity')
+            params = params['Parameters']
+
+            my = self.check_param(params, name='my', lower=10, upper=400)
+            self.assertTrue(my, "Morris model was not updated successfully")
+            # ensure that we can access the sobol model
+
+            self.assertEqual(len(mmm.inspect_model('Models.Morris')), 1)
+            # what about single string without a dot or full path?
+            self.assertEqual(len(mmm.inspect_model('Morris')), 1)
+        # for Sobol
+        with ApsimModel('Sobol') as mmm:
+            mmm.edit_model(model_type='Models.Sobol', model_name='Sobol', Parameters=[
+                dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=17, UpperBound=400)
+            ])
+            params = mmm.inspect_model_parameters('Models.Sobol', model_name='Sobol')
+            params = params['Parameters']
+            my = self.check_param(params, name='my', lower=17, upper=400)
+            self.assertTrue(my, "Sobol model was not updated successfully")
+            # ensure that we can access the sobol model
+            self.assertEqual(len(mmm.inspect_model('Models.Sobol')), 1)
+            # what about single string without a dot or full path?
+            self.assertEqual(len(mmm.inspect_model('Sobol')), 1)
 
     def test_edit_soil_multiple_soil_layers(self):
         """

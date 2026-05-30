@@ -193,8 +193,7 @@ class CoreModel(PlotManager):
         sim = self.get_sim_by_name_or_index(sim)
         return sim.MemberwiseClone()
 
-
-    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str=None,
+    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str = None,
                           payload: Union[dict, tuple, list] = None) -> None:
         """
         Add a simulation to the simulations collection.
@@ -206,6 +205,7 @@ class CoreModel(PlotManager):
 
         rename : str
             Unique name assigned to the appended simulation.
+            Renaming is expensive as appended simulations grows, since the method first checks if the suggested name exists in the simulation, use external simulation and rename them before insertion
 
         payload: list[dict] or dict
             list of edits following the edit_model methods that should be applied to the appended simulations. exception is that no ned to specify the simulation
@@ -258,7 +258,7 @@ class CoreModel(PlotManager):
         if payload:
             # payload is from one node
             if isinstance(payload, dict):
-                payload['simulations'] =simulation.Name
+                payload['simulations'] = simulation.Name
                 self.edit_model(**payload)
             # multiple nodes enclosed in an iterabale, each defined in a dict
             else:
@@ -2279,7 +2279,21 @@ class CoreModel(PlotManager):
         def edit_object(obj):
             sim = obj
             if is_higher_apsim_version():
-                model_instance = find_child(sim, model_type_class, model_name)
+
+                if model_type_class in {
+                    Models.Morris,
+                    Models.Sobol,
+                    "Models.Morris",
+                    "Models.Sobol",
+                    "Morris",
+                    "Sobol",
+                }:
+                    # high-level search
+                    model_instance =  find_child(self.Simulations, model_type_class, model_name)
+
+                else:
+                    model_instance = find_child(sim, model_type_class, model_name)
+
             else:
                 model_instance = sim.FindDescendant[model_type_class](model_name)
             model_to_cast = getattr(model_instance, "Model", model_instance)
@@ -2295,6 +2309,42 @@ class CoreModel(PlotManager):
                         raise AttributeError(
                             f"{str(ate)}. Allowed {model_instance} attributes are: {ap}"
                         ) from ate
+                case Models.Morris | Models.Sobol:
+                    from System.Collections.Generic import List
+                    from Models.Sensitivity import Parameter
+
+                    parameters_all = List[Parameter]()
+
+                    paVs = {}
+                    params = list(model_instance.Parameters)
+                    for p in params:
+                        paVs[p.Path] = dict(Name=p.Name, LowerBound=p.LowerBound, UpperBound=p.UpperBound, Path=p.Path)
+                    for pp in kwargs.get('Parameters', {}):
+                        if not isinstance(pp, dict):
+                            raise TypeError(f"Invalid data type expected dict got {type(pp)}")
+                        path = pp['Path']
+                        paVs[path] = pp
+                    for _, p in paVs.items():
+                        parameter = Models.Sensitivity.Parameter()
+
+                        for k, v in p.items():
+                            if not hasattr(parameter, k):
+                                raise AttributeError(
+                                    f'{k} is not a valid attributee valid are Path, Name LowerBound, and UpperBound')
+                            setattr(parameter, k, v)
+                        parameters_all.Add(parameter)
+                    model_instance.Parameters = parameters_all
+                    kwa = dict(kwargs)
+                    kwa.pop('Parameters', None)
+                    for k, v in kwa.items():
+                        if hasattr(model_instance, k):
+                            setattr(model_instance, k, v)
+                        else:
+                            morris = "AggregationVariableName, NumPaths,TableName, Name, NumIntervals,Jump, and Parameters"
+                            raise AttributeError(f'Invalid attribute {k} valid one are; AggregationVariableName, NumPaths,TableName, Name, and Parameters'
+                                                 f'for Models.Sobol \n or {morris} ')
+                    self.save()
+                    # recreate
 
                 case Models.Climate.Weather:
                     self._set_weather_path(model_instance, param_values=kwargs, verbose=verbose)
@@ -2485,11 +2535,14 @@ class CoreModel(PlotManager):
                     #     logger.info(f"Edited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
 
                 case _:
-                    if not model_instance and not replace_ments:
-                        raise ValueError(f"{model_name} of class {model_type} was not found or does not exist in the "
-                                         f"current simulations")
-                    if not replace_ments and not isinstance(model_type, Models.Core.Folder):
-                        raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
+                    if not model_instance:
+                        raise ValueError(f"{model_instance} is None")
+                    pass
+                    # if not model_instance  or not model_instance and not replace_ments:
+                    #     raise ValueError(f"{model_name} of class {model_type} was not found or does not exist in the "
+                    #                      f"current simulations")
+                    # if not replace_ments and not isinstance(model_type, Models.Core.Folder):
+                    #     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
 
         for _ in map(edit_object, edit_candidate_objects):
             pass
@@ -5930,4 +5983,9 @@ if __name__ == '__main__':
     fixed_model.append_simulation(fixed_model[0], rename='clone1', payload=dict(model_type='Models.Manager',
                                                                                 model_name='Sow using a variable rule',
                                                                                 Population=12))
-    fixed_model.open_in_gui()
+    # fixed_model.open_in_gui()
+    with CoreModel('Morris') as mmm:
+        mmm.edit_model(model_type=Models.Morris, model_name='FallowSensitivity', Parameters=[
+            dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
+        ])
+        mmm.open_in_gui(watch=True)

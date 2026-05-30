@@ -52,7 +52,12 @@ def merge_dict(data):
     merged = {}
     for d in data:
         d.pop(PATH, None)
+
         for k, v in d.items():
+            if k in {'commands', 'command'} and isinstance(v, dict):
+                for kk, vv in v.items():
+                    merged.update({kk: vv})
+
             merged.update({k: v})
     return merged
 
@@ -166,7 +171,7 @@ def single_runner(
         subset=None,
         call_back=None,
         ignore_runtime_errors=True,
-        retry_rate=RETRY_INTERVAL):
+        retry_rate=RETRY_INTERVAL, table=None):
     """
     Execute a single APSIM simulation job and persist its results to a database.
 

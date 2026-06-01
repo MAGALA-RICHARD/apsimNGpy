@@ -194,6 +194,34 @@ class TestEditModelByPath(unittest.TestCase):
                     manager_param=None,
                     rename='edit-added')
 
+    # ensure editing morris/sobol works by path
+    def test_edit_morris_clear_old_true(self):
+        self.sens_model_test('Models.Morris', clear=True)
+        self.sens_model_test('Models.Sobol', clear=True)
+
+    def sens_model_test(self, sens_model, clear):
+        if sens_model == 'Models.Morris':
+            m_name = 'Morris'
+        elif sens_model == 'Models.Sobol':
+            m_name = 'Sobol'
+        else:
+            raise NotImplementedError(f"{sens_model} is not implemented")
+        with ApsimModel(m_name) as model:
+            path = model.inspect_model(sens_model)[0]
+            model.edit_model_by_path(path=path, clear_old=clear,
+                                     Parameters=[dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass',
+                                                      LowerBound=10, UpperBound=400)])
+            params = model.inspect_model_parameters_by_path(path)
+            params = params['Parameters']
+            if not clear:
+                self.assertGreater(len(params), 1)
+            else:
+                self.assertEqual(len(params), 1)
+
+    def test_edit_morris_clear_old_false(self):
+        self.sens_model_test('Models.Morris', clear=False)
+        self.sens_model_test('Models.Sobol', clear=False)
+
     # ---------------------------------------------------
     # Ensure edited cultivar values are reflected in the added node
     # ---------------------------------------------------

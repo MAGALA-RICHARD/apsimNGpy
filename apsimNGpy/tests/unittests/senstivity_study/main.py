@@ -1,3 +1,6 @@
+import sys
+from pathlib import Path
+
 import pandas as pd
 from utils import rmse, fit_pearson
 from apsimNGpy import SensitivityManager, ApsimModel
@@ -5,53 +8,99 @@ from maize_parameters import maize_params
 from xlwings import view
 from itertools import combinations
 import winsound
+from sqlalchemy import create_engine
+
+DataBAse = Path(__file__).parent / 'sens.db'
+soilPrefixes = ['N', 'F', 'S']
+
+
+def get_last_two_from_path(path: str, step) -> str:
+    ap = path.split('.')[-step:]
+    return '.'.join(ap)
+
+
+def get_soil_parameters(model):
+    su_om_name = model.inspect_model('Models.Surface.SurfaceOrganicMatter', fullpath=True)[0]
+    su_om_name = get_last_two_from_path(su_om_name, 2)
+    organic_name = model.inspect_model('Models.Soils.Organic', fullpath=True)[0]
+    organic_name = get_last_two_from_path(organic_name, 3)
+    surfom = [
+        {'Path': f'{su_om_name}.InitialResidueMass', 'LowerBound': 500, 'UpperBound': 5000, 'Name': 'ResidueMass'},
+        {'Path': f'{su_om_name}.InitialCNR', 'LowerBound': 40, 'UpperBound': 180, 'Name': 'CNR'}]
+    organic = [
+        {'Path': f"{organic_name}.FBiom[1]", 'LowerBound': 0.03, 'UpperBound': 0.045, 'Name': 'FBiom'},
+        {'Path': f"{organic_name}.Carbon[1]", 'LowerBound': 0.9, 'UpperBound': 3.5, 'Name': 'InitialCarbon'},
+        {'Path': f"{organic_name}.FOM[1]", 'LowerBound': 500, 'UpperBound': 8000, 'Name': 'FOM'}]
+
+    organic.extend(surfom)
+    return organic
+
+
 if __name__ == '__main__':
-    DATA = []
+    Engine = create_engine(f'sqlite:///{str(DataBAse)}')
+
     CROPS = ['Maize', 'Maize, Soybean', 'Maize, Wheat']
-    for crop in CROPS:
-        with ApsimModel(r"D:\Elimin_rye_cover_crop_2026\APSIMX\F_sobol.apsimx") as sobol:
-            sim_name  = sobol[0].Name
-            sobol.edit_model_by_path(f'.Simulations.Sobol.{sim_name}.Field1.Simple Rotation', Crops=crop, )
-            sobol.edit_model('Models.Sobol', 'Sobol', NumPaths =124)
-            sobol.run(timeout=60*60)
-            df = sobol.get_simulated_output('SobolStatistics')
-            df.reset_index(inplace=True, drop=True)
+    for prefix in soilPrefixes:
+        DATA = []
+        RawResults = []
+        sobolDataTable = []
+        print(f'Testing {prefix}...', file=sys.stderr)
+        for crop in CROPS:
+            with ApsimModel(r"D:\Elimin_rye_cover_crop_2026\APSIMX\F_sobol.apsimx") as sobol:
+                soil_params = get_soil_parameters(sobol)
+                sobol.edit_model('Models.Sobol', model_name='Sobol', Parameters=soil_params, clear_old=True)
+                sim_name = sobol[0].Name
+                sobol.edit_model_by_path(f'.Simulations.Sobol.{sim_name}.Field1.Simple Rotation', Crops=crop, )
+                sobol.edit_model('Models.Sobol', 'Sobol', NumPaths=200)
+                sobol.run(timeout=60 * 60)
+                df = sobol.get_simulated_output('SobolStatistics')
+                sobolDataTable.append(df)
+                df.reset_index(inplace=True, drop=True)
 
-            result = (
-                df.groupby(['Parameter', 'ColumnName', 'Indices'])
-                .mean(numeric_only=True)
-                .unstack(['Indices'])
-            )
-            result.columns = [
-                f"{col}_{idx}"
-                for col, idx in result.columns
-            ]
-            result['crops'] = crop
-            winsound.Beep(1200, 450)
-            DATA.append(result)
-    data=pd.concat(DATA)
-    res = (
-        data.groupby(['ColumnName', 'crops'], as_index=False)
-        .mean(numeric_only=True)
-        .sort_values('original_Total', ascending=False)
-    )
-    d1 = DATA[0].sort_values(['ColumnName', 'Parameter'], ascending=False)
-    d2 = DATA[1].sort_values(['ColumnName','Parameter'], ascending=False)
+                result = (
+                    df.groupby(['Parameter', 'ColumnName', 'Indices'])
+                    .mean(numeric_only=True)
+                    .unstack(['Indices'])
+                )
+                result.columns = [
+                    f"{col}_{idx}"
+                    for col, idx in result.columns
+                ]
+                result['crops'] = crop
+                winsound.Beep(1200, 450)
+                DATA.append(result)
+                RawResults.append(sobol.results)
+        data = pd.concat(DATA)
+        RawDf = pd.concat(RawResults)
+        sobolStatRawDF = pd.concat(sobolDataTable)
+        data['soil'] = prefix
+        raw_result_table = f'{prefix}_raw_results'
+        statistics = f'{prefix}_summary_statistics'
+        sobStaticsTable = 'SobolStatistics'
+        data.to_sql(statistics, con=Engine, if_exists='replace')
+        RawDf.to_sql(raw_result_table, con=Engine, if_exists='replace')
+        sobolStatRawDF.to_sql(sobStaticsTable, con=Engine, if_exists='replace')
 
-    d1['original_FirstOrder']/d2['original_FirstOrder'] * 100
-    rmse( d1['original_FirstOrder'], d2['original_FirstOrder'] )
-    fit_pearson(d1['original_FirstOrder'], d2['original_FirstOrder'])
-    combs = list(combinations(['Maize', 'Maize, Soybean', 'Maize, Wheat'], 2))
-    for comb in combs:
-        first, end = comb
-        idx1, idx2 = CROPS.index(first), CROPS.index(end)
-        d1 = DATA[idx1].sort_values(['ColumnName', 'Parameter'], ascending=False)
-        d2 = DATA[idx2].sort_values(['ColumnName', 'Parameter'], ascending=False)
-        fit = fit_pearson(d1['original_FirstOrder'], d2['original_FirstOrder'])
-        print(comb)
-        print(fit)
+        d1 = DATA[0].sort_values(['ColumnName', 'Parameter'], ascending=False)
+        d2 = DATA[1].sort_values(['ColumnName', 'Parameter'], ascending=False)
+
+        d1['original_FirstOrder'] / d2['original_FirstOrder'] * 100
         rmse(d1['original_FirstOrder'], d2['original_FirstOrder'])
+        fit_pearson(d1['original_FirstOrder'], d2['original_FirstOrder'])
+        combs = list(combinations(['Maize', 'Maize, Soybean', 'Maize, Wheat'], 2))
+        for comb in combs:
+            first, end = comb
+            idx1, idx2 = CROPS.index(first), CROPS.index(end)
+            d1 = DATA[idx1].sort_values(['ColumnName', 'Parameter'], ascending=False)
+            d2 = DATA[idx2].sort_values(['ColumnName', 'Parameter'], ascending=False)
+            fit = fit_pearson(d1['original_FirstOrder'], d2['original_FirstOrder'])
+            print(comb)
+            print(fit)
+            print(rmse(d1['original_FirstOrder'], d2['original_FirstOrder']))
+        del data, DATA
+        import gc
 
+        gc.collect()
 
 # selected = {}
 # with SensitivityManager('Maize') as model:

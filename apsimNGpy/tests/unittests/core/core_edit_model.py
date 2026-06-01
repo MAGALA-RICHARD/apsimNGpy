@@ -184,7 +184,33 @@ class TestCoreModel(BaseTester):
                 flag = True
         return flag
 
-    def test_editing_sobol_or_morris_model(self):
+    def test_editing_sobol_or_morris_model_clear_old_true(self):
+        # For Morris
+        with ApsimModel('Morris') as mmm:
+            mmm.edit_model(model_type='Models.Morris', model_name='FallowSensitivity', Parameters=[
+                dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
+            ], clear_old=True,  NumPaths=200)
+            param = mmm.inspect_model_parameters('Models.Morris', model_name='FallowSensitivity')
+            params = param['Parameters']
+            num_path = param['NumPaths']
+            self.assertEqual(float(num_path), 200.0)
+
+            my = self.check_param(params, name='my', lower=10, upper=400)
+            self.assertTrue(my, "Morris model was not updated successfully")
+            # ensure that we can access the sobol model
+
+            self.assertEqual(len(mmm.inspect_model('Models.Morris')), 1)
+            # what about single string without a dot or full path?
+            self.assertEqual(len(mmm.inspect_model('Morris')), 1)
+            self.assertEqual(len(params), 1)
+            # ensure missing keys are flagged off
+            with self.assertRaises(ValueError):
+                # skips the Name keys in the parameter description
+                mmm.edit_model(model_type='Models.Morris', model_name='FallowSensitivity', Parameters=[
+                    dict( Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
+                ], clear_old=True)
+
+    def test_editing_sobol_or_morris_model_clear_old_false(self):
         # For Morris
         with ApsimModel('Morris') as mmm:
             mmm.edit_model(model_type='Models.Morris', model_name='FallowSensitivity', Parameters=[
@@ -204,7 +230,7 @@ class TestCoreModel(BaseTester):
         with ApsimModel('Sobol') as mmm:
             mmm.edit_model(model_type='Models.Sobol', model_name='Sobol', Parameters=[
                 dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=17, UpperBound=400)
-            ])
+            ], clear_old=False)
             params = mmm.inspect_model_parameters('Models.Sobol', model_name='Sobol')
             params = params['Parameters']
             my = self.check_param(params, name='my', lower=17, upper=400)

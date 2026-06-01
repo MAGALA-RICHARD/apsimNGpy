@@ -1746,7 +1746,7 @@ class CoreModel(PlotManager):
         )
         return model_type if not full_name else model.GetType().FullName
 
-    def edit_model_by_path(self, path: str, **kwargs):
+    def edit_model_by_path(self, path: str, clear_old=False, **kwargs):
         """
         Edit a model component located by an APSIM path, dispatching to type-specific editors.
 
@@ -1853,38 +1853,38 @@ class CoreModel(PlotManager):
 
            Related API: :meth:`edit_model`.
         """
-        simulations = kwargs.get('simulations', None) or kwargs.get('simulation', None)
-        default = kwargs.setdefault('verbose', False)
         verbose = kwargs.get('verbose')
         for p in {'simulation', 'simulations', 'verbose'}:
             kwargs.pop(p, None)
         if hasattr(self.Simulations, 'FindByPath'):
             v_obj = self.Simulations.FindByPath(path)
         else:
-            v_obj = get_node_by_path(self.Simulations, path)
+            v_obj = get_node_by_path(self.Simulations, path, cast_as='auto')
         if v_obj is None:
             raise ValueError(f"Could not find model instance associated with path `{path}`")
         try:
             values = v_obj.Value
         except AttributeError:
-            values = v_obj.Model
-            for model_class in {Models.Manager, Models.Climate.Weather,
-                                Models.PMF.Cultivar, Models.Clock, Models.Report,
-                                Models.Surface.SurfaceOrganicMatter,
-                                Models.Soils.Physical, Models.Soils.Chemical, Models.Soils.Organic, Models.Soils.Water,
-                                Models.Soils.Solute, Models.WaterModel.WaterBalance,
-                                }:
-                cast_model = CastHelper.CastAs[model_class](values)
+            values = v_obj
+            # for model_class in {Models.Manager, Models.Climate.Weather,
+            #                     Models.PMF.Cultivar, Models.Clock, Models.Report,
+            #                     Models.Surface.SurfaceOrganicMatter,
+            #                     Models.Soils.Physical, Models.Soils.Chemical, Models.Soils.Organic, Models.Soils.Water,
+            #                     Models.Soils.Solute, Models.WaterModel.WaterBalance,
+            #                     }:
+            #     cast_model = CastHelper.CastAs[model_class](values)
+            #
+            #     if cast_model is not None:
+            #         values = cast_model
+            #         break
 
-                if cast_model is not None:
-                    values = cast_model
-                    break
-
-            else:
+            if not values:
                 raise ValueError(
                     f"Could not find model instance associated with `{path}\n or {path} is not supported by this method")
 
         match type(values):
+            case Models.Morris | Models.Sobol:
+                self.edit_model(type(values), values.Name, clear_old=clear_old, **kwargs)
             case Models.WaterModel.WaterBalance:
                 self.edit_model(Models.WaterModel.WaterBalance, model_name=values.Name, **kwargs)
 
@@ -2035,7 +2035,7 @@ class CoreModel(PlotManager):
 
     def edit_model(self, model_type: str, model_name: str,
                    simulations: Union[str, list] = 'all', exclude=None,
-                   verbose=False, **kwargs):
+                   verbose=False, clear_old=False, **kwargs):
         """
         Modify various APSIM model components by specifying the model type and name across given simulations.
 
@@ -2079,6 +2079,8 @@ class CoreModel(PlotManager):
             print the status of the editing activities
         exclude: Union[str, None, Iterable[str]], optional,default is None
             Added in 'V0.39.10.20'+. It is used to specify which simulation should be skipped during the editing process, in case there are more than simulations
+        clear_old: bool default is False.
+            used to clear exisiting values, meaning the new replacements requires to completely overide the olds one regardless of the value type
 
         kwargs
         ------
@@ -2246,6 +2248,16 @@ class CoreModel(PlotManager):
                                          cultivar_manager='Sow using a variable rule,
                                          parameter_name='CultivarName'
                                          )
+        You can edit a Sobol or Morris model as follows::
+
+            with ApsimModel('Morris') as sobol:
+                sobol.edit_model(model_type='Models.Morris', model_name='FallowSensitivity', Parameters=[
+                    dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
+                ], clear_old=False, NumPaths=200)
+                sobol.run()
+                sobol.get_simulated_output('SobolStatistics')
+                # raw results
+                df = sobol.results
 
         .. seealso::
 
@@ -2317,11 +2329,20 @@ class CoreModel(PlotManager):
 
                     paVs = {}
                     params = list(model_instance.Parameters)
-                    for p in params:
-                        paVs[p.Path] = dict(Name=p.Name, LowerBound=p.LowerBound, UpperBound=p.UpperBound, Path=p.Path)
+                    if not clear_old:
+                        for p in params:
+                            paVs[p.Path] = dict(Name=p.Name, LowerBound=p.LowerBound, UpperBound=p.UpperBound, Path=p.Path)
                     for pp in kwargs.get('Parameters', {}):
                         if not isinstance(pp, dict):
                             raise TypeError(f"Invalid data type expected dict got {type(pp)}")
+                        required = {"Name", "Path", "LowerBound", "UpperBound"}
+
+                        missing = required - pp.keys()
+
+                        if missing:
+                            raise ValueError(
+                                f"Missing required keys: {', '.join(sorted(missing))}"
+                            )
                         path = pp['Path']
                         paVs[path] = pp
                     for _, p in paVs.items():

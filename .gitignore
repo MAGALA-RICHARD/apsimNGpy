@@ -133,6 +133,7 @@ pip-selfcheck.json
 apsimNGpy/tests/unittests/senstivity_study/*.db
 apsimNGpy/tests/unittests/senstivity_study/*.png
 apsimNGpy/tests/unittests/senstivity_study/*.jpg
+apsimNGpy/tests/unittests/senstivity/*.db
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
@@ -218,5 +219,10 @@ apsimNGpy/scratch/*.apsimx
 apsimNGpy/scratch/*.db-shm
 apsimNGpy/scratch/*.db
 apsimNGpy/scratch/*.db-wal
-*scratch
+apsimNGpy/.scratch/*.apsimx
+apsimNGpy/.scratch/*.db-shm
+apsimNGpy/.scratch/*.db
+apsimNGpy/.scratch/*.db-wal
+**/scratch/
+**/.scratch/
 apsimNGpy/mailer

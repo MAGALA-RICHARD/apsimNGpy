@@ -18,7 +18,6 @@ soil_type = dict(zip(PREFIXEs, ['sharspburg', 'Nicollet', "Fayette"]))
 
 #print(get_db_table_names(cultivarDB))
 
-
 def merge_soil_statistics():
     stats = []
     for p in PREFIXEs:

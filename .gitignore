@@ -130,7 +130,7 @@ pip-selfcheck.json
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
-
+apsimNGpy/tests/unittests/senstivity_study/*.db
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries

@@ -131,6 +131,8 @@ pip-selfcheck.json
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 apsimNGpy/tests/unittests/senstivity_study/*.db
+apsimNGpy/tests/unittests/senstivity_study/*.png
+apsimNGpy/tests/unittests/senstivity_study/*.jpg
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries

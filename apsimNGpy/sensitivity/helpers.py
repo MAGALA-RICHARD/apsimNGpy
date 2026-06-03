@@ -225,7 +225,10 @@ def clear_db(
 
 
 def generate_default_db_path(tag=""):
-    return f"{tag}{uuid.uuid1()}_.db"
+    base = Path.cwd()/'.scratch'
+    base.mkdir(parents=True, exist_ok=True)
+    ans = base/f"{tag}{uuid.uuid1()}_.db"
+    return str(ans)
 
 
 def switch_sobol_option(sample_options, analyze_options):

@@ -229,6 +229,8 @@ or
 
 See doc: :meth:`~apsimNGpy.core.apsim.ApsimModel.add_new_model`
 
+
+
 Bug Fixes
 ---------
 
@@ -238,12 +240,13 @@ Bug Fixes
   duplicate replacement nodes. The method now prevents replication of
   existing replacements.
 
-# inspect_model return is node of a given type does not exist
-the function now return [] if non existent
+:meth:`~apsimNGpy.core.apsim.inspect_model` now return [] if specified model type does non exist in the simulation tree
+
+Removed the fixed 8000-second execution timeout and replaced it with unlimited runtime by default,
+preventing premature termination of computationally intensive simulations such as Sobol sensitivity analyses.
 
 # model.inspect_model_parameters()` now returns a dictionary consistently across inspected APSIM model types.
 - A dict allows to explicitly include the scalar values that are not layered in nature..
-
 
 
 Version 1.5.2

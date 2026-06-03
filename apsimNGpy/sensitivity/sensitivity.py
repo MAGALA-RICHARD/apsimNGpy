@@ -4,7 +4,7 @@ import dataclasses
 import gc
 import os
 import sys
-from functools import partial
+from functools import partial, cache
 from pathlib import Path
 from typing import Iterable
 import numpy as np
@@ -143,7 +143,6 @@ class ConfigProblem:
 
         for idx, row in enumerate(X):
 
-
             ############################################
             values = dict(zip(self.param_keys, row))
 
@@ -152,7 +151,6 @@ class ConfigProblem:
             for base, attrs in pairs.items():
                 others = grouped.others.get(base, {})
                 attributes = {a: values[a] for a in attrs}
-
 
                 if not isinstance(grouped.node_types.get(base), CLR.Models.PMF.Cultivar):
                     inData = {
@@ -194,8 +192,9 @@ class ConfigProblem:
         from apsimNGpy.core.mult_cores import MultiCoreManager, core_count
         db_path = generate_default_db_path(table_prefix)
         n_cores = core_count(n_cores, threads=threads)
-        dF= pd.DataFrame(X)
+        dF = pd.DataFrame(X)
         view(dF)
+
         def run_in_multi_core(db):
 
             with MultiCoreManager(agg_func=agg_func, db_path=db, table_prefix=table_prefix) as mc:
@@ -573,6 +572,18 @@ class Factor(BaseModel):
             manager_p = ()
         return abs(hash((self.base, self.param, self.name, manager_p, self.name)))
 
+    def dump(self, base_model):
+        with ApsimModel(base_model) as model:
+            node = get_node_by_path(model.Simulations, node_path=self.base, cast_as='auto')
+        if isinstance(node, Models.PMF.Cultivar):
+            if not isinstance(self.managers, dict):
+                raise ValueError('managers must be a dictionary in order to update the cultivar ')
+            if not isinstance(self.plant, str):
+                raise ValueError(f'Please provide a plant hosting the cultivar: {self.base}')
+            return dict(base=self.base, param=self.param, bounds=self.bounds, managers=self.managers, names=self.name,
+                        plant=self.plant)
+        return dict(base=self.base, param=self.param, bounds=self.bounds)
+
 
 class CustomSensitivityManager:
 
@@ -583,30 +594,11 @@ class CustomSensitivityManager:
         self.runner = None
 
     def add_sens_factor(self, *, base: str, param, bounds, managers=None, names=None, plant=None):
-        with ApsimModel(self.base_model) as model:
-            node = get_node_by_path(model.Simulations, node_path=base, cast_as='auto')
-
-        if isinstance(node, Models.PMF.Cultivar):
-
-            if not isinstance(managers, dict):
-                raise ValueError('managers must be a dictionary in order to update the cultivar ')
-            if not isinstance(plant, str):
-                raise ValueError(f'Please provide a plant hosting the cultivar: {base}')
-            fac = Factor(base=base, param=param, bounds=bounds, managers=managers, name=names, plant=plant)
-            hask_key = fac.hash()
-            if hask_key in self._factors:
-                raise ValueError(f"Duplicate {fac} detected. Factor already exist")
-            self._factors[hask_key] = fac.model_dump()
-        else:
-
-            fac = Factor(base=base, param=param, bounds=bounds, name=names)
-            dump_model = dict(fac.model_dump())
-            dump_model.pop('plant', None)
-            dump_model.pop('managers', None)
-            hask_key = fac.hash()
-            if hask_key in self._factors:
-                raise ValueError(f"Duplicate {fac} detected. factor already exist")
-            self._factors[hask_key] = dump_model
+        factor = Factor(base=base, param=param, bounds=bounds, managers=managers, name=names, plant=plant)
+        hask_key = factor.hash()
+        if hask_key in self._factors:
+            raise ValueError(f"Duplicate {factor} detected. Factor already exist")
+        self._factors[hask_key] = factor.dump(self.base_model)
 
     def get_list_sens_factors(self):
         factors = dict(self._factors)
@@ -708,18 +700,18 @@ if __name__ == "__main__":
     #         "calc_second_order": True,
     #     },
     # )
-    ccMorris = cc.build_sense_model(method="morris", n_cores=10,
-                                    sample_options={
-                                        'seed': 42,
-                                        "num_levels": 6,
-                                        "optimal_trajectories": 6,
-                                    },
-                                    analyze_options={
-                                        'conf_level': 0.95,
-                                        "num_resamples": 1000,
-                                        "print_to_console": True,
-                                        'seed': 42
-                                    }, )
+    # ccMorris = cc.build_sense_model(method="morris", n_cores=10,
+    #                                 sample_options={
+    #                                     'seed': 42,
+    #                                     "num_levels": 6,
+    #                                     "optimal_trajectories": 6,
+    #                                 },
+    #                                 analyze_options={
+    #                                     'conf_level': 0.95,
+    #                                     "num_resamples": 1000,
+    #                                     "print_to_console": True,
+    #                                     'seed': 42
+    #                                 }, )
     runner = ConfigProblem(
         base_model="Maize",
         params=params,

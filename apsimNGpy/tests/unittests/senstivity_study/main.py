@@ -3,16 +3,20 @@ from pathlib import Path
 
 import pandas as pd
 from utils import rmse, fit_pearson
-from apsimNGpy import SensitivityManager, ApsimModel
+from apsimNGpy import SensitivityManager, ApsimModel, logger
 from maize_parameters import maize_params
 from xlwings import view
 from itertools import combinations
 import winsound
 from sqlalchemy import create_engine
+from cultivars_params import parameters as cultivars_params
 
 DataBAse = Path(__file__).parent / 'sens.db'
-soilPrefixes = ['N', 'F', 'S']
-
+soilDB = Path(__file__).parent / 'soil_sens.db'
+cultivarDB = Path(__file__).parent / 'cultivar_sens.db'
+soilPrefixes = [ 'S', 'F', 'N',]
+TIMEOUT = None# large sensitivity experiments requires large time out
+NRATES = [0, 150, 300]
 
 def get_last_two_from_path(path: str, step) -> str:
     ap = path.split('.')[-step:]
@@ -28,7 +32,7 @@ def get_soil_parameters(model):
         {'Path': f'{su_om_name}.InitialResidueMass', 'LowerBound': 500, 'UpperBound': 5000, 'Name': 'ResidueMass'},
         {'Path': f'{su_om_name}.InitialCNR', 'LowerBound': 40, 'UpperBound': 180, 'Name': 'CNR'}]
     organic = [
-        {'Path': f"{organic_name}.FBiom[1]", 'LowerBound': 0.03, 'UpperBound': 0.045, 'Name': 'FBiom'},
+      #  {'Path': f"{organic_name}.FBiom[1]", 'LowerBound': 0.03, 'UpperBound': 0.045, 'Name': 'FBiom'},
         {'Path': f"{organic_name}.Carbon[1]", 'LowerBound': 0.9, 'UpperBound': 3.5, 'Name': 'InitialCarbon'},
         {'Path': f"{organic_name}.FOM[1]", 'LowerBound': 500, 'UpperBound': 8000, 'Name': 'FOM'}]
 
@@ -36,50 +40,66 @@ def get_soil_parameters(model):
     return organic
 
 
-if __name__ == '__main__':
-    Engine = create_engine(f'sqlite:///{str(DataBAse)}')
-
+def main(parameters, data_base_engine):
     CROPS = ['Maize', 'Maize, Soybean', 'Maize, Wheat']
-    for prefix in soilPrefixes:
+    for N in NRATES:
         DATA = []
         RawResults = []
         sobolDataTable = []
-        print(f'Testing {prefix}...', file=sys.stderr)
-        for crop in CROPS:
-            with ApsimModel(r"D:\Elimin_rye_cover_crop_2026\APSIMX\F_sobol.apsimx") as sobol:
-                soil_params = get_soil_parameters(sobol)
-                sobol.edit_model('Models.Sobol', model_name='Sobol', Parameters=soil_params, clear_old=True)
-                sim_name = sobol[0].Name
-                sobol.edit_model_by_path(f'.Simulations.Sobol.{sim_name}.Field1.Simple Rotation', Crops=crop, )
-                sobol.edit_model('Models.Sobol', 'Sobol', NumPaths=200)
-                sobol.run(timeout=60 * 60)
-                df = sobol.get_simulated_output('SobolStatistics')
-                sobolDataTable.append(df)
-                df.reset_index(inplace=True, drop=True)
+        for prefix in soilPrefixes:
+            print(f'Testing {prefix}...', file=sys.stderr)
+            for crop in CROPS:
+                file_base_name = f'{prefix}_sobol.apsimx'
+                full_file_path = Path(r"D:\Elimin_rye_cover_crop_2026\APSIMX").joinpath(file_base_name)
+                logger.info(f'processing file: {N} {crop} {prefix}')
+                with ApsimModel(full_file_path) as sobol:
+                    sim_name = sobol[0].Name
+                    if callable(parameters):
+                        print(f'parameters: is callable supplying model as the input', file=sys.stderr)
+                        # for some reason, we want to make sure soil paths are exact, according to each model type
+                        parameters = parameters(sobol)  # because it takes in model
+                    # soil_params = get_soil_parameters(sobol)
+                    sobol.edit_model('Models.Sobol', model_name='Sobol', Parameters=parameters,NumPaths=2200,  clear_old=True)
+                    sobol.edit_model_by_path(f'.Simulations.Sobol.{sim_name}.Field1.AddfertlizerRotationMAize', Amount =N)
 
-                result = (
-                    df.groupby(['Parameter', 'ColumnName', 'Indices'])
-                    .mean(numeric_only=True)
-                    .unstack(['Indices'])
-                )
-                result.columns = [
-                    f"{col}_{idx}"
-                    for col, idx in result.columns
-                ]
-                result['crops'] = crop
-                winsound.Beep(1200, 450)
-                DATA.append(result)
-                RawResults.append(sobol.results)
+                    sobol.edit_model_by_path(f'.Simulations.Sobol.{sim_name}.Field1.Simple Rotation', Crops=crop, )
+
+                    sobol.run(cpu_count=16)
+                    df = sobol.get_simulated_output('SobolStatistics')
+                    df['Crops'] = crop
+                    df['NRate'] =N
+                    sobolDataTable.append(df)
+                    df.reset_index(inplace=True, drop=True)
+
+                    result = (
+                        df.groupby(['Parameter', 'ColumnName', 'Indices'])
+                        .mean(numeric_only=True)
+                        .unstack(['Indices'])
+                    )
+                    result.columns = [
+                        f"{col}_{idx}"
+                        for col, idx in result.columns
+                    ]
+                    result['Crops'] = crop
+                    result['NRate'] = N
+                    logger.info(f"{prefix} for {crop} completed")
+                    winsound.Beep(1200, 450)
+                    DATA.append(result)
+                    sob_raw_output = sobol.results
+                    sob_raw_output['Crops'] = crop
+                    sob_raw_output['NRate'] = N
+                    RawResults.append(sob_raw_output)
         data = pd.concat(DATA)
+
         RawDf = pd.concat(RawResults)
         sobolStatRawDF = pd.concat(sobolDataTable)
         data['soil'] = prefix
         raw_result_table = f'{prefix}_raw_results'
         statistics = f'{prefix}_summary_statistics'
-        sobStaticsTable = 'SobolStatistics'
-        data.to_sql(statistics, con=Engine, if_exists='replace')
-        RawDf.to_sql(raw_result_table, con=Engine, if_exists='replace')
-        sobolStatRawDF.to_sql(sobStaticsTable, con=Engine, if_exists='replace')
+        sobStaticsTable = f'{prefix}SobolStatistics'
+        data.to_sql(statistics, con=data_base_engine, if_exists='replace')
+        RawDf.to_sql(raw_result_table, con=data_base_engine, if_exists='replace')
+        sobolStatRawDF.to_sql(sobStaticsTable, con=data_base_engine, if_exists='replace')
 
         d1 = DATA[0].sort_values(['ColumnName', 'Parameter'], ascending=False)
         d2 = DATA[1].sort_values(['ColumnName', 'Parameter'], ascending=False)
@@ -100,7 +120,16 @@ if __name__ == '__main__':
         del data, DATA
         import gc
 
-        gc.collect()
+    gc.collect()
+
+
+if __name__ == '__main__':
+    Engine = create_engine(f'sqlite:///{str(DataBAse)}')
+    SoilEngine = create_engine(f'sqlite:///{str(soilDB)}')
+    cultivarEngine = create_engine(f'sqlite:///{str(cultivarDB)}')
+
+    main(cultivars_params, data_base_engine=cultivarEngine)
+    #main(get_soil_parameters, data_base_engine=SoilEngine)
 
 # selected = {}
 # with SensitivityManager('Maize') as model:

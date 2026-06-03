@@ -21,6 +21,7 @@ from functools import lru_cache
 from typing import Any
 from typing import Union
 
+import numpy as np
 import pandas as pd
 from apsimNGpy.starter.starter import CLR
 from System import *
@@ -51,11 +52,14 @@ from apsimNGpy.manager.weathermanager import get_weather
 from apsimNGpy.settings import workspace, MissingOption
 from apsimNGpy.logger import logger
 
-_NOT_PROVIDED = object()
 
 # constants
 IS_NEW_MODEL = CLR.file_format_modified
 Models = CLR.Models
+_NOT_PROVIDED = object()
+DEFAULT_TIMEOUT = None  # unlimited
+VERBOSE = False
+RELOAD = True
 
 
 def edit_cultivar(node, cultivar_name, commands):
@@ -314,7 +318,7 @@ class CoreModel(PlotManager):
                     f"name_or_index must be str or int, got {type(name_or_index).__name__}"
                 )
 
-    def _edit_model_obj(self, model_instance, scope, verbose=False, **kwargs):
+    def _edit_model_obj(self, model_instance, scope, verbose=VERBOSE, **kwargs):
         model_name = model_instance.Name
         match type(model_instance):
             case Models.WaterModel.WaterBalance:
@@ -585,7 +589,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def save(self, file_name: Union[str, Path,] = _NOT_PROVIDED, reload=True):
+    def save(self, file_name: Union[str, Path,] = _NOT_PROVIDED, reload=RELOAD):
         """
         Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -970,7 +974,7 @@ class CoreModel(PlotManager):
             simulations: Union[tuple, list] = None,
             clean_up: bool = True,
             verbose: bool = False,
-            timeout: int = 800,
+            timeout: int | None = DEFAULT_TIMEOUT,  # unlimited adjust, according to your simulation time complexity
             cpu_count: int = -1,
             **kwargs) -> 'CoreModel':
         """
@@ -992,8 +996,9 @@ class CoreModel(PlotManager):
         verbose: bool, optional
             If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
 
-        timeout: int, default is 800 seconds
-              Enforces a timeout and returns a CompletedProcess-like object.
+        timeout: int, default is None seconds
+              Enforces a timeout and returns a CompletedProcess-like object. Simulation runtime varies substantially with model complexity, weather records, management scenarios, and output requests.
+              When timeout is not specified, allow the simulation to run until completion rather than enforcing an arbitrary limit.
         cpu_count: int, Optional default is -1, referring to all threads
             This parameter is useful when the number of simulations are more than 1, below that performance differences are minimal
             added in 0.39.11.21+
@@ -1037,6 +1042,7 @@ class CoreModel(PlotManager):
 
         #  apsim_bin_path = configuration.bin_path if apsim_bin_path is AUTO_PATH else apsim_bin_path
         #
+
         def dispose_db():
             try:
                 self._DataStore.Dispose()
@@ -2285,31 +2291,18 @@ class CoreModel(PlotManager):
         if replace_ments is not None:
             edit_candidate_objects.append(replace_ments)
 
-            # model_instance = get_or_check_model(sim, model_type_class, model_name, action='get', cacheit=cacheit,
-            #                                     cache_size=cache_size)
-
         def edit_object(obj):
             sim = obj
+
             if is_higher_apsim_version():
 
-                if model_type_class in {
-                    Models.Morris,
-                    Models.Sobol,
-                    "Models.Morris",
-                    "Models.Sobol",
-                    "Morris",
-                    "Sobol",
-                }:
-                    # high-level search
-                    model_instance =  find_child(self.Simulations, model_type_class, model_name)
-
-                else:
-                    model_instance = find_child(sim, model_type_class, model_name)
+                model_instance = find_child(self.Simulations, model_type_class, model_name)
 
             else:
-                model_instance = sim.FindDescendant[model_type_class](model_name)
+                model_instance = self.Simulations.FindDescendant[model_type_class](model_name)
             model_to_cast = getattr(model_instance, "Model", model_instance)
             model_instance = CastHelper.CastAs[model_type_class](model_to_cast)
+
             match type(model_instance):
                 case Models.WaterModel.WaterBalance:
                     try:
@@ -2331,7 +2324,8 @@ class CoreModel(PlotManager):
                     params = list(model_instance.Parameters)
                     if not clear_old:
                         for p in params:
-                            paVs[p.Path] = dict(Name=p.Name, LowerBound=p.LowerBound, UpperBound=p.UpperBound, Path=p.Path)
+                            paVs[p.Path] = dict(Name=p.Name, LowerBound=p.LowerBound, UpperBound=p.UpperBound,
+                                                Path=p.Path)
                     for pp in kwargs.get('Parameters', {}):
                         if not isinstance(pp, dict):
                             raise TypeError(f"Invalid data type expected dict got {type(pp)}")
@@ -2362,8 +2356,9 @@ class CoreModel(PlotManager):
                             setattr(model_instance, k, v)
                         else:
                             morris = "AggregationVariableName, NumPaths,TableName, Name, NumIntervals,Jump, and Parameters"
-                            raise AttributeError(f'Invalid attribute {k} valid one are; AggregationVariableName, NumPaths,TableName, Name, and Parameters'
-                                                 f'for Models.Sobol \n or {morris} ')
+                            raise AttributeError(
+                                f'Invalid attribute {k} valid one are; AggregationVariableName, NumPaths,TableName, Name, and Parameters'
+                                f'for Models.Sobol \n or {morris} ')
                     self.save()
                     # recreate
 
@@ -2373,7 +2368,19 @@ class CoreModel(PlotManager):
                     self._set_clock_vars(model_instance, param_values=kwargs, verbose=verbose)
 
                 case Models.Manager:
-                    self.update_manager(scope=sim, manager_name=model_name, **kwargs)
+                    # self.update_manager(scope=sim, manager_name=model_name, **kwargs)
+                    manager = model_instance
+                    g_parameters = manager.Parameters
+                    # set the arguments
+                    for i in range(len(list(g_parameters))):
+                        _param = g_parameters[i].Key
+                        # loop through arguments
+                        if _param in kwargs:
+                            manager.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
+                            # remove the successfully processed keys
+                            kwargs.pop(_param)
+                    if len(kwargs.keys()) > 0:
+                        logger.error(f"The following {kwargs} were not found in {manager.FullPath}")
 
                 case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
                     try:
@@ -2557,7 +2564,8 @@ class CoreModel(PlotManager):
 
                 case _:
                     if not model_instance:
-                        raise ValueError(f"{model_instance} is None")
+                        raise ValueError(
+                            f"{model_name} and model type: {model_type} was resolved to  None, implying does not exist in the simulation tree")
                     pass
                     # if not model_instance  or not model_instance and not replace_ments:
                     #     raise ValueError(f"{model_name} of class {model_type} was not found or does not exist in the "
@@ -3307,6 +3315,7 @@ class CoreModel(PlotManager):
 
             Related API: :meth:`inspect_model_parameters_by_path`
         """
+        self.save()
         exclude = {exclude} if isinstance(exclude, str) or exclude is None else exclude
         if parameters == 'all':
             parameters = None
@@ -3657,6 +3666,7 @@ class CoreModel(PlotManager):
 
     @staticmethod
     def update_manager(scope, manager_name, **kwargs):
+
         if is_higher_apsim_version():
             manager = ModelTools.find_child(scope, Models.Manager, manager_name)
             manager = CastHelper.CastAs[Models.Manager](manager)
@@ -5961,7 +5971,7 @@ if __name__ == '__main__':
         water = ModelTools.find_child(corep.Simulations, child_class=Models.WaterModel.WaterBalance,
                                       child_name='SoilWater')
         waterb = CastHelper.CastAs[Models.WaterModel.WaterBalance](water)
-        corep.edit_model('Models.WaterModel.WaterBalance', 'SoilWater', SWCON=[3, 3, 5, 50, 60], )
+        corep.edit_model(Models.WaterModel.WaterBalance, model_name='SoilWater', SWCON=[3, 3, 5, 50, 60], )
         inp = corep.inspect_model_parameters('Models.WaterModel.WaterBalance', 'SoilWater')
         print(inp['SWCON'])
         corep.save()

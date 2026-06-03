@@ -1,0 +1,18 @@
+# Include all data files in apsimNGpy/data/
+recursive-include apsimNGpy/data *
+
+# Include all PNG images
+recursive-include images *.png
+
+# Include specific file types (apsimx, met, dll) from the 'files' directory
+recursive-include files *.apsimx *.met *.dll
+
+# Include specific important scripts
+include apsimNGpy/cli.py
+include apsimNGpy/set_ups.py
+
+# Include all DLLs in apsimNgpy/dll (correct the path name capitalization)
+recursive-include apsimNGpy/dll *.dll
+
+# Include everything inside apsimNGpy
+recursive-include apsimNGpy *

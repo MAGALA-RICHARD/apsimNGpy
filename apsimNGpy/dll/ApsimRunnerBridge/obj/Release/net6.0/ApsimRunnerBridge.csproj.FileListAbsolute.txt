@@ -1,0 +1,12 @@
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\bin\Release\net6.0\ApsimRunnerBridge.deps.json
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\bin\Release\net6.0\ApsimRunnerBridge.dll
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\bin\Release\net6.0\ApsimRunnerBridge.pdb
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\obj\Release\net6.0\ApsimRunnerBridge.GeneratedMSBuildEditorConfig.editorconfig
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\obj\Release\net6.0\ApsimRunnerBridge.AssemblyInfoInputs.cache
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\obj\Release\net6.0\ApsimRunnerBridge.AssemblyInfo.cs
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\obj\Release\net6.0\ApsimRunnerBridge.csproj.CoreCompileInputs.cache
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\obj\Release\net6.0\ApsimRunnerBridge.sourcelink.json
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\obj\Release\net6.0\ApsimRunnerBridge.dll
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\obj\Release\net6.0\refint\ApsimRunnerBridge.dll
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\obj\Release\net6.0\ApsimRunnerBridge.pdb
+D:\package\apsimNGpy\apsimNGpy\dll\ApsimRunnerBridge\obj\Release\net6.0\ref\ApsimRunnerBridge.dll

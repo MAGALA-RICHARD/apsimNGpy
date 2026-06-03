@@ -1,0 +1,91 @@
+import os
+from pathlib import Path
+
+from setuptools import setup, find_packages
+import sys
+from functools import cache
+
+VERSION = '1.5.2'
+
+DESCRIPTION = 'APSIM next generation package interface'
+LONG_DESCRIPTION = 'Run, edit, download soils and weather and interact with the apsimx file'
+
+readme = Path("README.rst").read_text(encoding="utf-8")
+
+setup(
+    name='apsimngpy',
+    version=VERSION,
+    url='https://github.com/MAGALA-RICHARD/apsimNGpy.git',
+    license_file="./LICENSE",
+    author='Richard Magala',
+    author_email='magalarich20@gmail.com',
+    description=DESCRIPTION,
+    long_description=readme,
+    packages=find_packages(),
+    include_package_data=True,
+    python_requires=">=3.10,<3.14",
+    entry_points={
+        'console_scripts': [
+            'apsim=apsimNGpy.cli.cli:main_entry_point',
+            'bp=apsimNGpy.cli.set_ups:apsim_bin_path',
+
+            'apsim_bin_path=apsimNGpy.cli.set_ups:apsim_bin_path',
+        ],
+    },
+
+    package_data={'': ['./apsimNGpy/data/*.apsimx',
+                       './apsimNGpy/dll/*.dll',
+                       './apsimNGpy/*.met',
+                       './apsimNGpy/*.dll',
+                       "./apsimNGpy/experiment/*.py",
+                       './apsimNGpy/examples/*.png',
+                       './apsimNGpy/images/*.png',
+                       './apsimNGpy/*.toml',
+                       './apsimNGpy/*.ini', "./*.ini"]},
+    keywords=['python', 'APSIM Next Generation', 'pythonnet', 'crop modeling'],
+    classifiers=[
+        "License :: OSI Approved :: Apache Software License",
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: Education",
+        "Topic :: Scientific/Engineering :: Visualization",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+        "Operating System :: OS Independent",
+    ],
+
+    install_requires=[
+        'numpy>=1.20.0',
+        'scipy>=1.7',
+        'xmltodict >=0.13.0',
+        'requests >=2.32.4',
+        "pythonnet>=3.0.5",
+        'rasterio >=1.3.8',
+        'shapely >=2.0.1',
+        'clr >= 1.0.3',
+        'geopandas >=0.13.2',
+        'pandas >=2.0.3',
+        'geopy >= 2.4.1',
+        'joblib >= 1.3.2',
+        'sqlalchemy >=2.0',
+        'matplotlib',
+        'seaborn >=0.13.2',
+        'psutil >=6.0.0',
+        'tenacity',
+        'typer',
+        'python-dotenv>=1.0.1,<2.0.0',
+        'pymoo == 0.6.1.5',
+        'wrapdisc==2.5.0',
+        'summarytools>=0.3.0',
+        'tqdm==4.67.1',
+        'watchdog==6.0.0',
+        'SALib==1.5.2',
+        'numpy==1.26.4',
+        'pydantic>=2.12',
+        'loguru == 0.7.3',
+        "rich>=13.7.0",
+
+
+    ]
+)

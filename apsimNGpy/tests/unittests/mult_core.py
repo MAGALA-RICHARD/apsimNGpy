@@ -1,0 +1,93 @@
+import os.path
+from pathlib import Path
+from apsimNGpy.core_utils.database_utils import get_db_table_names, read_db_table
+import pandas as pd
+from apsimNGpy.core.mult_cores import MultiCoreManager
+from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
+import sys
+import unittest
+from apsimNGpy.core_utils.database_utils import insert_table
+from apsimNGpy.settings import logger
+
+
+class TestMultiCoreManager(BaseTester):
+    def setUp(self):
+        self.model = 'Maize'
+        self.data_db = Path('test12.db').resolve()
+        self.db_path_agg_func = Path('test22.db').resolve()
+        self.out_path_no_agg = os.path.realpath('maize_multi_core_test_no_agg.apsimx')
+        self.out_path_mean = os.path.realpath('maize_multi_core_test_mean.apsimx')
+        self.jobs = ['Maize', "Soybean", 'Barley', 'Canola']
+        self.core_manager_no_agg = MultiCoreManager(db_path=self.data_db, agg_func='mean')
+        self.insert_data_db = os.path.realpath('test313.db')
+
+        self.test_clear_db = os.path.realpath('test314.db')
+
+    def tearDown(self):
+
+        remove = [self.data_db, self.db_path_agg_func,
+                  self.test_clear_db,
+                  self.out_path_no_agg, self.out_path_mean]
+        for element in remove:
+            try:
+                if os.path.exists(element): os.remove(element)
+
+            except PermissionError:
+                ...
+
+    @staticmethod
+    def create_synthetic_data():
+        df = pd.DataFrame([{"cores": 2, 'sys': "linnux"}, {'sys': 'windows', 'cores': 5}])
+        return df
+
+    def test_insert_data_db(self):
+        """tests if insert_data method on MultiCoreManager is working"""
+        self.insert_data_manager = MultiCoreManager(db_path=self.insert_data_db)
+        # ensure files does not exists
+        if os.path.exists(self.insert_data_db):
+            os.remove(self.insert_data_db)
+        # make up data quickly
+        df = self.create_synthetic_data()
+        insert_table(results=df, table='makeup', db_path=self.insert_data_manager.db_path)
+        df2 = read_db_table(self.insert_data_db, 'makeup')
+        self.assertFalse(df2.empty)
+        self.assertEqual(df2.shape[0], df.shape[0])
+
+    def _test_run_all_jobs(self, agg_func=None, clear_db_test=True, threads=True, cores=2):
+        """tests if run_all_tests work under various conditions"""
+        core_manager_mean = MultiCoreManager(db_path=self.data_db, agg_func=agg_func)
+
+        # using processes will fail in this environment, so threads are appropriate
+        core_manager_mean.run_all_jobs(jobs=self.jobs, threads=threads, n_cores=cores, clear_db=clear_db_test,
+                                       )
+        df = core_manager_mean.results
+        self.assertFalse(df.empty)
+        # if mean aggregators worked, then number of rows are two
+        if agg_func is not None:
+            rows = df.shape[0] == len(self.jobs)
+
+            self.assertTrue(rows, f"agg function {agg_func} failed")
+        else:
+            rows = df.shape[0] > len(self.jobs)
+            self.assertTrue(rows)
+
+    def test_run_all_jobs(self):
+        # hard to pull off a multi_processing in this environment, we will use threads to represent all tests
+        logger.info('testing run_all_tests. agg_func = mean')
+        self._test_run_all_jobs(agg_func='mean', clear_db_test=True, threads=False)
+        logger.info('testing run_all_tests. agg_func = None')
+        self._test_run_all_jobs(agg_func=None, clear_db_test=True)
+
+
+def test_multiprocessing():
+    """this is being run separately for multiprocessing in test_main"""
+    if __name__ == '__main__':
+
+        if sys.platform.startswith('win'):
+            import multiprocessing as mp
+            mp.freeze_support()
+        unittest.main()
+
+
+if __name__ == '__main__':
+    test_multiprocessing()

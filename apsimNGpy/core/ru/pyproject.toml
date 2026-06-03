@@ -1,0 +1,8 @@
+[build-system]
+requires = ["maturin>=1.0"]
+build-backend = "maturin"
+
+[project]
+name = "apsim_runner"
+version = "0.1.0"
+classifiers = ["Programming Language :: Python"]

@@ -6,6 +6,7 @@ Tests the ``CoreModel`` base class through its public subclass
 from __future__ import annotations
 import os
 import shutil
+import sys
 import unittest
 from functools import lru_cache
 from pathlib import Path
@@ -596,13 +597,17 @@ class TestCoreModel(BaseTester):
             new_juvenile = 289.777729777
             base_path = '[Phenology].Juvenile.Target.FixedValue'.strip()
             com_path = f'{base_path} = {new_juvenile}'
+            cts_before = test_ap_sim.inspect_model('Models.PMF.Cultivar', fullpath=False)
             test_ap_sim.edit_model(model_type='Models.PMF.Cultivar', model_name='B_110', new_cultivar_name=out_cultivar,
                                    plant='Maize',
                                    commands=(com_path,), rename=out_cultivar,
                                    managers={'Sow using a variable rule': 'CultivarName'})
+            cts = test_ap_sim.inspect_model('Models.PMF.Cultivar', fullpath=False)
 
-            # first we check the current '[Phenology].Juvenile.Target.FixedValue': '211'
             cp = test_ap_sim.inspect_model_parameters(model_type='Models.PMF.Cultivar', model_name=out_cultivar)
+            cp = cp.get('Command', cp)
+            print(cp.keys())
+            print(cp[base_path])
 
             self.assertEqual(new_juvenile, float(cp.get(base_path)))
             self.paths.add(test_ap_sim.path)

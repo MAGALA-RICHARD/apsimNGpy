@@ -60,7 +60,7 @@ class TestCoreModel(BaseTester):
         with ApsimModel('Maize') as model:
             sim = model[0]
             model.append_simulation(sim, rename='clone')
-            model.edit_model(model_type='Organic', model_name='Organic', simulations=model[1], Carbon=toPCarb)
+            model.edit_model(model_type='Organic', model_name='Organic', simulations='clone', Carbon=toPCarb)
             out = model.inspect_model_parameters(
                 model_type='Organic',
                 simulations='clone',
@@ -101,15 +101,43 @@ class TestCoreModel(BaseTester):
             self.assertIn('clone1', fixed_model.inspect_model("Models.Core.Simulation", fullpath=False))
             out = fixed_model.inspect_model_parameters('Models.Manager', model_name='Sow using a variable rule')
             # because they are more than one simulations
+
             out = out['clone1']['Parameters']
 
             pop = out['Population']
-            pop = int(pop)
+            pop = int(float(pop))
             self.assertEqual(pop, 12, msg='population was not successfully edited')
             fixed_model.run()
             df = fixed_model.results.groupby('SimulationID')['Yield'].mean()
             ans = list(df)
             self.assertNotEqual(*ans, msg='population was not successfully updated for the append simulation')
+
+    def test_edit_report(self):
+        with ApsimModel('Maize') as model:
+            vs = model.inspect_model_parameters("Report", 'Report')['VariableNames']
+            len_before = len(vs)
+            model.edit_model(
+                model_type="Report",
+                model_name="Report",
+                variable_spec=
+                "[Maize].AboveGround.Wt as abw"
+            )
+            # inspect again
+            vs = model.inspect_model_parameters("Report", 'Report')['VariableNames']
+            len_after = len(vs)
+            self.assertNotEqual(len_after, len_before, 'editing report failed')
+            # test clear_old flag
+            model.edit_model(
+                model_type="Report",
+                model_name="Report",
+                clear_old=True,
+                variable_spec=
+                "[Maize].AboveGround.Wt as abw"
+            )
+            # inspect again
+            vs = model.inspect_model_parameters("Report", 'Report')['VariableNames']
+            len_after_clear_old = len(vs)
+            self.assertEqual(1, len_after_clear_old, "clear_old flag did not work")
 
     def test_payload_with_external_simulation(self):
         with ApsimModel('Maize') as fixed_model:
@@ -189,7 +217,7 @@ class TestCoreModel(BaseTester):
         with ApsimModel('Morris') as mmm:
             mmm.edit_model(model_type='Models.Morris', model_name='FallowSensitivity', Parameters=[
                 dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
-            ], clear_old=True,  NumPaths=200)
+            ], clear_old=True, NumPaths=200)
             param = mmm.inspect_model_parameters('Models.Morris', model_name='FallowSensitivity')
             params = param['Parameters']
             num_path = param['NumPaths']
@@ -207,7 +235,7 @@ class TestCoreModel(BaseTester):
             with self.assertRaises(ValueError):
                 # skips the Name keys in the parameter description
                 mmm.edit_model(model_type='Models.Morris', model_name='FallowSensitivity', Parameters=[
-                    dict( Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
+                    dict(Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
                 ], clear_old=True)
 
     def test_editing_sobol_or_morris_model_clear_old_false(self):

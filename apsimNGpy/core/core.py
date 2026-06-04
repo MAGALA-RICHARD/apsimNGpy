@@ -51,7 +51,7 @@ from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.manager.weathermanager import get_weather
 from apsimNGpy.settings import workspace, MissingOption
 from apsimNGpy.logger import logger
-
+from apsimNGpy.core.doc_strings import EDIT_MODEL_DOC
 
 # constants
 IS_NEW_MODEL = CLR.file_format_modified
@@ -1651,7 +1651,7 @@ class CoreModel(PlotManager):
         if verbose:
             logger.info(f"weather file changed from '{c_wet}' to '{met_file}'")
 
-    def _set_report_vars(self, model_instance, param_values: dict, verbose=False):
+    def _set_report_vars(self, model_instance, param_values: dict, verbose=False, clear_old=False):
 
         set_event_names = param_values.get('set_event_names')
         report_name = model_instance.Name
@@ -1659,7 +1659,7 @@ class CoreModel(PlotManager):
         vs = param_values.get("variable_spec") or param_values.get("VariableNames")
         if not vs:
             raise ValueError("Please specify a report name using key word 'variable_spec'")
-        self.add_report_variable(variable_spec=vs, set_event_names=set_event_names, report_name=report_name)
+        self.add_report_variable(variable_spec=vs, set_event_names=set_event_names, report_name=report_name, clear_old=clear_old)
         if verbose:
             logger.info(f" '{vs}' added to '{report_name}'")
 
@@ -1999,7 +1999,8 @@ class CoreModel(PlotManager):
             case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
                 self.replace_soils_values_by_path(node_path=path, **kwargs)
             case Models.Report:
-                self._set_report_vars(values, param_values=kwargs, verbose=verbose)
+
+                self._set_report_vars(values, param_values=kwargs, verbose=verbose, clear_old=clear_old)
             case Models.Surface.SurfaceOrganicMatter:
                 if kwargs == {}:
                     accepted_params = {'SurfOM', 'InitialCPR', 'InitialResidueMass', 'InitialCNR', 'IncorporatedP'}
@@ -2039,545 +2040,371 @@ class CoreModel(PlotManager):
         self.save()
         return self
 
-    def edit_model(self, model_type: str, model_name: str,
-                   simulations: Union[str, list] = 'all', exclude=None,
-                   verbose=False, clear_old=False, **kwargs):
+    @property
+    def editor(self):
+        from apsimNGpy.core.model_editor import ModelEditor
+        return ModelEditor(self)
+
+    @timer
+    def _edit_model(self, *args, **kwargs):
+        return self.editor.edit(*args, **kwargs)
+
+    def edit_model(
+            self,
+            model_type: str,
+            model_name: str,
+            simulations: Union[str, list] = "all",
+            exclude=None,
+            verbose=False,
+            clear_old=False,
+            **kwargs,
+    ):
         """
-        Modify various APSIM model components by specifying the model type and name across given simulations.
+        Modify APSIM model components by model type/name across selected simulations.
 
-        .. tip::
-
-           Editing APSIM models in **apsimNGpy** does *not* require placing the
-           target model inside a *Replacements* folder or node. However, when
-           modifying **cultivar parameters**, it can be helpful to include a
-           Replacements folder containing the relevant plant definition hosting
-           that cultivar. In many cases, apsimNGpy will handle this automatically.
-
-        Selective Editing
-        -----------------
-        Selective editing allows you to apply modifications only to certain
-        simulations. This is *not* possible when the same model instance is shared
-        through a common Replacements folder. For reliable selective editing,
-        each simulation should ideally reference a uniquely named model.
-        However, even when model names are not unique, apsimNGpy still enables
-        targeted editing through two mechanisms:
-
-        1. **Exclusion strategy**
-           You can explicitly *exclude* simulations to which the edits should
-           **not** be applied.
-
-        2. **Specification strategy**
-           You can explicitly *specify* which simulations should have their
-           models edited or replaced with new parameters.
-
-
-        Parameters
-        ----------
-        model_type: str, required
-            Type of the model component to modify (e.g., 'Clock', 'Manager', 'Soils.Physical', etc.).
-
-        simulations: Union[str, list], optional
-            A simulation name or list of simulation names in which to search. Defaults to all simulations in the model.
-
-        model_name: str, required
-            Name of the model instance to modify.
-        verbose: bool, optional
-            print the status of the editing activities
-        exclude: Union[str, None, Iterable[str]], optional,default is None
-            Added in 'V0.39.10.20'+. It is used to specify which simulation should be skipped during the editing process, in case there are more than simulations
-        clear_old: bool default is False.
-            used to clear exisiting values, meaning the new replacements requires to completely overide the olds one regardless of the value type
-
-        kwargs
-        ------
-
-        Additional keyword arguments specific to the model type. Atleast one key word argument is required. These vary by component:
-
-        Models.Climate.Weather:
-            `weather_file` (str): Path to the weather `.met` file.
-
-        Models.Clock:
-            Date properties such as `Start` and `End` in ISO format (e.g., '2021-01-01').
-
-        Models.Manager:
-            Variables to update in the Manager script using `update_mgt_by_path`.
-
-        Soils.Physical | Soils.Chemical | Soils.Organic | Soils.Water:
-            Variables to replace using `replace_soils_values_by_path`.
-
-            Valid `parameters` are shown below;
-
-            +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
-            | Soil Model Type  | **Supported key word arguments**                                                                                                     |
-            +==================+======================================================================================================================================+
-            | Physical         | AirDry, BD, DUL, DULmm, Depth, DepthMidPoints, KS, LL15, LL15mm, PAWC, PAWCmm, SAT, SATmm, SW, SWmm, Thickness, ThicknessCumulative  |
-            +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
-            | Organic          | CNR, Carbon, Depth, FBiom, FInert, FOM, Nitrogen, SoilCNRatio, Thickness                                                             |
-            +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
-            | Chemical         | Depth, PH, Thickness                                                                                                                 |
-            +------------------+--------------------------------------------------------------------------------------------------------------------------------------+
-
-        Models.Report:
-          report_name (str):
-             Name of the report model (optional depending on structure).
-          variable_spec`   (list[str] or str):
-             Variables to include in the report.
-          set_event_names` (list[str], optional):
-             Events that trigger the report.
-
-        Models.PMF.Cultivar:
-            commands (str):
-               APSIM path to the cultivar parameter to update.
-            values: (Any)
-               Value to assign.
-            cultivar_manager: (str)
-               Name of the Manager script managing the cultivar, which must contain the `CultivarName` parameter. Required to propagate updated cultivar values, as APSIM treats cultivars as read-only.
-
-        .. warning::
-
-            ValueError
-                If the model instance is not found, required kwargs are missing, or `kwargs` is empty.
-            NotImplementedError
-                If the logic for the specified `model_class` is not implemented.
-
-        Examples::
-
-            from apsimNGpy.core.apsim import ApsimModel
-            model = ApsimModel(model='Maize')
-
-        Example of how to edit a cultivar model::
-
-            model.edit_model(model_type='Cultivar',
-                 simulations='Simulation',
-                 commands='[Phenology].Juvenile.Target.FixedValue',
-                 values=256,
-                 model_name='B_110',
-                 new_cultivar_name='B_110_edited',
-                 cultivar_manager='Sow using a variable rule')
-
-        Edit a soil organic matter module::
-
-            model.edit_model(
-                 model_type='Organic',
-                 simulations='Simulation',
-                 model_name='Organic',
-                 Carbon=1.23)
-
-        Edit multiple soil layers::
-
-            model.edit_model(
-                 model_type='Organic',
-                 simulations='Simulation',
-                 model_name='Organic',
-                 Carbon=[1.23, 1.0])
-
-        Example of how to edit solute models::
-
-           model.edit_model(
-                 model_type='Solute',
-                 simulations='Simulation',
-                 model_name='NH4',
-                 InitialValues=0.2)
-           model.edit_model(
-                model_class='Solute',
-                simulations='Simulation',
-                model_name='Urea',
-                InitialValues=0.002)
-
-        Edit a manager script::
-
-           model.edit_model(
-                model_type='Manager',
-                simulations='Simulation',
-                model_name='Sow using a variable rule',
-                population=8.4)
-
-        Edit surface organic matter parameters::
-
-            model.edit_model(
-                model_type='SurfaceOrganicMatter',
-                simulations='Simulation',
-                model_name='SurfaceOrganicMatter',
-                InitialResidueMass=2500)
-
-            model.edit_model(
-                model_type='SurfaceOrganicMatter',
-                simulations='Simulation',
-                model_name='SurfaceOrganicMatter',
-                InitialCNR=85)
-
-        Edit Clock start and end dates::
-
-            model.edit_model(
-                model_type='Clock',
-                simulations='Simulation',
-                model_name='Clock',
-                Start='2021-01-01',
-                End='2021-01-12')
-
-        Edit report _variables::
-
-            model.edit_model(
-                model_type='Report',
-                simulations='Simulation',
-                model_name='Report',
-                variable_spec='[Maize].AboveGround.Wt as abw')
-
-        Multiple report _variables::
-
-            model.edit_model(
-                model_type='Report',
-                simulations='Simulation',
-                model_name='Report',
-                variable_spec=[
-                '[Maize].AboveGround.Wt as abw',
-                '[Maize].Grain.Total.Wt as grain_weight'])
-        the best way to edit cultivar with minimal error is to use a dict of commands as follows.
-
-        .. code-block:: python
-
-             params = {
-            "[Leaf].Photosynthesis.RUE.FixedValue": 1.8984705340394,
-            "[Phenology].GrainFilling.Target.FixedValue": 710,
-            "[Grain].MaximumGrainsPerCob.FixedValue": 810,
-            "[Phenology].FloweringToGrainFilling.Target.FixedValue": 215,
-            "[Phenology].MaturityToHarvestRipe.Target.FixedValue": 100,
-            "[Maize].Grain.MaximumPotentialGrainSize.FixedValue": 0.867411373063701,
-            "[Grain].MaximumNConc.InitialPhase.InitialNconc.FixedValue": 0.05,
-            '[Maize].Root.SpecificRootLength.FixedValue': 135,
-            '[Maize].Root.RootFrontVelocity.PotentialRootFrontVelocity.PreFlowering.RootFrontVelocity.FixedValue': 22,
-            '[Rachis].DMDemands.Structural.DMDemandFunction.MaximumOrganWt.FixedValue': 36
-        }
-
-        model.edit_model_by_path(model_type='Models.PMF.Cultivar, model_name='Dekalb_XL82',
-                                         commands=params,
-                                         cultivar_manager='Sow using a variable rule,
-                                         parameter_name='CultivarName'
-                                         )
-        You can edit a Sobol or Morris model as follows::
-
-            with ApsimModel('Morris') as sobol:
-                sobol.edit_model(model_type='Models.Morris', model_name='FallowSensitivity', Parameters=[
-                    dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
-                ], clear_old=False, NumPaths=200)
-                sobol.run()
-                sobol.get_simulated_output('SobolStatistics')
-                # raw results
-                df = sobol.results
-
-        .. seealso::
-
-           Related API: :meth:`edit_model_by_path`.
-
+        Notes
+        -----
+        This implementation keeps the existing public API, including cultivar aliases
+        such as cultivar_manager/parameter_name and manager_path/managers. Please ase EDIT_MODEL_DOC for more info.
         """
-        if isinstance(exclude, str):
-            exclude = {exclude}
 
-        elif not exclude:
+        if not kwargs:
+            raise ValueError("At least one keyword argument is required for editing.")
+
+        # ------------------------------------------------------------------
+        # Normalize exclude
+        # ------------------------------------------------------------------
+        if exclude is None:
             exclude = set()
+        elif isinstance(exclude, str):
+            exclude = {exclude}
+        else:
+            exclude = set(exclude)
 
-        if simulations == 'all' or simulations is None or simulations == MissingOption:
-            simulations = self.inspect_model('Models.Core.Simulation', fullpath=False)
-            simulations = [str(i) for i in simulations if i not in exclude]
-
+        # ------------------------------------------------------------------
+        # Resolve model type
+        # ------------------------------------------------------------------
         model_type_class = validate_model_obj(model_type)
-        replace_ments = self.get_replacements_node()
-        if (isinstance(simulations, Models.Core.Simulation) or
-                # if model is in the replacement folder
-                isinstance(simulations, Models.Core.Folder) and simulations.Name == 'Replacements'):
+
+        # ------------------------------------------------------------------
+        # Normalize simulations
+        # ------------------------------------------------------------------
+        if simulations == "all" or simulations is None or simulations == MissingOption:
+            simulations = self.inspect_model("Models.Core.Simulation", fullpath=False)
+            simulations = [str(i) for i in simulations if str(i) not in exclude]
+
+        # ------------------------------------------------------------------
+        # Build edit scope candidates
+        # ------------------------------------------------------------------
+        replacements = self.get_replacements_node()
+
+        if (
+                isinstance(simulations, Models.Core.Simulation)
+                or (
+                isinstance(simulations, Models.Core.Folder)
+                and simulations.Name == "Replacements"
+        )
+        ):
             edit_candidate_objects = [simulations]
         else:
             edit_candidate_objects = self.find_simulations(simulations)
-        if replace_ments is not None:
-            edit_candidate_objects.append(replace_ments)
 
-        def edit_object(obj):
-            sim = obj
+        if replacements is not None:
+            edit_candidate_objects.append(replacements)
 
+        # Remove excluded simulations and duplicates
+        unique_candidates = []
+        seen = set()
+
+        for obj in edit_candidate_objects:
+            name = getattr(obj, "Name", None)
+
+            if name in exclude:
+                continue
+
+            obj_id = id(obj)
+            if obj_id not in seen:
+                unique_candidates.append(obj)
+                seen.add(obj_id)
+
+        edit_candidate_objects = unique_candidates
+
+        if not edit_candidate_objects:
+            raise ValueError(
+                f"No editable simulations or replacement nodes were found for: {simulations}"
+            )
+
+        # ------------------------------------------------------------------
+        # Helpers
+        # ------------------------------------------------------------------
+        def _model_type_name(cls):
+            return getattr(cls, "__name__", str(cls))
+
+        def _safe_edit_instance(model_instance, model_cls):
+            if model_instance:
+                try:
+                    ModelTools.edit_instance(model_instance, **kwargs)
+                except AttributeError as err:
+                    try:
+                        accepted = self.inspect_settable_attributes(model_cls)
+                    except Exception:
+                        accepted = [
+                            attr[len("set_"):]
+                            for attr in dir(model_instance)
+                            if attr.startswith("set_")
+                        ]
+
+                    accepted_text = "\n".join(map(str, accepted))
+                    logger.info(f"Accepted attributes for {model_instance}: {accepted_text}")
+
+                    raise AttributeError(
+                        f"{err}. Allowed {model_instance} attributes are:\n{accepted_text}"
+                    ) from err
+
+        def _find_model_instance(scope):
             if is_higher_apsim_version():
-
-                model_instance = find_child(self.Simulations, model_type_class, model_name)
-
+                # Sobol and Morris are usually direct children of Simulations,
+                # not children of an individual Simulation.
+                lookup_scope = (
+                    self.Simulations
+                    if model_type_class in {Models.Sobol, Models.Morris}
+                    else scope
+                )
+                found = find_child(lookup_scope, model_type_class, model_name)
             else:
-                model_instance = self.Simulations.FindDescendant[model_type_class](model_name)
-            model_to_cast = getattr(model_instance, "Model", model_instance)
-            model_instance = CastHelper.CastAs[model_type_class](model_to_cast)
+                found = self.Simulations.FindDescendant[model_type_class](model_name)
+
+            if found is None and not scope.Name=='Replacements':
+                raise ValueError(
+                    f"Model '{model_name}' of type '{_model_type_name(model_type_class)}' "
+                    f"was not found under '{getattr(scope, 'Name', scope)}'."
+                )
+
+            model_to_cast = getattr(found, "Model", found)
+            return CastHelper.CastAs[model_type_class](model_to_cast)
+
+        def _edit_sensitivity_model(model_instance):
+            from System.Collections.Generic import List
+            from Models.Sensitivity import Parameter
+
+            required = {"Name", "Path", "LowerBound", "UpperBound"}
+            parameters_all = List[Parameter]()
+            parameter_values = {}
+
+            if not clear_old:
+                for p in list(model_instance.Parameters):
+                    parameter_values[p.Path] = {
+                        "Name": p.Name,
+                        "Path": p.Path,
+                        "LowerBound": p.LowerBound,
+                        "UpperBound": p.UpperBound,
+                    }
+
+            for pp in kwargs.get("Parameters", []):
+                if not isinstance(pp, dict):
+                    raise TypeError(
+                        f"Invalid parameter specification. Expected dict, got {type(pp)}."
+                    )
+
+                missing = required - pp.keys()
+                if missing:
+                    raise ValueError(
+                        f"Missing required parameter keys: {', '.join(sorted(missing))}"
+                    )
+
+                parameter_values[pp["Path"]] = pp
+
+            for p in parameter_values.values():
+                parameter = Models.Sensitivity.Parameter()
+
+                for k, v in p.items():
+                    if not hasattr(parameter, k):
+                        raise AttributeError(
+                            f"'{k}' is not a valid sensitivity parameter attribute. "
+                            "Valid attributes are: Name, Path, LowerBound, UpperBound."
+                        )
+                    setattr(parameter, k, v)
+
+                parameters_all.Add(parameter)
+
+            model_instance.Parameters = parameters_all
+
+            remaining_kwargs = dict(kwargs)
+            remaining_kwargs.pop("Parameters", None)
+
+            for k, v in remaining_kwargs.items():
+                try:
+                    setattr(model_instance, k, v)
+                except AttributeError as err:
+                    morris_attrs = (
+                        "AggregationVariableName, NumPaths, TableName, Name, "
+                        "NumIntervals, Jump, Parameters"
+                    )
+                    sobol_attrs = (
+                        "AggregationVariableName, NumPaths, TableName, Name, Parameters"
+                    )
+
+                    raise AttributeError(
+                        f"Invalid attribute '{k}' for sensitivity model. "
+                        f"Valid Sobol attributes include: {sobol_attrs}. "
+                        f"Valid Morris attributes include: {morris_attrs}."
+                    ) from err
+
+        def _edit_cultivar():
+            plant_name = kwargs.get("plant")
+            if plant_name is None:
+                raise ValueError(
+                    "Please specify the plant name hosting the cultivar, e.g. "
+                    "`plant='Maize'` or `plant='Soybean'`."
+                )
+
+            commands = kwargs.get("commands")
+            if commands is None:
+                raise ValueError(
+                    "`commands` is required when editing a cultivar. "
+                    "Use a dict, list, or tuple of APSIM cultivar commands."
+                )
+
+            rename = (
+                    kwargs.get("rename")
+                    or kwargs.get("new_cultivar_name")
+                    or f"e_{plant_name}_{model_name}"
+            )
+
+            cc = CreatNewCultivar(
+                model=self,
+                template=model_name,
+                plant=plant_name,
+            )
+
+            match commands:
+                case dict():
+                    cc.edit_by_cmd_pairs(name=rename, commands=commands)
+
+                case list() | tuple() | ValuesView() | KeysView():
+                    values = kwargs.get("values", [])
+
+                    if not values:
+                        cc.edit_by_cmd_iterable(rename, commands=commands)
+                    else:
+                        cc.edit_by_cmd_values(
+                            rename,
+                            commands=commands,
+                            values=values,
+                        )
+
+                case _:
+                    raise TypeError(
+                        f"Unsupported type for `commands`: {type(commands).__name__}. "
+                        "Expected dict, list, tuple, ValuesView, or KeysView."
+                    )
+
+            manager_map = kwargs.get("manager_path") or kwargs.get("managers")
+
+            # Backward-compatible documented API:
+            cultivar_manager = kwargs.get("cultivar_manager")
+            parameter_name = kwargs.get("parameter_name", "CultivarName")
+
+            if manager_map is None and cultivar_manager is not None:
+                manager_map = {cultivar_manager: parameter_name}
+
+            sowed = kwargs.get("sowed", False)
+
+            if not isinstance(manager_map, dict) and not sowed:
+                raise ValueError(
+                    "For cultivar editing, provide a manager mapping. Example:\n"
+                    "`manager_path={'Sow using a variable rule': 'CultivarName'}`\n"
+                    "or use the documented API:\n"
+                    "`cultivar_manager='Sow using a variable rule', "
+                    "parameter_name='CultivarName'`."
+                )
+
+            if isinstance(manager_map, dict):
+                for manager, param_name in manager_map.items():
+                    cc.attach_cultivar(
+                        name=rename,
+                        manager=manager,
+                        param_name=param_name,
+                    )
+
+        def edit_object(scope):
+            model_instance = _find_model_instance(scope)
 
             match type(model_instance):
                 case Models.WaterModel.WaterBalance:
-                    try:
-                        ModelTools.edit_instance(model_instance, **kwargs)
-                    except AttributeError as ate:
-                        accepted_attributes = self.inspect_settable_attributes(Models.WaterModel.WaterBalance)
-                        ap = '\n'.join(accepted_attributes)
-                        logger.info(f'some of the accepted attributes are {ap}')
-                        raise AttributeError(
-                            f"{str(ate)}. Allowed {model_instance} attributes are: {ap}"
-                        ) from ate
+                    _safe_edit_instance(
+                        model_instance,
+                        Models.WaterModel.WaterBalance,
+                    )
+
                 case Models.Morris | Models.Sobol:
-                    from System.Collections.Generic import List
-                    from Models.Sensitivity import Parameter
-
-                    parameters_all = List[Parameter]()
-
-                    paVs = {}
-                    params = list(model_instance.Parameters)
-                    if not clear_old:
-                        for p in params:
-                            paVs[p.Path] = dict(Name=p.Name, LowerBound=p.LowerBound, UpperBound=p.UpperBound,
-                                                Path=p.Path)
-                    for pp in kwargs.get('Parameters', {}):
-                        if not isinstance(pp, dict):
-                            raise TypeError(f"Invalid data type expected dict got {type(pp)}")
-                        required = {"Name", "Path", "LowerBound", "UpperBound"}
-
-                        missing = required - pp.keys()
-
-                        if missing:
-                            raise ValueError(
-                                f"Missing required keys: {', '.join(sorted(missing))}"
-                            )
-                        path = pp['Path']
-                        paVs[path] = pp
-                    for _, p in paVs.items():
-                        parameter = Models.Sensitivity.Parameter()
-
-                        for k, v in p.items():
-                            if not hasattr(parameter, k):
-                                raise AttributeError(
-                                    f'{k} is not a valid attributee valid are Path, Name LowerBound, and UpperBound')
-                            setattr(parameter, k, v)
-                        parameters_all.Add(parameter)
-                    model_instance.Parameters = parameters_all
-                    kwa = dict(kwargs)
-                    kwa.pop('Parameters', None)
-                    for k, v in kwa.items():
-                        if hasattr(model_instance, k):
-                            setattr(model_instance, k, v)
-                        else:
-                            morris = "AggregationVariableName, NumPaths,TableName, Name, NumIntervals,Jump, and Parameters"
-                            raise AttributeError(
-                                f'Invalid attribute {k} valid one are; AggregationVariableName, NumPaths,TableName, Name, and Parameters'
-                                f'for Models.Sobol \n or {morris} ')
-                    self.save()
-                    # recreate
+                    _edit_sensitivity_model(model_instance)
 
                 case Models.Climate.Weather:
-                    self._set_weather_path(model_instance, param_values=kwargs, verbose=verbose)
+                    self._set_weather_path(
+                        model_instance,
+                        param_values=kwargs,
+                        verbose=verbose,
+                    )
+
                 case Models.Clock:
-                    self._set_clock_vars(model_instance, param_values=kwargs, verbose=verbose)
+                    self._set_clock_vars(
+                        model_instance,
+                        param_values=kwargs,
+                        verbose=verbose,
+                    )
 
                 case Models.Manager:
-                    # self.update_manager(scope=sim, manager_name=model_name, **kwargs)
-                    manager = model_instance
-                    g_parameters = manager.Parameters
-                    # set the arguments
-                    for i in range(len(list(g_parameters))):
-                        _param = g_parameters[i].Key
-                        # loop through arguments
-                        if _param in kwargs:
-                            manager.Parameters[i] = KeyValuePair[String, String](_param, f"{kwargs[_param]}")
-                            # remove the successfully processed keys
-                            kwargs.pop(_param)
-                    if len(kwargs.keys()) > 0:
-                        logger.error(f"The following {kwargs} were not found in {manager.FullPath}")
+                    self.update_manager(
+                        scope=scope,
+                        manager_name=model_name,
+                        **kwargs,
+                    )
 
-                case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
-                    try:
-                        # Accept key word arguments
-                        ModelTools.edit_instance(model_instance, **kwargs)
-                    except AttributeError as ate:
+                case (
+                Models.Soils.Physical
+                | Models.Soils.Chemical
+                | Models.Soils.Organic
+                | Models.Soils.Water
+                | Models.Soils.Solute
+                ):
+                    _safe_edit_instance(model_instance, model_type_class)
 
-                        lp = [attr[len('set_'):] for attr in dir(model_instance) if attr.startswith('set_')]
-                        accepted_attributes = '\n'.join(lp)
-                        logger.info(f'some of the accepted attributes are {accepted_attributes}')
-                        raise AttributeError(
-                            f"{str(ate)}. Allowed {model_instance} attributes are: {accepted_attributes}"
-                        ) from ate
-                    # self.replace_soils_values_by_path(node_path=model_instance.FullPath, **kwargs)
                 case Models.Surface.SurfaceOrganicMatter:
-                    try:
-                        ModelTools.edit_instance(model_instance, **kwargs)
-                    except AttributeError as ate:
-                        accepted_attributes = self.inspect_settable_attributes(Models.Surface.SurfaceOrganicMatter)
-                        # Provide user with acceptable attributes
-                        accept = "\n".join(accepted_attributes)
-                        logger.info(f'some of the accepted attributes are {accept}')
-                        raise AttributeError(
-                            f"{str(ate)}. Allowed {model_instance} attributes are: {accept}"
-                        ) from ate
-                    # self._set_surface_organic_matter(model_instance, param_values=kwargs, verbose=verbose)
+                    _safe_edit_instance(
+                        model_instance,
+                        Models.Surface.SurfaceOrganicMatter,
+                    )
 
                 case Models.Report:
-                    self._set_report_vars(model_instance, param_values=kwargs, verbose=verbose)
+                    self._set_report_vars(
+                        model_instance,
+                        param_values=kwargs,
+                        verbose=verbose,
+                        clear_old=clear_old,
+                    )
 
                 case Models.MicroClimate:
-                    try:
-                        ModelTools.edit_instance(model_instance, **kwargs)
-                    except AttributeError as e:
-                        attribs = self.inspect_settable_attributes(model_type=Models.MicroClimate)
-                        at = ', '.join(attribs)
-
-                        # Log helpful information BEFORE raising the error
-                        logger.error(
-                            f"Invalid attribute in MicroClimate model. "
-                            f"Allowed attributes include: {at}"
-                        )
-
-                        # Re-raise with additional context
-                        raise AttributeError(
-                            f"{str(e)}. Allowed MicroClimate attributes are: {at}"
-                        ) from e
+                    _safe_edit_instance(
+                        model_instance,
+                        Models.MicroClimate,
+                    )
 
                 case Models.PMF.Cultivar:
-                    plant_name = kwargs.get('plant')
-                    if plant_name is None:
-                        raise ValueError(
-                            f'Please specify the plant name e.g., Maize, Soybean etc hosting the suggested cultivar: {model_name}')
-                    rename = kwargs.get('rename', f"e_{plant_name}_{model_name}")
-
-                    cc = CreatNewCultivar(model=self, template=model_name, plant=plant_name)
-                    commands = kwargs.get('commands')
-                    match commands:
-                        case dict():
-                            # Example: {'[Phenology].Juvenile.Target.FixedValue':'200'}
-
-                            cc.edit_by_cmd_pairs(name=rename, commands=commands)
-
-                        case list() | tuple() | ValuesView() | KeysView():
-                            values = kwargs.get("values", [])
-
-                            if not values:
-                                # Example: ['[Phenology].Juvenile.Target.FixedValue=200']
-                                cc.edit_by_cmd_iterable(rename, commands=commands)
-
-                            else:
-                                # Example:
-                                # commands = ['[Phenology].Juvenile.Target.FixedValue']
-                                # values = [200]
-                                cc.edit_by_cmd_values(rename, commands=commands, values=values)
-
-                        case _:
-                            raise TypeError(
-                                f"Unsupported type for 'commands': {type(commands).__name__}. "
-                                "Expected dict, list, or tuple."
-                            )
-
-                    # kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
-
-                    mp = kwargs.get('manager_path', None) or kwargs.get('managers')
-                    sowed = kwargs.get('sowed', False)
-                    if not isinstance(mp, dict) and not sowed:
-                        raise ValueError(
-                            f"For Cultivar managers, expected a dict, but got {type(mp).__name__}. "
-                            "Please provide a dictionary where keys are manager paths or names "
-                            "and values are parameter names. Example: `{'Sow using a variable rule':'CultivarName'}"
-                        )
-                    for k, v in mp.items():
-                        cc.attach_cultivar(name=rename, manager=k, param_name=v)
-
-                    # # Ensure crop replacements exist under Replacements
-                    # if 'Replacements' not in self.inspect_model('Models.Core.Folder', fullpath=False):
-                    #     for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
-                    #         self.add_crop_replacements(_crop=crop_name)
-                    #
-                    # _cultivar_names = self.inspect_model('Cultivar', fullpath=False)
-                    #
-                    # # Extract input parameters
-                    # commands = kwargs.get("commands")
-                    # if isinstance(commands, dict):
-                    #     commands, values = commands.items()
-                    # else:
-                    #     values = kwargs.get("values")
-                    #
-                    # cultivar_manager = kwargs.get("cultivar_manager")
-                    # new_cultivar_name = kwargs.get("new_cultivar_name", None)
-                    # cultivar_manager_param = kwargs.get("parameter_name", 'CultivarName')
-                    #
-                    # plant_name = (kwargs.get('plant') or
-                    #               trace_cultivar(self.Simulations, model_name).get(model_name))
-                    #
-                    # # Input validation
-                    # if not new_cultivar_name:
-                    #     new_cultivar_name = f"{model_name}-{plant_name}-edited01"
-                    #
-                    # if not cultivar_manager:
-                    #     raise ValueError("Please specify a cultivar manager using 'cultivar_manager=\"your_manager\"'")
-                    #
-                    # evaluate_commands_and_values_types(commands=commands, values=values)
-                    #
-                    # # Get replacement folder and source cultivar model
-                    # replacements = get_or_check_model(self.Simulations, Models.Core.Folder, 'Replacements',
-                    #                                   action='get')
-                    #
-                    # get_or_check_model(replacements, Models.Core.Folder, 'Replacements',
-                    #                    action='delete')
-                    # cultivar_fallback = get_or_check_model(self.Simulations, Models.PMF.Cultivar, model_name,
-                    #                                        action='get')
-                    # cultivar = ModelTools.CLONER(cultivar_fallback)
-                    #
-                    # # Update cultivar parameters
-                    # cultivar_params = self._cultivar_params(cultivar)
-                    #
-                    # if isinstance(values, str):
-                    #     cultivar_params[commands] = values.strip()
-                    # elif isinstance(values, (int, float)):
-                    #     cultivar_params[commands] = values
-                    # else:
-                    #     for cmd, val in zip(commands, values):
-                    #         cultivar_params[cmd.strip()] = val.strip() if isinstance(val, str) else val
-                    #
-                    # # Apply updated commands
-                    # updated_cmds = [f"{k.strip()}={v}" for k, v in cultivar_params.items()]
-                    # cultivar = CastHelper.CastAs[Models.PMF.Cultivar](cultivar)
-                    # cultivar.set_Command(updated_cmds)
-                    #
-                    # # Attach cultivar under a plant model
-                    # try:
-                    #     plant_model = get_or_check_model(replacements, Models.PMF.Plant, plant_name,
-                    #                                      action='get')
-                    #     if not plant_model:
-                    #         raise RuntimeError(f'plant {plant_name} not found')
-                    # except ValueError:
-                    #     "an error occured"
-                    #     plant_model = find_child(parent=replacements, child_class=Models.PMF.Plant, child_name='Maize')
-                    #
-                    # # Remove existing cultivar with same name
-                    # get_or_check_model(replacements, Models.PMF.Cultivar, new_cultivar_name, action='delete')
-                    #
-                    # # Rename and reattach cultivar
-                    # cultivar.Name = new_cultivar_name
-                    # if ModelTools.ADD:
-                    #     # most likely old APSIM models
-                    #     ModelTools.ADD(cultivar, plant_model)
-                    # else:
-                    #     plant_model.Children.Add(cultivar)
-                    #
-                    # # Update cultivar manager script
-                    # self.edit_model(model_type=Models.Manager, model_name=cultivar_manager, simulations=simulations,
-                    #                 **{cultivar_manager_param: new_cultivar_name})
-                    #
-                    # self.save()
-                    #
-                    # if verbose:
-                    #     logger.info(f"Edited Cultivar '{model_name}' and saved it as '{new_cultivar_name}'")
+                    _edit_cultivar()
 
                 case _:
-                    if not model_instance:
-                        raise ValueError(
-                            f"{model_name} and model type: {model_type} was resolved to  None, implying does not exist in the simulation tree")
-                    pass
-                    # if not model_instance  or not model_instance and not replace_ments:
-                    #     raise ValueError(f"{model_name} of class {model_type} was not found or does not exist in the "
-                    #                      f"current simulations")
-                    # if not replace_ments and not isinstance(model_type, Models.Core.Folder):
-                    #     raise NotImplementedError(f"No edit method implemented for model type {type(model_instance)}")
+                    _safe_edit_instance(model_instance, model_type_class)
 
-        for _ in map(edit_object, edit_candidate_objects):
-            pass
+        # ------------------------------------------------------------------
+        # Apply edits
+        # ------------------------------------------------------------------
+        for candidate in edit_candidate_objects:
+            edit_object(candidate)
 
         self.ran_ok = False
         return self
+
 
     @staticmethod
     def inspect_settable_attributes(model_type):
@@ -2670,7 +2497,7 @@ class CoreModel(PlotManager):
             return ModelTools.find_child(replacement, model_type, child_name=model_name)
 
     def add_report_variable(self, variable_spec: Union[list, str, tuple], report_name: str = None,
-                            set_event_names: Union[str, list] = None, simulations=None):
+                            set_event_names: Union[str, list] = None, simulations=None, clear_old=False):
         """
         This adds a report variable to the end of other _variables, if you want to change the whole report use change_report
 
@@ -2736,8 +2563,9 @@ class CoreModel(PlotManager):
             if isinstance(variable_spec, str):
                 variable_spec = [variable_spec]
             get_report = self._get_report(report_name, sim)
-            get_cur_variables = list(get_report.VariableNames)
+            get_cur_variables = list(get_report.VariableNames) if not clear_old else []
             get_cur_variables.extend(variable_spec)
+
             # remove any duplicate after appending
             de_duped = list(dict.fromkeys(get_cur_variables))
             get_cur_variables = de_duped
@@ -5928,7 +5756,8 @@ class CoreModel(PlotManager):
 
 
 APSIMNG = CoreModel
-
+# Attach docs
+CoreModel.edit_model.__doc__ = EDIT_MODEL_DOC
 gc.collect()
 if __name__ == '__main__':
     from pathlib import Path
@@ -6015,8 +5844,9 @@ if __name__ == '__main__':
                                                                                 model_name='Sow using a variable rule',
                                                                                 Population=12))
     # fixed_model.open_in_gui()
-    with CoreModel('Morris') as mmm:
-        mmm.edit_model(model_type=Models.Morris, model_name='FallowSensitivity', Parameters=[
+    with CoreModel('Sobol') as mmm:
+        mmm.edit_model(model_type=Models.Sobol, model_name='Sobol', Parameters=[
             dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
         ])
+        mmm.save(reload=True)
         mmm.open_in_gui(watch=True)

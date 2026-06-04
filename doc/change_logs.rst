@@ -11,16 +11,18 @@ API improvements
   from external ``ApsimModel`` objects in addition to duplicating
   simulations already present within the current model instance.
 
-  Key features:
+Advantages:
 
-  - Append simulations from external ``ApsimModel`` objects
-  - Duplicate existing simulations within the current model
-  - Optional renaming of appended simulations
-  - Improved flexibility for simulation aggregation and scenario
-    construction workflows
-  - Supports cross-model simulation transfer
+- Reuse simulations across APSIM models without manual copying.
+- Build complex scenario collections from multiple source models with minimal effort.
+- Quickly create simulation variants by duplicating existing simulations.
+- Avoid naming conflicts through optional simulation renaming.
+- Improve productivity when assembling large simulation ensembles.
+- Improves execution efficiency by allowing multiple simulations to be managed within a single APSIM model instance, reducing the overhead associated with repeatedly loading and initializing `Models.exe`.
+- Rapidly generate multiple simulation scenarios using the ``payload`` argument, enabling efficient exploration of management, soil, weather, or cultivar variations and their impacts on model outputs.
+- Simplify what-if analysis by automatically creating simulation variants from different input configurations, reducing the effort required to evaluate alternative strategies and outcomes.
 
-  Basic example::
+Basic example::
 
       from apsimNGpy import ApsimModel
       base_model =ApsimModel('Maize')
@@ -31,7 +33,7 @@ API improvements
           rename="Simulation2"
       )
 
-  Duplicating an existing simulation::
+Duplicating an existing simulation::
 
       from apsimNGpy import ApsimModel
       model =ApsimModel('Maize')
@@ -39,7 +41,7 @@ API improvements
       model[0]
           rename="Simulation_copy"
       )
-# Edit the added simulation on the fly::
+Edit the added simulation on the fly::
 
         with ApsimModel('Maize') as model:
             model.append_simulation(simulation=model[0], rename='pop12',
@@ -51,15 +53,14 @@ API improvements
   .. note::
 
      This method should not be used with ``ExperimentManager`` objects,
-     even though ``ExperimentManager`` inherits from ``ApsimModel``.
-     Experiment-related simulation structures are managed differently
+     even though ``ExperimentManager`` inherits from ``ApsimModel``. These objects supports one base simulation
      and may produce unintended behavior when appended directly.
 
      Normally you may need to edit the newly edited simulation surgically to make it unique from the existing simulation but
      the method allows editing via key word payload which could be a dict or a list of dicts as follows::
-     model.append_simulation(fixed_model[0], rename='clone1', payload=dict(model_type='Models.Manager',
+     model.append_simulation(fixed_model[0], rename='clone1', [payload=dict(model_type='Models.Manager',
                                                                                         model_name='Sow using a variable rule',
-                                                                                        Population=12))
+                                                                                        Population=12)])
 
 
   For additional usage examples and implementation details see::
@@ -82,44 +83,82 @@ API improvements
   This update enhances robustness model editing  and generation and usability for workflows involving
   model customization, scenario generation, and dynamic node manipulation.
 
-* **``clone_simulation`` method**
+Added ``clone_simulation`` method
+----------------------------------
    Added support for cloning existing simulations with a new name, enabling users to easily create and manage multiple simulation
    scenarios within the same model. This update facilitates
    comparative analyses (e.g., varying management practices such as fertilization rates) while preserving the original simulation configuration.
-   see doc; :meth:`~apsimNGpy.core.ApsimModel.clone_simulation`. see example below::
+   see doc; :meth:`~apsimNGpy.core.ApsimModel.clone_simulation`. see example below:
 
-     from apsimNGpy import ApsimModel
-     sim_model = ApsimModel("Maize")
-     population=10
-     sim_name = f"sim_{population}"
-     sim_model.clone_simulation(rename=sim_name, base_simulation=0)
-     # edit the  created simulations
-     sim_model.edit_model("Models.Manager", 'Sow using a variable rule', simulations=sim_name, Population =10)
-     # edit the prebious simulation to 4
-     sim_model.edit_model("Models.Manager", 'Sow using a variable rule', simulations'='Simulation, Population =4)
-     # now we have two simulations in our folder
-     sim_model.inspect_model('Simulation')
-     #['.Simulations.Simulation', '.Simulations.sim_10']
-     # a simulation ID is created in the reports table, but we cant explicitly know which one is associated with simulation name
-     # so, add it in the table as follows;
-     sim_model.edit_model(model_type='Models.Report', model_name='Report',
-                              variable_spec=['[Simulation].Name as Simulations'])
-     sim_model.run()
-     # groupby simulations
-     sim_model.results.groupby('Simulations')['Yield'].mean()
-     #Out[17]:
-        Simulations
-        Simulation    4786.670976
-        sim_10        6287.776688
-        Name: Yield, dtype: float64
+.. code-block:: python
 
-* **``has_node`` method**
+    from apsimNGpy import ApsimModel
+    model = ApsimModel("Maize")
+    # Create a new simulation with a different population
+    population = 10
+    simulation_name = f"sim_{population}"
+    model.clone_simulation(
+        rename=simulation_name,
+        base_simulation=0,
+    )
+
+    # Update the cloned simulation
+    model.edit_model(
+        model_type="Models.Manager",
+        model_name="Sow using a variable rule",
+        simulations=simulation_name,
+        Population=population,
+    )
+
+    # Update the original simulation
+    model.edit_model(
+        model_type="Models.Manager",
+        model_name="Sow using a variable rule",
+        simulations="Simulation",
+        Population=4,
+    )
+
+    # Verify that two simulations now exist in the model
+    model.inspect_model("Simulation")
+
+    # Output:
+    # ['.Simulations.Simulation', '.Simulations.sim_10']
+
+    # APSIM assigns a SimulationID in the report tables, but the
+    # simulation name is often easier to interpret during analysis.
+    # Add the simulation name to the report output.
+    model.edit_model(
+        model_type="Models.Report",
+        model_name="Report",
+        variable_spec=[
+            "[Simulation].Name as SimulationName"
+        ],
+    )
+
+    model.run()
+
+    # Compare average yield by simulation
+    model.results.groupby("SimulationName")["Yield"].mean()
+
+    # Output:
+    #
+    # SimulationName
+    # Simulation    4786.670976
+    # sim_10        6287.776688
+    # Name: Yield, dtype: float64
+
+
+Added ``has_node`` method
+---------------------------------
 
   Added a new ``has_node`` method that allows users to check whether a given
   node name or path exists within the current APSIM model or specified scope.
   see doc; :meth:`~apsimNGpy.core.ApsimModel.has_node`
 
-Added switch_wm_to_swim3() to simplify replacing the default APSIM water balance model with the physically based SWIM3 module.
+Added switch_wm_to_swim3 method
+----------------------------------
+
+This method to simplifies replacing the default APSIM water balance model with the physically based SWIM3 module.
 
 New Features
    - Automatically replaces the existing soil water model with Models.Soils.Swim3
@@ -153,7 +192,7 @@ SWIM3 model parameters can can also be declared as follows::
                        "Diagnostics": False
             }
             )
-for more information see:
+for more information see::
 
    help(model.switch_wm_to_swim3)
 

@@ -4,23 +4,23 @@ import dataclasses
 import gc
 import os
 import sys
-from functools import partial, cache
+from functools import partial
 from pathlib import Path
 from typing import Iterable
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 import sqlalchemy
+from pydantic import BaseModel
 
 from apsimNGpy import is_scalar
-from apsimNGpy.starter import CLR
-from pydantic import BaseModel
-from typing import Optional
+from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_loader import get_node_by_path, Models
-from xlwings import view
-from apsimNGpy.sensitivity.helpers import (split_apsim_path_by_sep, group_candidate_params, default_n, define_problem,
+from apsimNGpy.sensitivity.helpers import (default_n, define_problem,
                                            generate_default_db_path)
 from apsimNGpy.settings import logger
-from apsimNGpy.core.apsim import ApsimModel
+from apsimNGpy.starter import CLR
 
 dataError = sqlalchemy.exc.OperationalError
 
@@ -193,7 +193,7 @@ class ConfigProblem:
         db_path = generate_default_db_path(table_prefix)
         n_cores = core_count(n_cores, threads=threads)
         dF = pd.DataFrame(X)
-        view(dF)
+
 
         def run_in_multi_core(db):
 
@@ -230,7 +230,7 @@ class ConfigProblem:
                     data.reset_index(drop=True, inplace=True)
                     data.sort_values(by=self.index_id, inplace=True)
                     # from xlwings import view
-                    view(data)
+
                     out_df[output] = data[output]
 
                 out = out_df.to_numpy()
@@ -700,18 +700,18 @@ if __name__ == "__main__":
     #         "calc_second_order": True,
     #     },
     # )
-    # ccMorris = cc.build_sense_model(method="morris", n_cores=10,
-    #                                 sample_options={
-    #                                     'seed': 42,
-    #                                     "num_levels": 6,
-    #                                     "optimal_trajectories": 6,
-    #                                 },
-    #                                 analyze_options={
-    #                                     'conf_level': 0.95,
-    #                                     "num_resamples": 1000,
-    #                                     "print_to_console": True,
-    #                                     'seed': 42
-    #                                 }, )
+    ccMorris = cc.build_sense_model(method="morris", n_cores=10,N=1000,
+                                    sample_options={
+                                        'seed': 42,
+                                        "num_levels": 6,
+                                        "optimal_trajectories": 6,
+                                    },
+                                    analyze_options={
+                                        'conf_level': 0.95,
+                                        "num_resamples": 1000,
+                                        "print_to_console": True,
+                                        'seed': 42
+                                    }, )
     runner = ConfigProblem(
         base_model="Maize",
         params=params,

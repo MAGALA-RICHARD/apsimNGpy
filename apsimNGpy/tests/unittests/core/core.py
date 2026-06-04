@@ -138,7 +138,9 @@ class TestCoreModel(BaseTester):
             model.update_mgt(management=mgt_script)
             # extract user infor
             value = model.inspect_model_parameters('Manager', simulations='Simulation',
-                                                   model_name='Fertilise at sowing', parameters='Amount')
+                                                   model_name='Fertilise at sowing', parameters='Parameters')
+            value = value.get('Parameters', value)
+
             amountIn = float(value['Amount'])
             self.assertEqual(amountIn, Amount)
 
@@ -592,13 +594,17 @@ class TestCoreModel(BaseTester):
         with apsim.ApsimModel("Maize") as test_ap_sim:
             out_cultivar = 'B_110-e'
             new_juvenile = 289.777729777
-            com_path = f'[Phenology].Juvenile.Target.FixedValue = {new_juvenile}'
-            test_ap_sim.edit_model(model_type='Cultivar', model_name='B_110', new_cultivar_name=out_cultivar,plant='Maize',
-                                   commands=[com_path],  cultivar_manager='Sow using a variable rule')
+            base_path = '[Phenology].Juvenile.Target.FixedValue'.strip()
+            com_path = f'{base_path} = {new_juvenile}'
+            test_ap_sim.edit_model(model_type='Models.PMF.Cultivar', model_name='B_110', new_cultivar_name=out_cultivar,
+                                   plant='Maize',
+                                   commands=(com_path,), rename=out_cultivar,
+                                   managers={'Sow using a variable rule': 'CultivarName'})
 
             # first we check the current '[Phenology].Juvenile.Target.FixedValue': '211'
-            cp = test_ap_sim.inspect_model_parameters(model_type='Cultivar', model_name=out_cultivar)
-            self.assertEqual(new_juvenile, float(cp.get(com_path)))
+            cp = test_ap_sim.inspect_model_parameters(model_type='Models.PMF.Cultivar', model_name=out_cultivar)
+
+            self.assertEqual(new_juvenile, float(cp.get(base_path)))
             self.paths.add(test_ap_sim.path)
             test_ap_sim.clean_up()
 
@@ -625,7 +631,7 @@ class TestCoreModel(BaseTester):
     def test_inspect_model_parameters(self):
         with apsim.ApsimModel("Maize") as model:
             w_file = model.inspect_model_parameters(model_type='Weather', simulations='Simulation',
-                                                    model_name='Weather')
+                                                    model_name='Weather')['FileName']
             self.assertIsInstance(w_file, str, msg='Inspect weather model parameters failed, when simulation is a str')
             # test a list of simulations
             w_file = model.inspect_model_parameters(model_type='Weather', simulations=['Simulation'],

@@ -66,7 +66,8 @@ Edit the added simulation on the fly::
   For additional usage examples and implementation details see::
 
       help(model.append_simulation)
-- ** :meth:`~apsimNGpy.core.apsim.ApsimModel.add_node_from` method**
+- ** Added add_node_from` method**
+------------------------------------------
 
   Added a utility for transferring nodes between APSIM models with improved
   control and safety. The method now enforces **keyword-only arguments**

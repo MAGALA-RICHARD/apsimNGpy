@@ -72,12 +72,14 @@ Define APSIM model inputs
 
 .. code-block:: python
 
-     params = {
-            ".Simulations.Simulation.Field.Sow using a variable rule?Population": (2, 10),
-            ".Simulations.Simulation.Field.Fertilise at sowing?Amount": (0, 300),
-            # ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82?[Leaf].Photosynthesis.RUE.FixedValue": (
-            #     1.2, 2.2),
-        }
+      params = [
+        {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
+        {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300),
+         },
+        dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+             param="[Leaf].Photosynthesis.RUE.FixedValue", bounds=(
+                0.7, 2.2), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize')
+    ]
 .. tip::
 
    The **base parameter path** and the **specific parameter name or sub-path**
@@ -461,6 +463,34 @@ To extend the analysis beyond the Sobol, Morris, and FAST methods, follow
 the same workflow demonstrated in the first example and consult the
 SALib documentation for additional sensitivity analysis techniques and
 their usage.
+
+Object oriented way
+=========================
+
+.. code-block:: python
+
+   from apsimNGpy.sensitivity.sensitivity import CustomSensitivityManager
+   cc = CustomSensitivityManager(base_model='Maize', response_vars=["Yield", "Maize.AboveGround.N"],)
+    cc.add_sens_factor(
+        **{'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10),
+           'managers': {1: 2}})
+    cc.add_sens_factor(
+        **{"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300,)})
+    print(cc._factors)
+    print(cc.get_list_sens_factors())
+    ccMorris = cc.build_sense_model(method="morris", n_cores=10,N=1000,
+                                    sample_options={
+                                        'seed': 42,
+                                        "num_levels": 6,
+                                        "optimal_trajectories": 6,
+                                    },
+                                    analyze_options={
+                                        'conf_level': 0.95,
+                                        "num_resamples": 1000,
+                                        "print_to_console": True,
+                                        'seed': 42
+                                    }, )
+   ccMorris.run()
 
 .. versionadded:: 1.0.0
 

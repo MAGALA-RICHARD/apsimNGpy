@@ -194,7 +194,6 @@ class ConfigProblem:
         n_cores = core_count(n_cores, threads=threads)
         dF = pd.DataFrame(X)
 
-
         def run_in_multi_core(db):
 
             with MultiCoreManager(agg_func=agg_func, db_path=db, table_prefix=table_prefix) as mc:
@@ -588,6 +587,7 @@ class Factor(BaseModel):
 class CustomSensitivityManager:
 
     def __init__(self, base_model: str, response_vars):
+        self.partial_run = None
         self._factors: dict = {}
         self.base_model = base_model
         self.y = response_vars
@@ -629,12 +629,11 @@ class CustomSensitivityManager:
                           seed: int | None = 48,
                           agg_func: str = "sum",
                           n_cores: int = -2,
-                          retry_rate: int = 3,
-                          threads: bool = False,
+
                           sample_options: dict | None = None,
                           analyze_options: dict | None = None,
-                          engine='python',
-                          chunk_size: int = 100):
+
+                          ):
         if not self.runner:
             # run with defaults if not called by the user
             self.config_problem()
@@ -643,16 +642,34 @@ class CustomSensitivityManager:
             raise ValueError(
                 msg
             )
-        return run_sensitivity(
-            configured_prob=self.runner,
-            method=method, n_cores=n_cores,
-            N=N, seed=seed, agg_func=agg_func,
-            sample_options=sample_options,
-            analyze_options=analyze_options,
-            engine=engine, chunk_size=chunk_size,
-            retry_rate=retry_rate,
-            threads=threads
-        )
+        self.partial_run = partial(run_sensitivity, configured_prob=self.runner,
+                                   method=method, n_cores=n_cores,
+                                   N=N, seed=seed, agg_func=agg_func,
+                                   sample_options=sample_options,
+                                   analyze_options=analyze_options,
+                                   )
+        return self
+
+    def run(self, n_cores: int = -1,
+            agg_func='mean', engine='python', chunk_size=200,
+            retry_rate=1,
+            threads=False):
+        if self.partial_run is None:
+            raise RuntimeError('can not non initialized or built senstivity model use sense model before continuing')
+        self.partial_run(n_cores=n_cores, engine=engine, chunk_size=chunk_size,
+                         agg_func=agg_func,
+                         retry_rate=retry_rate, threads=threads)
+
+        # return run_sensitivity(
+        #     configured_prob=self.runner,
+        #     method=method, n_cores=n_cores,
+        #     N=N, seed=seed, agg_func=agg_func,
+        #     sample_options=sample_options,
+        #     analyze_options=analyze_options,
+        #     engine=engine, chunk_size=chunk_size,
+        #     retry_rate=retry_rate,
+        #     threads=threads
+        # )
 
 
 if __name__ == "__main__":
@@ -700,7 +717,7 @@ if __name__ == "__main__":
     #         "calc_second_order": True,
     #     },
     # )
-    ccMorris = cc.build_sense_model(method="morris", n_cores=10,N=1000,
+    ccMorris = cc.build_sense_model(method="morris", n_cores=10, N=1000,
                                     sample_options={
                                         'seed': 42,
                                         "num_levels": 6,
@@ -712,6 +729,7 @@ if __name__ == "__main__":
                                         "print_to_console": True,
                                         'seed': 42
                                     }, )
+    ccMorris.run()
     runner = ConfigProblem(
         base_model="Maize",
         params=params,

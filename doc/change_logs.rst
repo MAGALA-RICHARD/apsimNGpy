@@ -156,7 +156,16 @@ Added ``has_node`` method
 
   Added a new ``has_node`` method that allows users to check whether a given
   node name or path exists within the current APSIM model or specified scope.
-  see doc; :meth:`~apsimNGpy.core.ApsimModel.has_node`
+  see doc; :meth:`~apsimNGpy.core.ApsimModel.has_node`.
+
+Example::
+
+   from apsimNGpy import ApsimModel
+   with ApsimModel('Maize') as model:
+      has = model.has_node('Sow using a variable rule', 'Models.Manager')
+      # {'ok': True, 'fullpath': False}
+      has = model.has_node('.Simulations.Simulation.Field.Sow using a variable rule', "Models.Manager")
+      #  {'ok': True, 'fullpath': True}
 
 Added switch_wm_to_swim3 method
 ----------------------------------

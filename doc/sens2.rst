@@ -490,7 +490,7 @@ Object oriented way
                                         "print_to_console": True,
                                         'seed': 42
                                     }, )
-   ccMorris.run()
+   ccMorris.run(agg_func=None)
 
 .. versionadded:: 1.0.0
 

@@ -5,7 +5,7 @@ API improvements
 --------------------------
 * **``append_simulation`` method**
 
-  Added a new ``append_simulation`` method for appending simulations
+  Added a new :meth:`~apsimNGpy.core.apsim.ApsimModel.append_simulation`` method for appending simulations
   into the current ``ApsimModel`` instance. Unlike
   ``clone_simulation``, this method supports transferring simulations
   from external ``ApsimModel`` objects in addition to duplicating
@@ -66,7 +66,7 @@ Edit the added simulation on the fly::
   For additional usage examples and implementation details see::
 
       help(model.append_simulation)
-- **add_node_from method**
+- ** :meth:`~apsimNGpy.core.apsim.ApsimModel.add_node_from` method**
 
   Added a utility for transferring nodes between APSIM models with improved
   control and safety. The method now enforces **keyword-only arguments**

@@ -245,7 +245,7 @@ class ConfigProblem:
                 self.NewXVars = join_df[dF_columns].to_numpy()
                 # drop inD fcolums
                 join_df.drop(dF_columns, axis=1, inplace=True)
-                print(data.columns)
+
                 # merge with
 
                #data.merge(dF, on='ID')

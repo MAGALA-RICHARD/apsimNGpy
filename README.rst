@@ -40,6 +40,9 @@ Links
 
 `Publication <https://www.sciencedirect.com/science/article/pii/S2352711025004625>`_.
 
+For the complete list of new features, improvements, and bug fixes, see the
+`v1.5.3 release notes <https://github.com/MAGALA-RICHARD/apsimNGpy/releases/tag/v1.5.3>`_.
+
 apsimNGpy: The Next Generation Agroe-cosystem Simulation Library
 ===========================================================================
 
@@ -55,9 +58,7 @@ It enables **object-oriented**, **data-driven** workflows for interacting with A
 
 `Python <https://www.python.org/>`_ serves as the execution environment, integrating scientific computing, data analysis, and automation for sustainable agricultural systems.
 
-For the complete list of new features, improvements, and bug fixes, see the
-`v1.5.3 release notes <https://github.com/MAGALA-RICHARD/apsimNGpy/releases/tag/v1.5.3>`_.
-python -m pip install --upgrade build twine
+
 Requirements
 *************
 

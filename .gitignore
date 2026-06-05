@@ -233,4 +233,5 @@ apsimNGpy/.scratch/*.db
 apsimNGpy/.scratch/*.db-wal
 **/scratch/
 **/.scratch/
+
 apsimNGpy/mailer/*

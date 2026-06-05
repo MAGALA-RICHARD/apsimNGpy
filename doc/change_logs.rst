@@ -158,7 +158,7 @@ Added ``has_node`` method
   node name or path exists within the current APSIM model or specified scope.
   see doc; :meth:`~apsimNGpy.core.ApsimModel.has_node`.
 
-Example::
+.. code-block:: python
 
    from apsimNGpy import ApsimModel
    with ApsimModel('Maize') as model:

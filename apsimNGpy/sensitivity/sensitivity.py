@@ -94,6 +94,7 @@ class ConfigProblem:
             index_id: str = "ID",
 
     ):
+        self.X = None
         self.config_ok = None
         self.raw_results = None
         self.base_model = base_model
@@ -101,6 +102,7 @@ class ConfigProblem:
         self.outputs = outputs
         self.index_id = index_id
         self.incomplete_jobs = []
+        self.NewXVars = None
 
         self.problem = define_problem(
             params,
@@ -193,6 +195,8 @@ class ConfigProblem:
         db_path = generate_default_db_path(table_prefix)
         n_cores = core_count(n_cores, threads=threads)
         dF = pd.DataFrame(X)
+        dF['ID'] = range(dF.shape[0])
+
 
         def run_in_multi_core(db):
 
@@ -223,16 +227,29 @@ class ConfigProblem:
                 if is_scalar(self.outputs):
                     self.outputs = [self.outputs]
                 out_df = pd.DataFrame()
+                # for filtering None values
                 for output in self.outputs:
                     data = df.copy()
                     data.dropna(subset=[output], inplace=True)
                     data.reset_index(drop=True, inplace=True)
                     data.sort_values(by=self.index_id, inplace=True)
-                    # from xlwings import view
+
 
                     out_df[output] = data[output]
+                out_df['ID'] = data['ID']
+                # in case it mult year simulations, no aggregations
+                out_df = out_df.set_index('ID')
+                dF.set_index('ID', inplace=True)
+                dF_columns = dF.columns.tolist()
+                join_df = out_df.join(dF, how='outer',)
+                self.NewXVars = join_df[dF_columns].to_numpy()
+                # drop inD fcolums
+                join_df.drop(dF_columns, axis=1, inplace=True)
+                print(data.columns)
+                # merge with
 
-                out = out_df.to_numpy()
+               #data.merge(dF, on='ID')
+                out = join_df.to_numpy()
                 del df
                 return out
 
@@ -271,6 +288,7 @@ class ConfigProblem:
         """
         from apsimNGpy.core.mult_cores import core_count
         n_cores = core_count(n_cores, threads=threads)
+        self.X = X
         part = partial(
             self._evaluate,
             agg_func=agg_func,
@@ -536,7 +554,9 @@ def run_sensitivity(
     sample_options.setdefault('seed', seed)
     try:
         stp = sampler(N=N, **sample_options)
+        stp.X = configured_prob.NewXVars
         stp.evaluate(evaluate)
+
         analyzer = getattr(stp, f"analyze_{method}")
         setattr(stp, 'apsim_results', configured_prob.raw_results)
         # ---- analyze ----
@@ -548,6 +568,7 @@ def run_sensitivity(
         if ans.results.shape[0] != ans.samples.shape[0]:
             logger.info('re-running results, lengths of samples and evaluated results were not the same')
             # evaluate and analyse again
+
             stp.evaluate(evaluate)
             ans = analyzer(**analyze_options)
         return ans
@@ -627,7 +648,7 @@ class CustomSensitivityManager:
                           method: str = 'morris',
                           N: int | None = None,
                           seed: int | None = 48,
-                          agg_func: str = "sum",
+                          agg_func: str | None = "sum",
                           n_cores: int = -2,
 
                           sample_options: dict | None = None,
@@ -717,7 +738,7 @@ if __name__ == "__main__":
     #         "calc_second_order": True,
     #     },
     # )
-    ccMorris = cc.build_sense_model(method="morris", n_cores=10, N=1000,
+    ccMorris = cc.build_sense_model(method="morris", n_cores=10, N=1000,agg_func=None,
                                     sample_options={
                                         'seed': 42,
                                         "num_levels": 6,

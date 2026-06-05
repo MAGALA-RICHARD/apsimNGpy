@@ -3,7 +3,9 @@ Version 1.5.3
 
 API improvements
 --------------------------
-* **``append_simulation`` method**
+
+* ** ``append_simulation`` method**
+------------------------------------------
 
   Added a new :meth:`~apsimNGpy.core.apsim.ApsimModel.append_simulation`` method for appending simulations
   into the current ``ApsimModel`` instance. Unlike

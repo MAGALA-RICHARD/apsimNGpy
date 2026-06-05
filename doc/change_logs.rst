@@ -179,13 +179,17 @@ New Features
    - Adds validation for invalid drainage parameter keys
    - Supports custom layer structure thickness configuration
 
-with this method, sub surface drainage can be declared with automatic configuration::
+with this method, sub surface drainage can be declared with automatic configuration:
+
+.. code-block:: python
 
     model.switch_wm_to_swim3(
         ss_tile_drainage="auto"
     )
 
-or custom settings::
+or custom settings:
+
+.. code-block:: python
 
     model.switch_wm_to_swim3(
         ss_tile_drainage={
@@ -195,7 +199,9 @@ or custom settings::
         }
     )
 
-SWIM3 model parameters can can also be declared as follows::
+SWIM3 model parameters can can also be declared as follows:
+
+.. code-block:: python
 
     model.switch_wm_to_swim3(
     swim_model_params = {"eo_time": "05:00", "eo_durn": 600.0,

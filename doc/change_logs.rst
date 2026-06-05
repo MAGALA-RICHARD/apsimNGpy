@@ -24,7 +24,9 @@ Advantages:
 - Rapidly generate multiple simulation scenarios using the ``payload`` argument, enabling efficient exploration of management, soil, weather, or cultivar variations and their impacts on model outputs.
 - Simplify what-if analysis by automatically creating simulation variants from different input configurations, reducing the effort required to evaluate alternative strategies and outcomes.
 
-Basic example::
+Basic example:
+
+.. code-block:: python
 
       from apsimNGpy import ApsimModel
       base_model =ApsimModel('Maize')
@@ -35,7 +37,9 @@ Basic example::
           rename="Simulation2"
       )
 
-Duplicating an existing simulation::
+Duplicating an existing simulation:
+
+.. code-block:: python
 
       from apsimNGpy import ApsimModel
       model =ApsimModel('Maize')
@@ -43,7 +47,9 @@ Duplicating an existing simulation::
       model[0]
           rename="Simulation_copy"
       )
-Edit the added simulation on the fly::
+Edit the added simulation on the fly:
+
+.. code-block:: python
 
         with ApsimModel('Maize') as model:
             model.append_simulation(simulation=model[0], rename='pop12',
@@ -68,7 +74,7 @@ Edit the added simulation on the fly::
   For additional usage examples and implementation details see::
 
       help(model.append_simulation)
-- ** Added add_node_from` method**
+- ** Added `add_node_from` method**
 ------------------------------------------
 
   Added a utility for transferring nodes between APSIM models with improved
@@ -210,7 +216,9 @@ SWIM3 model parameters can can also be declared as follows:
                        "Diagnostics": False
             }
             )
-for more information see::
+for more information see:
+
+.. code-block:: python
 
    help(model.switch_wm_to_swim3)
 
@@ -245,7 +253,9 @@ for more information see::
   - Gracefully ignore unsupported or incompatible attributes during
     assignment
 
-  Basic example::
+  Basic example:
+
+.. code-block:: python
 
       from apsimNGpy import ApsimModel
 
@@ -261,7 +271,9 @@ for more information see::
           }
       )
 
-  Adding a Manager script::
+  Adding a Manager script:
+
+.. code-block:: python
 
       model.add_new_model(
           parent_identifier=".Simulations.Simulation.Field",

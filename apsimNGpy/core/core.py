@@ -34,7 +34,8 @@ from apsimNGpy.config import configuration
 from apsimNGpy.core.ce import CreatNewCultivar
 
 CastHelper = CLR.CastHelper
-from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, get_node_by_path, AUTO_PATH)
+from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, cast_obj,
+                                         get_node_by_path, AUTO_PATH)
 from apsimNGpy.core.model_tools import find_child
 from apsimNGpy.core.model_tools import (get_or_check_model, old_method, inspect_model_inputs,
                                         ModelTools, validate_model_obj, replace_variable_by_index)
@@ -1630,6 +1631,9 @@ class CoreModel(PlotManager):
                 setattr(model_instance, key, parsed_value)
                 if verbose:
                     logger.info(f"Set {key} to {parsed_value}")
+            elif kwa in dir(model_instance):
+                setattr(model_instance, kwa, value)
+
 
             else:
                 raise AttributeError(
@@ -1659,7 +1663,8 @@ class CoreModel(PlotManager):
         vs = param_values.get("variable_spec") or param_values.get("VariableNames")
         if not vs:
             raise ValueError("Please specify a report name using key word 'variable_spec'")
-        self.add_report_variable(variable_spec=vs, set_event_names=set_event_names, report_name=report_name, clear_old=clear_old)
+        self.add_report_variable(variable_spec=vs, set_event_names=set_event_names, report_name=report_name,
+                                 clear_old=clear_old)
         if verbose:
             logger.info(f" '{vs}' added to '{report_name}'")
 
@@ -1891,8 +1896,8 @@ class CoreModel(PlotManager):
         match type(values):
             case Models.Morris | Models.Sobol:
                 self.edit_model(type(values), values.Name, clear_old=clear_old, **kwargs)
-            case Models.WaterModel.WaterBalance:
-                self.edit_model(Models.WaterModel.WaterBalance, model_name=values.Name, **kwargs)
+            # case Models.WaterModel.WaterBalance:
+            #     self.edit_model(Models.WaterModel.WaterBalance, model_name=values.Name, **kwargs)
 
             case Models.Climate.Weather:
                 self._set_weather_path(values, param_values=kwargs, verbose=verbose)
@@ -2001,14 +2006,16 @@ class CoreModel(PlotManager):
             case Models.Report:
 
                 self._set_report_vars(values, param_values=kwargs, verbose=verbose, clear_old=clear_old)
-            case Models.Surface.SurfaceOrganicMatter:
-                if kwargs == {}:
-                    accepted_params = {'SurfOM', 'InitialCPR', 'InitialResidueMass', 'InitialCNR', 'IncorporatedP'}
-                    raise ValueError(
-                        f"Please supply at least one parameter: value \n '{', '.join(sorted(accepted_params))}' for {path}")
-                self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
+            # case Models.Surface.SurfaceOrganicMatter:
+            #     sel
+            #     if kwargs == {}:
+            #         accepted_params = {'SurfOM', 'InitialCPR', 'InitialResidueMass', 'InitialCNR', 'IncorporatedP'}
+            #         raise ValueError(
+            #             f"Please supply at least one parameter: value \n '{', '.join(sorted(accepted_params))}' for {path}")
+            #     self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
             case _:
-                raise NotImplementedError(f"No edit method implemented for model type {type(values)}")
+                self._safe_edit_instance(values, type(values), **kwargs)
+                #raise NotImplementedError(f"No edit method implemented for model type {type(values)}")
 
         return self
 
@@ -2048,6 +2055,27 @@ class CoreModel(PlotManager):
     @timer
     def _edit_model(self, *args, **kwargs):
         return self.editor.edit(*args, **kwargs)
+
+    def _safe_edit_instance(self, model_instance, model_cls, **kwargs):
+        if model_instance:
+            try:
+                ModelTools.edit_instance(model_instance, **kwargs)
+            except AttributeError as err:
+                try:
+                    accepted = self.inspect_settable_attributes(model_cls)
+                except Exception:
+                    accepted = [
+                        attr[len("set_"):]
+                        for attr in dir(model_instance)
+                        if attr.startswith("set_")
+                    ]
+
+                accepted_text = "\n".join(map(str, accepted))
+                logger.info(f"Accepted attributes for {model_instance}: {accepted_text}")
+
+                raise AttributeError(
+                    f"{err}. Allowed {model_instance} attributes are:\n{accepted_text}"
+                ) from err
 
     def edit_model(
             self,
@@ -2140,26 +2168,6 @@ class CoreModel(PlotManager):
         def _model_type_name(cls):
             return getattr(cls, "__name__", str(cls))
 
-        def _safe_edit_instance(model_instance, model_cls):
-            if model_instance:
-                try:
-                    ModelTools.edit_instance(model_instance, **kwargs)
-                except AttributeError as err:
-                    try:
-                        accepted = self.inspect_settable_attributes(model_cls)
-                    except Exception:
-                        accepted = [
-                            attr[len("set_"):]
-                            for attr in dir(model_instance)
-                            if attr.startswith("set_")
-                        ]
-
-                    accepted_text = "\n".join(map(str, accepted))
-                    logger.info(f"Accepted attributes for {model_instance}: {accepted_text}")
-
-                    raise AttributeError(
-                        f"{err}. Allowed {model_instance} attributes are:\n{accepted_text}"
-                    ) from err
 
         def _find_model_instance(scope):
             if is_higher_apsim_version():
@@ -2167,14 +2175,14 @@ class CoreModel(PlotManager):
                 # not children of an individual Simulation.
                 lookup_scope = (
                     self.Simulations
-                    if model_type_class in {Models.Sobol, Models.Morris}
+                    if model_type_class in {Models.Sobol, Models.Factorial.Experiment, Models.Morris}
                     else scope
                 )
                 found = find_child(lookup_scope, model_type_class, model_name)
             else:
                 found = self.Simulations.FindDescendant[model_type_class](model_name)
 
-            if found is None and not scope.Name=='Replacements':
+            if found is None and not scope.Name == 'Replacements':
                 raise ValueError(
                     f"Model '{model_name}' of type '{_model_type_name(model_type_class)}' "
                     f"was not found under '{getattr(scope, 'Name', scope)}'."
@@ -2332,9 +2340,10 @@ class CoreModel(PlotManager):
 
             match type(model_instance):
                 case Models.WaterModel.WaterBalance:
-                    _safe_edit_instance(
+                    self._safe_edit_instance(
                         model_instance,
                         Models.WaterModel.WaterBalance,
+                        **kwargs
                     )
 
                 case Models.Morris | Models.Sobol:
@@ -2368,12 +2377,13 @@ class CoreModel(PlotManager):
                 | Models.Soils.Water
                 | Models.Soils.Solute
                 ):
-                    _safe_edit_instance(model_instance, model_type_class)
+                    self._safe_edit_instance(model_instance, model_type_class, **kwargs)
 
                 case Models.Surface.SurfaceOrganicMatter:
-                    _safe_edit_instance(
+                    self._safe_edit_instance(
                         model_instance,
                         Models.Surface.SurfaceOrganicMatter,
+                        **kwargs
                     )
 
                 case Models.Report:
@@ -2385,16 +2395,17 @@ class CoreModel(PlotManager):
                     )
 
                 case Models.MicroClimate:
-                    _safe_edit_instance(
+                    self._safe_edit_instance(
                         model_instance,
                         Models.MicroClimate,
+                        **kwargs
                     )
 
                 case Models.PMF.Cultivar:
                     _edit_cultivar()
 
                 case _:
-                    _safe_edit_instance(model_instance, model_type_class)
+                    self._safe_edit_instance(model_instance, model_type_class, **kwargs)
 
         # ------------------------------------------------------------------
         # Apply edits
@@ -2404,6 +2415,7 @@ class CoreModel(PlotManager):
 
         self.ran_ok = False
         return self
+
 
 
     @staticmethod
@@ -2880,6 +2892,12 @@ class CoreModel(PlotManager):
 
         rep = self.get_replacements_node()
         if rep:
+            crop_rep = ModelTools.find_child(rep, CLR.Models.PMF.Plant, Crop)
+            return crop_rep
+        else:
+            self.add_crop_replacements()
+
+            rep = self.get_replacements_node()
             crop_rep = ModelTools.find_child(rep, CLR.Models.PMF.Plant, Crop)
             return crop_rep
 
@@ -4459,8 +4477,10 @@ class CoreModel(PlotManager):
         _base_version = float(BASE_RELEASE_NO.replace(".", ''))
         inspection_location = self.Simulations if scope is _NOT_PROVIDED else scope
         model_type = validate_model_obj(model_type)
+
         if model_type == Models.Core.Simulations:
-            obj = [self.Simulations]
+            obj = self.Simulations
+            return obj.FullPath if fullpath else obj.Name
 
         else:
 
@@ -5846,7 +5866,8 @@ if __name__ == '__main__':
     # fixed_model.open_in_gui()
     with CoreModel('Sobol') as mmm:
         mmm.edit_model(model_type=Models.Sobol, model_name='Sobol', Parameters=[
-            dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass', LowerBound=10, UpperBound=400)
-        ])
+            dict(Name='my', Path='Field.SurfaceOrganicMatter.InitialResidueMass',
+                 LowerBound=10, UpperBound=400),
+        ], clear_old=True, )
         mmm.save(reload=True)
-        mmm.open_in_gui(watch=True)
+        print(mmm.inspect_model('Models.Core.Simulations'))

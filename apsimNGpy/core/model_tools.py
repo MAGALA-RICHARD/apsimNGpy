@@ -345,7 +345,7 @@ def find_model(model_name: str):
     return model_type
 
 
-@lru_cache(maxsize=300)
+@cache
 def validate_model_obj(model__type, evaluate_bound=False) -> CLASS_MODEL:
     """
     Evaluates the model type from either string or Models namespace

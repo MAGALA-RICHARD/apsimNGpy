@@ -395,6 +395,13 @@ def get_node_by_name(node, name):
     #
 
 
+def cast_obj(obj_instance):
+    nod_model = getattr(obj_instance, 'Model', obj_instance)
+    node_type = nod_model.GetType()
+    n = CastHelpers.CastAs[node_type](nod_model)
+    return n
+
+
 def get_node_by_path(node, node_path, cast_as=None):
     """
     get a node by path
@@ -538,7 +545,7 @@ if __name__ == '__main__':
         if hasattr(node, 'Walk'):
             for n in node.Walk():
                 nod = getattr(n, 'Model', node)
-                node_type = model_type # nod.GetType()
+                node_type = model_type  # nod.GetType()
                 n = CastHelpers.CastAs[node_type](nod)
                 if n:
                     data.append(n)
@@ -548,12 +555,12 @@ if __name__ == '__main__':
                             print(n.get_FixedValue())
                             n.set_FixedValue(400)
                             print(n.FullPath, n.get_FixedValue())
-                   # print(*dir(n), sep='\n')
+                # print(*dir(n), sep='\n')
         return data
 
 
     with ApsimModel('Wheat', 'ap') as mm:
-       # mm.tree()
+        # mm.tree()
         mm.add_crop_replacements()
         maize = get_node_by_path(mm.Simulations, '.Simulations.Replacements.Wheat')
         constants = trace(maize, Models.Functions.Constant)

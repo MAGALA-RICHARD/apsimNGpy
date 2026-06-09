@@ -79,6 +79,20 @@ class TestCoreModel(BaseTester):
                 model2.run(verbose=False)
                 self.assertFalse(model2.results.empty)
 
+    def test_we_edit_under_factorial_experiments(self):
+        with ApsimModel('Factorial') as exp:
+            exp.edit_model('Models.Manager', simulations='Base0',
+                          model_name= 'FertiliserRule', ApplicationAmount=170)
+            print(exp.inspect_model(model_type='Models.Manager'))
+            out = exp.inspect_model_parameters('Models.Manager',
+                                               'ApplicationAmount')
+            print(
+                out
+            )
+            amount = out['Base0']['Parameters']['ApplicationAmount']
+            self.assertEqual(str(amount), '170',
+                             msg='editing manager module in factorial simulation experiment failed')
+
     def test_if_we_can_add_simulation_externally2(self):
         with ApsimModel('Soybean') as model:
             # model.edit_model('Models.Report', 'Report', Name='soybean')

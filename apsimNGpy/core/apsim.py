@@ -29,7 +29,7 @@ from apsimNGpy import logger, timer, NodeNotFoundError, is_scalar
 from apsimNGpy.soils.helpers import soil_water_param_fill
 from System.Collections.Generic import List
 from System.Collections.Generic import KeyValuePair
-
+from apsimNGpy.core.edit import edit_model_by_name
 from apsimNGpy.core.water import (swim_data, layer_struct,
                                   set_swim_lower_bc,
                                   ci, sub_surface_tile_drainage,
@@ -146,6 +146,10 @@ class ApsimModel(CoreModel):
             index_col=index_col,
             expr=expr,
         )
+
+    def edit_model_by_name(self, model_type, model_name, simulations=None, clear_old=False, **kwargs):
+        edit_model_by_name(self, model_type, model_name, simulations=simulations, clear_old=clear_old, **kwargs)
+
 
     def evaluate(
             self,

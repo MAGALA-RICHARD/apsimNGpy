@@ -4,7 +4,7 @@ import sys
 import unittest
 from pathlib import Path
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
-
+from apsimNGpy.core.edit import edit_model_by_name
 wd = Path.cwd() / "test_apsim"
 wd.mkdir(parents=True, exist_ok=True)
 os.chdir(wd)
@@ -145,10 +145,10 @@ class TestCoreModel(BaseTester):
             model.add_report_variable(variable_spec='[Clock].Today.Year as year', report_name='Report')
             model.run()
             with self.assertRaises(TypeError, msg="expected to raise  TypeError"):
-                metrics = model.evaluate(ref_data=[obs], table='Report', index_col=['year'],
+                _ = model.evaluate(ref_data=[obs], table='Report', index_col=['year'],
                                          target_col='Yield', ref_data_col='observed')
             with self.assertRaises(TypeError, msg="expected to raise TypeError"):
-                metrics = model.evaluate(ref_data=obs, table=[model.results], index_col=['year'],
+                _ = model.evaluate(ref_data=obs, table=[model.results], index_col=['year'],
                                          target_col='Yield', ref_data_col='observed')
 
     def test_context_manager(self):

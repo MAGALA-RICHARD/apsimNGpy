@@ -107,7 +107,7 @@ class ConfigProblem:
         self.raw_results = None
         self.base_model = base_model
         self.params = params
-        self.outputs = outputs
+        self.outputs = get_list_like(outputs)
         self.index_id = index_id
         self.incomplete_jobs = []
         self.NewXVars = None
@@ -209,7 +209,7 @@ class ConfigProblem:
         def run_in_multi_core(data_db):
             # send the grouping to the subset variables
             group = list(get_list_like(groupings))
-            sub_sets_columns = get_list_like(self.outputs)
+            sub_sets_columns = self.outputs
             group.extend(sub_sets_columns)
             sub_sets_columns = group
 
@@ -239,15 +239,14 @@ class ConfigProblem:
                 self.incomplete_jobs = mc.incomplete_jobs
                 if mc.incomplete_jobs:
                     logger.warning(f"over {len(mc.incomplete_jobs)} incomplete were registered something went wrong")
+
                 # if not isinstance(self.outputs, str) and len(self.outputs) == 1:
                 #     self.outputs = self.outputs[0]
-                if is_scalar(self.outputs):
-                    self.outputs = [self.outputs]
 
                 def clean_a_group(dff):
                     if not self.outputs:
                         raise ValueError("outputs must be specified")
-                    outputs = [self.outputs] if is_scalar(self.outputs) else self.outputs
+                    outputs = self.outputs
                     data = dff.copy()
                     data.sort_values(by=self.index_id, inplace=True)
 

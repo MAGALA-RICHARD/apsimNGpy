@@ -318,16 +318,10 @@ def custom_parallel_chunks(
 
             for idx, chunk in enumerate(chunked):
                 key = get_key(value=idx, db=data_db)
-                if key and resume:
-                    if bar is not None:
-                        bar.update(1)
-                    continue
-                if bar is not None:
-                    bar.update(1)
+
                 start = time.perf_counter()
                 futures = [pool.submit(func, qi, *args) for qi in chunk]
                 submitted += 1
-
                 # Collect at least one finished chunk
                 for fut in as_completed(futures, timeout=None):
 
@@ -336,7 +330,6 @@ def custom_parallel_chunks(
                     elapsed = time.perf_counter() - start
                     if completed and elapsed > 0:
                         avg = elapsed / completed
-                        rate = completed / elapsed
                         bar.set_postfix_str(f"[{avg:.3f} s/{unit}]")
 
                     if not void:
@@ -345,6 +338,12 @@ def custom_parallel_chunks(
                     break  # return to top-up loop
                 # register completed chunk
                 register_key(idx, data_db)
+                if key and resume:
+                    if bar is not None:
+                        bar.update(1)
+                    continue
+                if bar is not None:
+                    bar.update(1)
                 gc.collect()
                 if idx + 1 == total_chunks:
                     # tracking completed

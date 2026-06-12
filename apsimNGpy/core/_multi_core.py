@@ -264,7 +264,7 @@ def single_runner(
                         # set before running
                         for in_put in inputs:
                             _model.set_params(**in_put)
-                    _model.run(timeout=timeout, cpu_count=4, report_name=table_to_use)
+                    _model.run(timeout=timeout, cpu_count=2, report_name=table_to_use)
 
                     # Aggregate results if requested
                     if agg_func:

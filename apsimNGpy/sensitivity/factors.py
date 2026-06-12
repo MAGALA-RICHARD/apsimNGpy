@@ -79,9 +79,10 @@ if __name__ == '__main__':
             method="fast",
             agg_func='mean',
             N=Base_N,
+            total_chunks=20,
             n_cores=14,
             tables=['MaizeR'],
-            # grouping=['Year'],
+            grouping=['Year'],
             sample_options={
                 "M": 4,
 

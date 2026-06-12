@@ -306,8 +306,6 @@ def custom_parallel_chunks(
     with Executor(max_workers=ncores) as pool:
         submitted = 0
         completed = 0
-        sims = 0
-
         bar = tqdm(
             total=total_chunks, desc=desc, unit=unit,
             dynamic_ncols=True, miniters=1,
@@ -335,12 +333,11 @@ def custom_parallel_chunks(
 
                     result = fut.result()  # propagate exceptions
                     completed += 1
-                    sims +=1
                     elapsed = time.perf_counter() - start
                     if completed and elapsed > 0:
                         avg = elapsed / completed
                         rate = completed / elapsed
-                        bar.set_postfix_str(f"({avg:.3f} s/{unit}  [{sims}]")
+                        bar.set_postfix_str(f"[{avg:.3f} s/{unit}]")
 
                     if not void:
                         # yield results for THIS iterable (kept separate)
@@ -386,12 +383,13 @@ if __name__ == '__main__':
     # quick example
 
     success = list(
-        custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True, progressbar=False))
+        custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True,
+                        progressbar=False))
     fail = list(
         custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True, ))
     fai = list(
         custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
-    x= 0
+    x = 0
     for i in custom_parallel_chunks(worker, range(10000), use_thread=False, n_chunks=102, void=False, resume=True):
-        x+=1
+        x += 1
         pass

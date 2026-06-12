@@ -44,7 +44,7 @@ def cultivar_factor(base_model, name, param, managers, plant, bounds):
 if __name__ == '__main__':
 
     base = Path(r"D:\Elimin_rye_cover_crop_2026\APSIMX\N_2.apsimx")
-    Base_N = 500
+    Base_N = 300
     with ApsimModel(base) as model:
         p = model.inspect_model_parameters("Models.Manager", 'AddfertlizerRotationMAize', parameters='Parameters')
         NRate = p['Parameters']['Amount']

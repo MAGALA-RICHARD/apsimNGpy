@@ -76,10 +76,16 @@ def grouper(base_model, _params):
 
 
 def get_list_like(obj):
-    if obj is None:
+    if not obj:
         return []
-    list_like = [obj] if is_scalar(obj) else obj
+    list_like = [obj] if is_scalar(obj) else list(obj)
     return list_like
+
+
+def check_all_completed(res, X_arr, index_name):
+    completed_ids = set(res[index_name])
+    all_ids = set(range(X_arr.shape[0]))
+    return all_ids - completed_ids
 
 
 class ConfigProblem:
@@ -138,7 +144,7 @@ class ConfigProblem:
 
     # ---------------- Job generation ----------------
 
-    def job_maker(self, X: np.ndarray):
+    def job_maker(self, X: np.ndarray, pending=None):
         """
         Generate APSIM jobs for each sampled parameter vector.
         """
@@ -150,8 +156,11 @@ class ConfigProblem:
             grouped = self.grouped
 
         # grouped = group_candidate_params(self.params)
-
-        for idx, row in enumerate(X):
+        if pending:
+            iterator = zip(pending, X)
+        else:
+            iterator = enumerate(X)
+        for idx, row in iterator:
 
             ############################################
             values = dict(zip(self.param_keys, row))
@@ -207,96 +216,117 @@ class ConfigProblem:
         n_cores = core_count(n_cores, threads=threads)
         PROB_NAMES = self.problem.get('names')
 
-        def run_in_multi_core(data_db):
+        def run_in_multi_core(data_db, sample_matrix, pending_retry=None, chunks=total_chunks):
             # send the grouping to the subset variables
             group = list(get_list_like(groupings))
             sub_sets_columns = self.outputs
             group.extend(sub_sets_columns)
             sub_sets_columns = group
 
-            with MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix) as mc:
-                mc.run_all_jobs(
-                    self.job_maker(X),
-                    n_cores=n_cores,
-                    retry_rate=retry_rate,
-                    threads=threads,
-                    clear_db=True,
-                    display_failures=True,
-                    subset=sub_sets_columns,
-                    ignore_runtime_errors=False,
-                    engine=engine,
-                    chunk_size=chunk_size,
-                    table_name=tables,
-                    total_chunks=total_chunks,
-                )
-                df = mc.get_simulated_output(axis=0)
-
-                #################################################################
-                # The simulations are organized according to index_id to match with input variables samplesd by SALib
-                df.sort_values(self.index_id, inplace=True)
-                from xlwings import view
-                view(df)
-                self.raw_results = df
-                self.incomplete_jobs = mc.incomplete_jobs
-                if mc.incomplete_jobs:
-                    logger.warning(f"over {len(mc.incomplete_jobs)} incomplete were registered something went wrong")
-
-                # if not isinstance(self.outputs, str) and len(self.outputs) == 1:
-                #     self.outputs = self.outputs[0]
-
-                def clean_a_group(dff):
-                    if not self.outputs:
-                        raise ValueError("outputs must be specified")
-                    outputs = self.outputs
-                    data = dff.copy()
-                    data.sort_values(by=self.index_id, inplace=True)
-
-                    out = data.dropna(subset=outputs)
-                    if out.empty:
-                        raise ValueError(
-                            "Dataframe contains no data after dropping all are you sure it is coming from the same table")
-
-                    Xs = out[PROB_NAMES].copy()
-                    Ys = out[outputs].copy()
-                    if Ys.shape[0] != X.shape[0]:
-                        raise ValueError("Data are not equal after processing")
-                    if Xs.shape != X.shape:
-                        raise ValueError("X vars are not equal after processing")
-                    return Xs, Ys
-
-                # check if multiple tables exist
-                if 'source_table' in df:
-                    existing_tables = df['source_table'].unique()
-                    print(len(existing_tables), 'tables')
-                    DATA_TABLES = []
-                    for _, dif in df.groupby('source_table'):
-                        DATA_TABLES.append(dif)
-                else:
-                    DATA_TABLES = [df, ]
-
-                if groupings:
-
-                    df.reset_index(drop=True, inplace=True)
-                    for keys, group_df in df.groupby(groupings):
-                        print(f"Working on group {keys}", file=sys.stderr)
-                        XX, get_out = clean_a_group(group_df)
-                        arr = get_out.to_numpy() if isinstance(get_out, pd.DataFrame) else get_out
-                        yield keys, XX, arr
-                else:
-
-                    xx, df = clean_a_group(df)
-                    arr = df.to_numpy() if isinstance(df, pd.DataFrame) else df
-                    yield agg_func, xx, arr
-
+            mc= MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix)
+            mc.run_all_jobs(
+                self.job_maker(sample_matrix, pending=pending_retry),
+                n_cores=n_cores,
+                retry_rate=retry_rate,
+                threads=threads,
+                clear_db=True,
+                display_failures=True,
+                subset=sub_sets_columns,
+                ignore_runtime_errors=False,
+                engine=engine,
+                chunk_size=chunk_size,
+                table_name=tables,
+                total_chunks=chunks,
+            )
+            return mc
         try:
-            return run_in_multi_core(data_db=db_path)
+
+            manager = run_in_multi_core(data_db=db_path, sample_matrix=X)
+
+            df = manager.get_simulated_output(axis=0)
+            completed = [df,]
+            logger.info('Checking incomplete outputs')
+            pending = list(check_all_completed(df, X, self.index_id))
+            with manager:
+                pass
+            while pending:
+                logger.info(f'{len(pending)} pending simulation IDs found. Rerunning them')
+                sub_x = X[pending]
+                manager = run_in_multi_core(
+                    data_db=db_path,
+                    sample_matrix=sub_x, pending_retry=pending,
+                    chunks=2,
+                )
+                with manager:
+                    dif = manager.get_simulated_output(axis=0)
+                    completed.append(dif)
+
+                    pending = list(
+                        check_all_completed(df, X, self.index_id)
+                    )
+
+            print(pending, 'not simulated')
+
+            #################################################################
+            # The simulations are organized according to index_id to match with input variables samplesd by SALib
+
+            from xlwings import view
+            ag_df = pd.concat(completed)
+            ag_df.sort_values(self.index_id, inplace=True)
+            self.raw_results = ag_df.reset_index()
+            return self.grouper(ag_df, groupings=groupings, agg_func=agg_func, X=X, problem_name=PROB_NAMES)
+
         finally:
             try:
-                db = Path(db_path).resolve()
-                os.remove(db) if db.exists() else None
-                print('database deleted', file=sys.stderr)
+                os.remove(db_path)
             except PermissionError:
                 pass
+            except FileNotFoundError:
+                pass
+
+    def clean_a_group(self, dff, *, problem_names, X):
+        if not self.outputs:
+            raise ValueError("outputs must be specified")
+        outputs = self.outputs
+        data = dff.copy()
+        data.sort_values(by=self.index_id, inplace=True)
+
+        out = data.dropna(subset=outputs)
+        if out.empty:
+            raise ValueError(
+                "Dataframe contains no data after dropping all are you sure it is coming from the same table")
+
+        Xs = out[problem_names].copy()
+        Ys = out[outputs].copy()
+        if Ys.shape[0] != X.shape[0]:
+            raise ValueError("Data are not equal after processing")
+        if Xs.shape != X.shape:
+            raise ValueError("X vars are not equal after processing")
+        return Xs, Ys
+
+    def grouper(self, df, groupings, agg_func, X, problem_name):
+        # check if multiple tables exist
+        if 'source_table' in df:
+            existing_tables = df['source_table'].unique()
+            print(len(existing_tables), 'tables')
+            DATA_TABLES = []
+            for _, dif in df.groupby('source_table'):
+                pass  # DATA_TABLES.append(dif)
+        else:
+            DATA_TABLES = [df, ]
+
+        if groupings:
+            grp = get_list_like(groupings)
+            df.reset_index(drop=True, inplace=True)
+            for keys, group_df in df.groupby(grp):
+                print(f"Working on group {keys}", file=sys.stderr)
+                XX, get_out = self.clean_a_group(group_df,problem_names=problem_name, X=X)
+                arr = get_out.to_numpy() if isinstance(get_out, pd.DataFrame) else get_out
+                yield keys, XX, arr
+        else:
+            xx, df = self.clean_a_group(df, problem_names=problem_name, X=X)
+            arr = df.to_numpy() if isinstance(df, pd.DataFrame) else df
+            yield agg_func, xx, arr
 
     def evaluate(self, X,
                  agg_func='sum',

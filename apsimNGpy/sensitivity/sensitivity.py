@@ -474,15 +474,25 @@ def run_sensitivity(
         seed (int)
             Random seed used to make the sampling reproducible.
              default is 48
-
     analyze_options : dict, optional
         Options forwarded to the SALib analyzer. The available options are described in the
         SALIB documentation fore each method.
     engine: str optional default is 'python'
         if 'csharp' results are written to a directory then forwarded to Models.exe. This is 50-100% times faster than python all the time.
         The csharp engine is considerably faster on powerful machines but exhibits stability issues in some older APSIM versions, whereas the Python engine is more stable. For this reason, the default engine is set to "python".
+    chunk_size : int, optional, default=100
+        Relevant only when engine="csharp".
+    grouping : list | None, optional, default=None
+        If provided, results will be grouped according to the specified
+        grouping variable(s), and evaluations will be performed separately
+        for each group.
+    tables : list | None, required
+        None is retained only for backward compatibility. The function
+        will raise a ValueError if tables are not provided.
 
+    total_chunks : int, optional, default=10
 
+        Relevant only when engine="python".
     Examples
     ---------
 

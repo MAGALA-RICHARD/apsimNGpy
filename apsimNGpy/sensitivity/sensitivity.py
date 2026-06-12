@@ -489,9 +489,7 @@ def run_sensitivity(
     tables : list | None, required
         None is retained only for backward compatibility. The function
         will raise a ValueError if tables are not provided.
-
     total_chunks : int, optional, default=10
-
         Relevant only when engine="python".
     Examples
     ---------
@@ -759,9 +757,22 @@ class CustomSensitivityManager:
                           seed: int | None = 48,
                           sample_options: dict | None = None,
                           analyze_options: dict | None = None,
-                          grouping: None | list = None
+                          grouping: None | list = None,
+                          tables: None | list = None,
+                          total_chunks: int =10
 
                           ):
+        """
+        grouping : list | None, optional, default=None
+            If provided, results will be grouped according to the specified
+            grouping variable(s), and evaluations will be performed separately
+            for each group.
+        tables : list | None, required
+            None is retained only for backward compatibility. The function
+            will raise a ValueError if tables are not provided.
+        total_chunks : int, optional, default=10
+            Relevant only when engine="python".
+        """
         if not self.runner:
             # run with defaults if not called by the user
             self.config_problem()
@@ -776,7 +787,9 @@ class CustomSensitivityManager:
                                    N=N, seed=seed,
                                    sample_options=sample_options,
                                    analyze_options=analyze_options,
-                                   grouping=grouping
+                                   grouping=grouping,
+                                   tables=tables,
+                                   total_chunks=total_chunks
                                    )
         return self
 

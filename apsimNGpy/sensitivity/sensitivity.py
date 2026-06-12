@@ -195,7 +195,8 @@ class ConfigProblem:
             engine: str,
             chunk_size: int = 100,
             groupings: list | None = None,
-            tables: list | None = None
+            tables: list | None = None,
+            total_chunks: int = 10,
     ):
         """
         Run APSIM simulations and return outputs and raw results.
@@ -226,7 +227,7 @@ class ConfigProblem:
                     engine=engine,
                     chunk_size=chunk_size,
                     table_name=tables,
-                    total_chunks=10,
+                    total_chunks=total_chunks,
                 )
                 df = mc.get_simulated_output(axis=0)
 
@@ -349,7 +350,8 @@ def run_sensitivity(
         engine='python',
         chunk_size: int = 100,
         grouping: None | list = None,
-        tables: None | list = None
+        tables: None | list = None,
+        total_chunks: int = 10
 ):
     """
     Run a complete sensitivity analysis.
@@ -591,7 +593,8 @@ def run_sensitivity(
         engine=engine,
         chunk_size=chunk_size,
         groupings=grouping,
-        tables=tables
+        tables=tables,
+        total_chunks=total_chunks,
     )
 
     sample_options.setdefault('seed', seed)
@@ -864,6 +867,7 @@ if __name__ == "__main__":
     # )
     si_fast = run_sensitivity(
         runner,
+        total_chunks=8,
         method="fast",
         tables=['Report'],
         N=50,

@@ -768,7 +768,7 @@ class MultiCoreManager(PlotManager):
 
         elif engine.lower() == 'python':
             self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads, subset=subset, table_name=table_name,
-                               clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors,
+                               clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors,n_chunks=total_chunks,
                                call_back=callback)
         else:
             raise ValueError(f"Unsupported engine expected str as (python or csharp) got {engine}")

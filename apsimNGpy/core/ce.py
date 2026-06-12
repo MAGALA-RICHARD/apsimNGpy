@@ -1,172 +1,15 @@
 """
 The role of this module is to provide explicit support for editing cultivars
 """
-from functools import lru_cache, cache
 
-import json
-import hashlib
-
-from apsimNGpy import timer, is_scalar
+from typing import Iterable
+from apsimNGpy import is_scalar
 from apsimNGpy.exceptions import NodeNotFoundError
 from apsimNGpy.starter.starter import CLR
-from dataclasses import dataclass
-from apsimNGpy.core.model_loader import get_node_by_path
-from apsimNGpy.core.model_tools import ModelTools
-from typing import Iterable, Any
-
+from apsimNGpy import timer
 Models = CLR.Models
 
 REPLACEMENTS = 'Replacements'
-
-
-@timer
-def create_new_cultivar(apsim_model, *, commands, template, parent_plant, rename=None):
-    """
-    Functionsl approach for creating or updating a cultivar by applying parameter commands and attaching it
-    under the Replacements folder for a given plant.
-
-    This method constructs a new `Models.PMF.Cultivar` node by merging user-provided
-    commands with existing cultivar parameters, then inserts it under:
-
-        .Simulations.Replacements.<parent_plant> implying that the new cultivar needs to be sown in the appropriate manager script or operations module
-
-    If the `Replacements` folder or the specified plant does not exist, they will
-    be created automatically.
-
-    Parameters
-    ----------
-    apsim_model : apsimNGpy.core.apsim.ApsimModel | apsimNGpy.core.Experiment.ExperimentManager
-         any instance of the `apsimNGpy.core.apsim.ApsimModel or apsimNGpy.core.Experiment.ExperimentManager`
-    commands : dict | list | tuple | set | str
-        Parameter modification commands to apply to the cultivar.
-
-        Supported formats:
-        - dict:
-            {"[Phenology].Juvenile.Target.FixedValue": 300}
-        - iterable (list/tuple/set):
-            ["[Phenology].Juvenile.Target.FixedValue=300"]
-        - str:
-            "[Phenology].Juvenile.Target.FixedValue=300"
-
-        All inputs are normalized internally to a set of APSIM command strings
-        of the form:
-            "parameter_path=value"
-
-    template : str
-        Name of the base cultivar used as a template for extracting existing parameters.
-        It Should be exactly as it is named in APSIM e.g., maize is incorrect, and Maize is correct
-
-
-    parent_plant : str
-        Name of the plant (e.g., "Maize", "Wheat", "Soybean") under which the cultivar
-        will be attached in the Replacements folder.
-
-    rename : str, optional
-        Name of the new cultivar. If not provided, defaults to:
-            f"ed{template}"
-
-    Behavior
-    --------
-    - Converts all input commands into APSIM-compatible command strings.
-    - Retrieves existing parameters from a reference cultivar.
-    - Merges existing parameters with user-provided commands (user commands override).
-    - Ensures the following structure exists:
-        .Simulations
-            └── Replacements
-                └── <parent_plant>
-    - Creates or replaces a cultivar under the specified plant using `add_new_model`.
-
-    Notes
-    -----
-    - The cultivar is created with:
-        ReadOnly = False
-    - Existing cultivars with the same name may be replaced depending on `replace=True`.
-    - This method assumes APSIM model is already loaded and valid in memory.
-
-    Returns
-    -------
-    None
-        The method modifies the APSIM model in-place.
-
-    Raises
-    ------
-    ValueError
-        If `commands` is not one of the supported types:
-        (dict, list, tuple, set, or str)
-
-    Examples
-    --------
-    >>> from apsimNGpy import ApsimModel
-    >>> model = ApsimModel('Maize')
-    >>> create_new_cultivar(apsim_model=model,
-    ...     commands={"[Phenology].Juvenile.Target.FixedValue": 350},
-    ...     template="B_100",
-    ...     parent_plant="Maize",
-    ...     rename="Maize_fast"
-    ... )
-
-    >>> create_new_cultivar(apsim_model=model,
-    ...     commands=[
-    ...         "[Grain].MaximumGrainsPerCob.FixedValue=800",
-    ...         "[Phenology].ThermalTime.Target=1200"
-    ...     ],
-    ...     template="B_100",
-    ...     parent_plant="Maize"
-    ... )
-
-    >>> create_new_cultivar(apsim_model=model,
-    ...     commands="[Phenology].Juvenile.Target.FixedValue=280",
-    ...     template="B_100",
-    ...     parent_plant="Maize"
-    ... )
-
-    Developer Notes
-    ---------------
-    - Consider parameterizing the base cultivar instead of hardcoding 'B_100'.
-    - Ensure `add_new_model` correctly resolves CLR types and handles replacement logic.
-    @param apsim_model:
-    """
-    apsim_model.add_crop_replacements()
-    # avoids mixing pup different plants
-    plant_node = apsim_model.has_node(parent_plant, node_type="Models.PMF.Plant")
-    if not plant_node['ok']:
-        raise NodeNotFoundError(f"model node:{parent_plant} not found")
-    match commands:
-        case dict():
-            keys = commands.keys()
-            commands = {f"{k}={v}" for k, v in commands.items()}
-        case list() | tuple() | set():
-            commands = set(commands)
-            keys = [k.split("=")[0].strip() for k in commands]
-        case str():
-            keys = commands.split('=')[0].strip()
-            commands = {commands}
-        case _:
-            raise ValueError(f"Unknown command type: {type(commands)} expected list, str, tuple, dicts or set")
-    existing_params = apsim_model.inspect_model_parameters(model_type='Models.PMF.Cultivar', model_name='B_100')
-    all_EX = {f"{k}={v}" for k, v in existing_params.items() if k not in keys}
-    # NOW WE CAN MERGE COMFORTABLY below
-    rename = rename or f"ed_{parent_plant}_{template}"
-
-    cult_load = {
-        "$type": "Models.PMF.Cultivar, Models",
-        "Command": [
-            *all_EX,
-            *commands,
-        ],
-        "Name": f"{rename}",
-        # "Enabled": True,
-        "ReadOnly": False,
-
-    }
-
-    apsim_model.save()
-    # get this again to get it full path
-    rep_path = f".{apsim_model.Simulations.Name}.{REPLACEMENTS}.{parent_plant}"
-    apsim_model.add_new_model(parent_type='Models.PMF.Plant',
-                              parent_identifier=rep_path,
-                              replace=True,
-                              source=cult_load)
 
 
 def _check_cmds(commands):
@@ -298,8 +141,11 @@ def attach_cultivar(model, name: str, manager: str, param_name: str):
 
 def harmonize(command):
     match command:
-        case list():
+        case list() | tuple():
             return _check_cmds(commands=command)
+        case dict():
+            # dicts dont need to be validated
+            return command
         case _:
             raise NotImplementedError(f"{type(command)} is not supported")
 
@@ -321,18 +167,18 @@ def _format_cmds(old_commands, new_commands: dict | list, clear_old=False):
     return fmt_cmds
 
 
-def new_cultivar(model, *, commands, plant, template=None, rename=None, managers=None):
+def derive_cultivar(model, *, commands, plant, template=None, rename=None, managers=None):
     # template can be None
     command_inspection = model.inspect_model_parameters("Models.PMF.Cultivar", model_name=template)[
         'Command'] if template else {}
 
     cmds = _format_cmds(command_inspection, commands, clear_old=False)
     model.add_crop_replacements()
-    plant_path = f"{model.Simulations.FullPath}.Replacements.{plant.capitalize()}"
+    plant_path = f"{model.Simulations.FullPath}.{REPLACEMENTS}.{plant.capitalize()}"
     # check if a plant path is valid
     if not plant_path in model.inspect_model("Models.PMF.Plant"):
         raise ValueError(f"{plant} not found in the simulation root")
-    default = f"new{template}_{plant}_cultivar" if template else f"new_{plant}_cultivar"
+    default = f"modified_{template}_{plant}_cultivar" if template else f"modified_{plant}_cultivar"
     rename = rename or default
     model.add_new_model(parent_identifier=plant_path, parent_type='Models.PMF.Plant',
                         replace=True,
@@ -373,8 +219,28 @@ if __name__ == "__main__":
 
     with ApsimModel('Maize') as mod:
         cms = [f'[Phenology].Juvenile.Target.FixedValue=490']
-        new_cultivar(mod, template=None, commands=cms, rename=None, plant='maize', clear_old=True,
-                      managers={'Sow using a variable rule': "CultivarName"})
+        cms_tup = tuple(cms)
+        derive_cultivar(mod, template=None, commands=cms, rename=None, plant='maize',
+                        managers={'Sow using a variable rule': "CultivarName"})
         out = mod.inspect_model_parameters("Models.Manager", model_name="Sow using a variable rule",
                                            parameters='Parameters')
-        mod.open_in_gui(watch=True)
+        if 'modified_maize_cultivar' in set(mod.inspect_model('Models.PMF.Cultivar', fullpath=False)):
+            # check if edits were successful
+             p = mod.inspect_model_parameters('Models.PMF.Cultivar', 'modified_maize_cultivar')
+             juv = p.get('Command', p)['[Phenology].Juvenile.Target.FixedValue']
+             assert juv =='490'
+        else:
+            raise ValueError('edits were not successful')
+
+        assert out.get('Parameters', out)['CultivarName']=='modified_maize_cultivar'
+        #mod.open_in_gui(watch=True)
+        derive_cultivar(mod, template=None, commands=cms_tup, rename="None", plant='maize',
+                        managers={'Sow using a variable rule': "CultivarName"})
+        if 'None' in set(mod.inspect_model('Models.PMF.Cultivar', fullpath=False)):
+            # check if edits were successful
+             p = mod.inspect_model_parameters('Models.PMF.Cultivar', 'modified_maize_cultivar')
+             juv = p.get('Command', p)['[Phenology].Juvenile.Target.FixedValue']
+             assert juv =='490'
+        else:
+            raise ValueError('edits were not successful')
+        mod.open_in_gui()

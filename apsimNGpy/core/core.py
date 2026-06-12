@@ -31,7 +31,7 @@ KeyValuePair = CLR.System.Collections.Generic.KeyValuePair
 String = CLR.System.String
 InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOperationException, CLR.System.ArgumentOutOfRangeException
 from apsimNGpy.config import configuration
-from apsimNGpy.core.ce import new_cultivar
+from apsimNGpy.core.ce import derive_cultivar
 
 CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, cast_obj,
@@ -1961,8 +1961,8 @@ class CoreModel(PlotManager):
                 if sowed:
                     kwargs['managers'] = None
                 command = kwargs.get('command') or kwargs.get('commands')
-                new_cultivar(self, managers=_managers, commands=command,rename=rename,
-                             plant=plant_name, template=template)
+                derive_cultivar(self, managers=_managers, commands=command, rename=rename,
+                                plant=plant_name, template=template)
                 # self.edit_model(model_type=Models.PMF.Cultivar,
                 #                 model_name=template, **kwargs)
             case Models.Clock:
@@ -2262,7 +2262,7 @@ class CoreModel(PlotManager):
                     "parameter_name='CultivarName'`."
                 )
 
-            partial__editor = partial(new_cultivar, self, template=model_name, rename=rename, plant=plant_name,
+            partial__editor = partial(derive_cultivar, self, template=model_name, rename=rename, plant=plant_name,
                                       managers=manager_map)
 
             match commands:

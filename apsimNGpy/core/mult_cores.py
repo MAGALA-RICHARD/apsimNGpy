@@ -443,8 +443,8 @@ class MultiCoreManager(PlotManager):
             raise ValueError("results are empty or not yet simulated")
 
     def run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, subset=None,
-                     ignore_runtime_errors=True, engine='python', progressbar: bool = True,
-                     chunk_size: int = 100, callback=None, **kwargs):
+                     ignore_runtime_errors=True, engine='python', progressbar: bool = True, table_name=None,
+                     chunk_size: int = 100, total_chunks=10, callback=None, **kwargs):
         """
 
         This method executes a collection of APSIM simulation jobs in parallel,
@@ -767,15 +767,15 @@ class MultiCoreManager(PlotManager):
                                             call_back=callback)
 
         elif engine.lower() == 'python':
-            self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads, subset=subset,
+            self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads, subset=subset, table_name=table_name,
                                clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors,
                                call_back=callback)
         else:
             raise ValueError(f"Unsupported engine expected str as (python or csharp) got {engine}")
 
     def _run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, progressbar: bool = True,
-                      subset=None, index=None,
-                      ignore_runtime_errors=True, **kwargs):
+                      subset=None, index=None, table_name=None,
+                      ignore_runtime_errors=True, n_chunks=10, **kwargs):
         """
         Run all provided jobs using multiprocessing or multithreading.
 
@@ -935,13 +935,13 @@ class MultiCoreManager(PlotManager):
             self.clear_db()  # each simulation is fresh,
 
         worker = partial(single_runner, agg_func=self.agg_func, index=index, call_back=kwargs.get('call_back'),
-                         ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate,
+                         ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate, table_name=table_name,
                          db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
         try:
-
-            for _ in custom_parallel(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
-                                     progress_message=f'APSIM running', unit='sim', void=False,
-                                     progressbar=progressbar):
+            from apsimNGpy.parallel.process import custom_parallel_chunks
+            for _ in custom_parallel_chunks(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
+                                            progress_message=f'APSIM running', unit='chunk', void=False,n_chunks=n_chunks,
+                                            progressbar=progressbar):
                 pass
 
         finally:

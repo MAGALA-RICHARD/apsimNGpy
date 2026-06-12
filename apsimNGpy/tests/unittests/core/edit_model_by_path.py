@@ -133,9 +133,34 @@ class TestEditModelByPath(unittest.TestCase):
             self.assertIn('edit-added', model.inspect_model('Models.PMF.Cultivar', fullpath=False),
                           msg='edited cultivar edit-added was not added to the replacement')
 
-    # ---------------------------------------------------
+    def test_edited_cultivar_added_to_replacements_in(self):
+        with ApsimModel('Maize') as model:
+            model.add_crop_replacements()
+            print()
+            yMaize_before = model.run('Report').results['Yield'].mean()
+            model.edit_model_by_path(
+                path='.Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82',
+                commands=[f'[Grain].MaximumGrainsPerCob.FixedValue=300',
+                          f'[Maize].Leaf.Photosynthesis.RUE.FixedValue=1'],
+                plant='Maize',
+                managers={'Sow using a variable rule': 'CultivarName'},
+                rename='edit-added')
+            model.save()
+            yMaize_after = model.run('Report').results['Yield'].mean()
+
+            self.assertNotEqual(yMaize_after, yMaize_before, msg='no changes detected after editing')
+            out = model.inspect_model_parameters('Models.PMF.Cultivar', model_name='edit-added')
+            out_value = out['Command']['[Grain].MaximumGrainsPerCob.FixedValue']
+            self.assertEqual(out_value, '300', 'edited cultivar  not successfully added to the replacements')
+            for i in model.inspect_model('Models.PMF.Cultivar'):
+                if i.split('.')[-1] == 'edit-added':
+                    self.assertIn('Replacements', i.split('.'))
+            self.assertIn('edit-added', model.inspect_model('Models.PMF.Cultivar', fullpath=False),
+                          msg='edited cultivar edit-added was not added to the replacement')
+
+    # ------------------------------------------------------------------------
     # Ensure edited cultivar is updated in the manager script; soybean model
-    # ---------------------------------------------------
+    # -----------------------------------------------------------------------
     def test_edited_cultivar_is_updated_to_manager(self):
         with ApsimModel('Maize') as model:
             model.edit_model_by_path(
@@ -154,14 +179,15 @@ class TestEditModelByPath(unittest.TestCase):
     def test_edited_cultivar_is_updated_to_manager_soy(self):
         with ApsimModel('Soybean') as model:
             model.edit_model_by_path(
-                path=cultivar_path_soybean,
+                path=model.inspect_model('Models.PMF.Cultivar')[0],
                 commands={f'[Grain].MaximumGrainsPerCob.FixedValue': 50},
                 plant='Soybean',
-                sowedr=False,
+                sowed=False,
                 managers={'.Simulations.Simulation.Field.Sow using a variable rule': 'CultivarName'},
                 rename='edit-added')
-            self.assertIn('edit-added', model.inspect_model_parameters_by_path(
-                '.Simulations.Simulation.Field.Sow using a variable rule')['Parameters'].values())
+
+            self.assertIn('edit-added', model.inspect_model_parameters('Models.Manager',
+                'Sow using a variable rule')['Parameters'].values())
 
     # ---------------------------------------------------
     # Ensure if updating a cultivar path to manger is given but not the parameter holder, raise values error

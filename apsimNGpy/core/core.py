@@ -17,7 +17,7 @@ import shutil
 import string
 import warnings
 from collections.abc import KeysView, ValuesView
-from functools import lru_cache
+from functools import lru_cache, partial
 from typing import Any
 from typing import Union
 
@@ -31,7 +31,7 @@ KeyValuePair = CLR.System.Collections.Generic.KeyValuePair
 String = CLR.System.String
 InvalidOperationException, ArgumentOutOfRangeException = CLR.System.InvalidOperationException, CLR.System.ArgumentOutOfRangeException
 from apsimNGpy.config import configuration
-from apsimNGpy.core.ce import CreatNewCultivar
+from apsimNGpy.core.ce import new_cultivar
 
 CastHelper = CLR.CastHelper
 from apsimNGpy.core.model_loader import (load_apsim_model, save_model_to_file, recompile, cast_obj,
@@ -1812,12 +1812,43 @@ class CoreModel(PlotManager):
              Events that trigger the report.
 
         Models.PMF.Cultivar:
-            commands (str):
-               APSIM path to the cultivar parameter to update.
-            values: (Any)
-               Value to assign.
-            cultivar_manager: (str)
-               Name of the Manager script managing the cultivar, which must contain the `CultivarName` parameter. Required to propagate updated cultivar values, as APSIM treats cultivars as read-only.
+            Parameters
+            ----------
+            commands: dict | iterable required
+            values: values
+            plant : str
+                Name of the plant hosting the cultivar (e.g., ``"Maize"``,
+                ``"Wheat"``, or ``"Soybean"``). Required.
+
+            template : str, optional
+                Name of the cultivar used as the template for constructing
+                the edited cultivar. If omitted, ``model_name`` is used.
+
+            rename : str, optional
+                Name of the edited cultivar. If not provided, a name will be
+                generated automatically.
+
+            managers : str or Iterable[str], optional
+                Manager script name(s) to update with the edited cultivar.
+                Ignored when ``sowed=True``.
+
+            sowed : bool, default=False
+                If ``True``, APSIMNGpy automatically locates manager scripts
+                responsible for sowing the specified crop and updates them to
+                use the edited cultivar. In this case, ``managers`` does not
+                need to be supplied.
+
+                If ``False``, the cultivar is created or updated but manager
+                scripts are only modified when explicitly specified through
+                ``managers``.
+
+            Notes
+            -----
+            Setting ``sowed=True`` provides a convenient way to create and
+            activate a cultivar without manually identifying the sowing
+            manager script. The cultivar is automatically attached to the
+            appropriate sowing operation for the specified crop.
+
 
         .. warning::
 
@@ -1920,85 +1951,20 @@ class CoreModel(PlotManager):
                 ...
             case Models.PMF.Cultivar:
 
-                # Ensure crop replacements exist under Replacements
-                # if 'Replacements' not in self.inspect_model('Models.Core.Folder'):
-                #     for crop_name in self.inspect_model(Models.PMF.Plant, fullpath=False):
-                #         self.add_crop_replacements(_crop=crop_name)
                 plant_name = kwargs.get('plant')
-                if plant_name is None:
-                    raise ValueError(
-                        f'Please specify the plant name e.g., Maize, Soybean etc hosting the suggested cultivar: {values.Name}')
-                rename = kwargs.get('rename', f"e_{plant_name}_{values.Name}")
-
-                cc = CreatNewCultivar(model=self, template=values.Name, plant=plant_name)
-                commands = kwargs.get('commands')
-                match commands:
-                    case dict():
-                        # Example: {'[Phenology].Juvenile.Target.FixedValue':'200'}
-                        cc.edit_by_cmd_pairs(name=rename, commands=commands)
-
-                    case list() | tuple() | ValuesView() | KeysView():
-                        values = kwargs.get("values", [])
-
-                        if not values:
-                            # Example: ['[Phenology].Juvenile.Target.FixedValue=200']
-                            cc.edit_by_cmd_iterable(rename, commands=commands)
-                        else:
-                            if is_scalar(values):
-                                raise TypeError(
-                                    f"Expected an iterable of values, but got {type(values).__name__}."
-                                )
-
-                            # Example:
-                            # commands = ['[Phenology].Juvenile.Target.FixedValue']
-                            # values = [200]
-                            if len(commands) != len(values):
-                                raise ValueError(
-                                    f"Length mismatch: {len(commands)} command(s) vs {len(values)} value(s)."
-                                )
-
-                            cmd_dict = dict(zip(commands, values))
-                            cc.edit_by_cmd_pairs(commands=cmd_dict, name=rename)
-
-                    case _:
-                        raise TypeError(
-                            f"Unsupported type for 'commands': {type(commands).__name__}. "
-                            "Expected dict, list, or tuple."
-                        )
-
-                # kwargs['plant'] = trace_cultivar(self.Simulations, values.Name).get(values.Name)
-
-                mp = kwargs.get('manager_path', None) or kwargs.get('managers')
-                if not isinstance(mp, dict):
-                    raise ValueError(
-                        f"Expected a dict, but got {type(mp).__name__}. "
-                        "Please provide a dictionary where keys are manager paths or names "
-                        "and values are parameter names. Example: `{'Sow using a variable rule':'CultivarName'}"
-                    )
-                for k, v in mp.items():
-                    cc.attach_cultivar(name=rename, manager=k, param_name=v)
-
-                # kvp = {}
-                # for k, v in kwargs.items():
-                #     if extract_cultivar_param_path(k):
-                #         kvp[k] = v
-                # commands = commands or kvp
-                # if not commands:
-                #     print(commands)
-                #     raise ValueError('key word arguments commands missing or dict of paramters values')
-                # if isinstance(commands, dict):
-                #     commands, com_values = commands.keys(), commands.values()
-                #
-                # else:
-                #     com_values = kwargs.get('values')
-                # edit_cultivar_by_path(self, path=path, commands=commands,
-                #                       values=com_values, manager_param=kwargs.get('manager_param'),
-                #                       manager_path=kwargs.get('manager_path'),
-                #                       sowed=kwargs.get('sowed', True), rename=kwargs.get('rename'))
-                # if kwargs.get('commands', None):  # changed it momentarily
-                #     _edit_in_cultivar(self, model_name=values.Name, simulations=simulations, param_values=kwargs,
-                #                       verbose=verbose, by_path=True)
-                # ...
+                if not plant_name:
+                    raise ValueError('Please specify the plant name hosting the cultivar')
+                rename = kwargs.get('rename')
+                _managers = kwargs.get('managers', None)
+                template = kwargs.get('template') or values.Name
+                sowed = kwargs.get('sowed')
+                if sowed:
+                    kwargs['managers'] = None
+                command = kwargs.get('command') or kwargs.get('commands')
+                new_cultivar(self, managers=_managers, commands=command,rename=rename,
+                             plant=plant_name, template=template)
+                # self.edit_model(model_type=Models.PMF.Cultivar,
+                #                 model_name=template, **kwargs)
             case Models.Clock:
                 self._set_clock_vars(values, param_values=kwargs)
             case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute:
@@ -2015,7 +1981,7 @@ class CoreModel(PlotManager):
             #     self._set_surface_organic_matter(values, param_values=kwargs, verbose=verbose)
             case _:
                 self._safe_edit_instance(values, type(values), **kwargs)
-                #raise NotImplementedError(f"No edit method implemented for model type {type(values)}")
+                # raise NotImplementedError(f"No edit method implemented for model type {type(values)}")
 
         return self
 
@@ -2168,7 +2134,6 @@ class CoreModel(PlotManager):
         def _model_type_name(cls):
             return getattr(cls, "__name__", str(cls))
 
-
         def _find_model_instance(scope):
             if is_higher_apsim_version():
                 # Sobol and Morris are usually direct children of Simulations,
@@ -2183,10 +2148,11 @@ class CoreModel(PlotManager):
                 found = self.Simulations.FindDescendant[model_type_class](model_name)
 
             if found is None and not scope.Name == 'Replacements':
-                raise ValueError(
-                    f"Model '{model_name}' of type '{_model_type_name(model_type_class)}' "
-                    f"was not found under '{getattr(scope, 'Name', scope)}'."
-                )
+                if not model_type in {"Models.PMF.Cultivar", Models.PMF.Cultivar}:
+                    raise ValueError(
+                        f"Model '{model_name}' of type '{_model_type_name(model_type_class)}' "
+                        f"was not found under '{getattr(scope, 'Name', scope)}'."
+                    )
 
             model_to_cast = getattr(found, "Model", found)
             return CastHelper.CastAs[model_type_class](model_to_cast)
@@ -2278,41 +2244,10 @@ class CoreModel(PlotManager):
                     or kwargs.get("new_cultivar_name")
                     or f"e_{plant_name}_{model_name}"
             )
-
-            cc = CreatNewCultivar(
-                model=self,
-                template=model_name,
-                plant=plant_name,
-            )
-
-            match commands:
-                case dict():
-                    cc.edit_by_cmd_pairs(name=rename, commands=commands)
-
-                case list() | tuple() | ValuesView() | KeysView():
-                    values = kwargs.get("values", [])
-
-                    if not values:
-                        cc.edit_by_cmd_iterable(rename, commands=commands)
-                    else:
-                        cc.edit_by_cmd_values(
-                            rename,
-                            commands=commands,
-                            values=values,
-                        )
-
-                case _:
-                    raise TypeError(
-                        f"Unsupported type for `commands`: {type(commands).__name__}. "
-                        "Expected dict, list, tuple, ValuesView, or KeysView."
-                    )
-
-            manager_map = kwargs.get("manager_path") or kwargs.get("managers")
-
             # Backward-compatible documented API:
             cultivar_manager = kwargs.get("cultivar_manager")
             parameter_name = kwargs.get("parameter_name", "CultivarName")
-
+            manager_map = kwargs.get("manager_path") or kwargs.get("managers")
             if manager_map is None and cultivar_manager is not None:
                 manager_map = {cultivar_manager: parameter_name}
 
@@ -2327,12 +2262,27 @@ class CoreModel(PlotManager):
                     "parameter_name='CultivarName'`."
                 )
 
-            if isinstance(manager_map, dict):
-                for manager, param_name in manager_map.items():
-                    cc.attach_cultivar(
-                        name=rename,
-                        manager=manager,
-                        param_name=param_name,
+            partial__editor = partial(new_cultivar, self, template=model_name, rename=rename, plant=plant_name,
+                                      managers=manager_map)
+
+            match commands:
+                case dict():
+                    partial__editor(commands=commands)
+
+                case list() | tuple() | ValuesView() | KeysView():
+                    values = kwargs.get("values", [])
+
+                    if not values:
+                        partial__editor(commands=commands)
+                    else:
+                        from apsimNGpy.core.ce import format_cmd_values
+                        commands = format_cmd_values(commands, values=values)
+                        partial__editor(commands=commands)
+
+                case _:
+                    raise TypeError(
+                        f"Unsupported type for `commands`: {type(commands)}. "
+                        "Expected dict, list, tuple, ValuesView, or KeysView."
                     )
 
         def edit_object(scope):
@@ -2415,8 +2365,6 @@ class CoreModel(PlotManager):
 
         self.ran_ok = False
         return self
-
-
 
     @staticmethod
     def inspect_settable_attributes(model_type):

@@ -312,21 +312,24 @@ def _find_model(model_name: str, model_namespace=Models, target_type=CLASS_MODEL
 
     return None
 
+
 desc = dict(Salib='Fraction of incoming solar radiation',
-                        WinterU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
-                        SummerU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
-                        PSIDul='Matric Potential at DUL (cm)',
-                        CNCov='Cover for maximum curve number reduction',
-                        DiffusSlope='effect of soil water storage above the lower limit on on soil water diffusivity (mm)',
-                        DischargeWidth='Basal width of the down slope boundary of the catchment for lateral flow calculations',
-                        SummerCona='Drying coefficient for stage 2 soil water evaporation in summer',
-                        DiffusConst='Constant in soil water diffusivity calculations',
-                        CN2Bare='Run off curve number ofr bare soil with average moisture',
-                        CatchmentArea='Catchment area flow calculations (m2)',
-                        WinterDate='Start date to switch to winter parameters',
-                        WinterCona='Drying coefficient for stage 2 soil water evaporation in winter',
-                        SummerDate='Start date to switch to summer parameters',
-                        )
+            WinterU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
+            SummerU='Cumulative soil water evaporation to reach end of stage 1 soil water evaporation in winter',
+            PSIDul='Matric Potential at DUL (cm)',
+            CNCov='Cover for maximum curve number reduction',
+            DiffusSlope='effect of soil water storage above the lower limit on on soil water diffusivity (mm)',
+            DischargeWidth='Basal width of the down slope boundary of the catchment for lateral flow calculations',
+            SummerCona='Drying coefficient for stage 2 soil water evaporation in summer',
+            DiffusConst='Constant in soil water diffusivity calculations',
+            CN2Bare='Run off curve number ofr bare soil with average moisture',
+            CatchmentArea='Catchment area flow calculations (m2)',
+            WinterDate='Start date to switch to winter parameters',
+            WinterCona='Drying coefficient for stage 2 soil water evaporation in winter',
+            SummerDate='Start date to switch to summer parameters',
+            )
+
+
 def find_model(model_name: str):
     model_type = _find_model(model_name)
     if model_type:
@@ -465,8 +468,8 @@ def extract_value(model_instance, parameters=None):
 
     match type(model_instance):
         case Models.Climate.Weather:
-            value  =_general_extractor(model_instance, parameters)
-            #value = model_instance.FileName
+            value = _general_extractor(model_instance, parameters)
+            # value = model_instance.FileName
         case Models.Clock:
             import datetime
             def __convert_to_datetime(dotnet_dt):
@@ -499,7 +502,7 @@ def extract_value(model_instance, parameters=None):
         case Models.Manager:
             value = _general_extractor(model_instance, parameters=parameters)
             params = value['Parameters']
-            value['Parameters'] = {param.Key: param.Value for param in params }
+            value['Parameters'] = {param.Key: param.Value for param in params}
 
         case Models.Soils.Physical | Models.Soils.Chemical | Models.Soils.Organic | Models.Soils.Water | Models.Soils.Solute | Models.Report \
              | Models.PMF.Organs.ReproductiveOrgan | Models.PMF.Organs.Root | Models.PMF.Phen.Phenology \
@@ -507,14 +510,16 @@ def extract_value(model_instance, parameters=None):
              | Models.Soils.LayerStructure | Models.Soils.Swim3 | Models.Soils.SoilTemp.SoilTemperature | Models.Storage.DataStore | Models.Morris:
             value = _general_extractor(parameters=parameters, model_instance=model_instance)
         case Models.WaterModel.WaterBalance:
-            value  = _general_extractor(model_instance,parameters=parameters)
+            value = _general_extractor(model_instance, parameters=parameters)
         case Models.PMF.Cultivar:
             value = _general_extractor(model_instance, parameters=None)
+            #value2 = _general_extractor(model_instance, parameters=['Parent', 'FullPath'])
             comm = value['Command']
             if isinstance(comm, list):
                 coms = (i.split('=') for i in comm)
-                cmd = {i[0]:i[1] for i in coms}
+                cmd = {i[0]: i[1] for i in coms}
                 value['Command'] = cmd
+            #value = value2 | value
 
         case _:
             value = _general_extractor(model_instance, parameters)

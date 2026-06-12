@@ -1,19 +1,19 @@
+import gc
+import hashlib
 import os
 import sqlite3
 from itertools import tee
+from multiprocessing import Value, Lock
 from pathlib import Path
+from typing import Tuple, Dict, Any, List
+from uuid import uuid4
 
 import pandas as pd
 from pandas import DataFrame
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
-from uuid import uuid4
+from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core_utils.database_utils import write_df_to_sql, read_with_pandas, get_db_table_names
 from apsimNGpy.exceptions import ApsimRuntimeError
-import hashlib
-from multiprocessing import Value, Lock
-from typing import Tuple, Dict, Any, List
-from apsimNGpy.parallel._process import JobTracker
 from apsimNGpy.logger import logger
 
 aggs = {'sum', 'mean', 'max', 'min', 'median', 'std'}
@@ -24,7 +24,7 @@ IDENTIFICATION = 'ID'
 PAYLOAD = 'payload'
 INPUTS = 'inputs'
 PATH = 'path'
-TIMEOUT = 1000
+TIMEOUT = None
 TABLE_PREFIX = '__table'
 RETRY_INTERVAL = 1
 MODEL_KEY = 'model'
@@ -171,7 +171,7 @@ def single_runner(
         subset=None,
         call_back=None,
         ignore_runtime_errors=True,
-        retry_rate=RETRY_INTERVAL, table=None):
+        retry_rate=RETRY_INTERVAL, table_name=None):
     """
     Execute a single APSIM simulation job and persist its results to a database.
 
@@ -239,6 +239,7 @@ def single_runner(
       support reproducibility and parallel execution tracking. Execution is determined from columns schemas
       and process ID is stochastic from each process or threads
     """
+    table_to_use = table_name
 
     @retry(stop=stop_after_attempt(retry_rate),
            retry=retry_if_exception_type((ApsimRuntimeError, TimeoutError, sqlite3.OperationalError)))
@@ -252,6 +253,7 @@ def single_runner(
             """
 
             model, metadata, inputs = _inspect_job(job)
+
             ID = metadata.get(IDENTIFICATION, None) if metadata else None
             with (ApsimModel(model) as _model):
                 try:
@@ -262,7 +264,7 @@ def single_runner(
                         # set before running
                         for in_put in inputs:
                             _model.set_params(**in_put)
-                    _model.run(timeout=timeout, cpu_count=4)
+                    _model.run(timeout=timeout, cpu_count=4, report_name=table_to_use)
 
                     # Aggregate results if requested
                     if agg_func:
@@ -270,20 +272,32 @@ def single_runner(
                             raise ValueError(
                                 f"Unsupported aggregation function '{agg_func}'"
                             )
-
-                        grp = index or "source_table"
+                        if not index or index == "source_table":
+                            grp = ["source_table"]
+                        elif is_scalar(index):
+                            grp = [index, 'source_table']
+                        else:
+                            if 'source_table' in index:
+                                grp = [*index]
+                            else:
+                                grp = [*index, 'source_table']
+                        grp = list(grp)
                         dat = _model.results.groupby(grp)
                         out = dat.agg(agg_func, numeric_only=True)
+                        out.reset_index(inplace=True, drop=False)
                         out["source_name"] = Path(model).name
                     else:
-                        grp = 'source_table'
                         out = _model.results
 
                     if sub:
+                        if is_scalar(sub):
+                            sub = [sub]
+                        if 'source_table' in out and 'source_table' not in sub:
+                            sub =  [*sub, 'source_table']
 
-                        sub = [sub] if isinstance(sub, str) else sub
                         if set(sub).issubset(out.columns):
                             out = out[[*sub]].copy()
+
                     # Attach execution metadata
                     PID = os.getpid()
                     out["MetaProcessID"] = PID
@@ -299,6 +313,8 @@ def single_runner(
                     table_name = f"{table_prefix}_{schema_hash}_{PID}"
                     write_df_to_sql(out, db_or_con=db_conn, table_name=table_name, if_exists=if_exists,
                                     chunk_size=chunk_size)
+                    del out, inputs, model, metadata, merged_inputs
+                    gc.collect()
 
                 except ApsimRuntimeError as apr:
                     # Track failed jobs without interrupting the workflow
@@ -323,12 +339,13 @@ def single_runner(
         _inside_runner(subset)
         return True
 
-    return runner_it()
+    rt = runner_it()
+    return rt
 
 
 x = 0
 
-from apsimNGpy.core_utils.utils import timer
+from apsimNGpy.core_utils.utils import timer, is_scalar
 
 
 @timer
@@ -358,7 +375,7 @@ def run_multi_core(files, agg_func=None):
     if agg_func is not None:
         df = pd.concat(dif, ignore_index=True)
         number = df.select_dtypes(include='number').columns.tolist()
-        return df.groupby(['CollectionID']).agg({i:agg_func for i in number})
+        return df.groupby(['CollectionID']).agg({i: agg_func for i in number})
 
     return dif
 
@@ -368,7 +385,7 @@ if __name__ == '__main__':
 
     mcp = Path('mptc')
     pid = os.getpid()
-    mcp.mkdir( exist_ok=True)
+    mcp.mkdir(exist_ok=True)
     for u in mcp.glob('*'):
         try:
             u.unlink()

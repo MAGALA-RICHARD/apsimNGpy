@@ -51,8 +51,8 @@ parameters = [
     {
         "Path": "[Maize].Leaf.Photosynthesis.RUE.FixedValue",
         "Name": "RUE",
-        "LowerBound": 1.125,
-        "UpperBound": 3.375,
+        "LowerBound": 1,
+        "UpperBound": 3,
     },
     {
         "Path": "[Maize].Grain.MaximumPotentialGrainSize.FixedValue",

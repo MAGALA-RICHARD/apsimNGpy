@@ -1,0 +1,22 @@
+{
+  "fast_raw": {
+    "database": "fast_results",
+    "table": "fast_raw_results"
+  },
+  "fast_stats": {
+    "database": "fast_results",
+    "table": "fast_statistics"
+  },
+  "sobol_stats": {
+    "database": "sensitivity",
+    "table": "sobol_statistics"
+  },
+  "morris_stats": {
+    "database": "sensitivity",
+    "table": "morris_statistics"
+  },
+  "optimization": {
+    "database": "optimization",
+    "table": "optimization_results"
+  }
+}

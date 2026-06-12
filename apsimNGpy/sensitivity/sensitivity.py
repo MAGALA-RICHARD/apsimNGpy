@@ -21,6 +21,7 @@ from apsimNGpy.sensitivity.helpers import (default_n, define_problem,
                                            generate_default_db_path)
 from apsimNGpy.settings import logger
 from apsimNGpy.starter import CLR
+from apsimNGpy.sensitivity.salib_sample import generate_samples
 
 dataError = sqlalchemy.exc.OperationalError
 
@@ -72,6 +73,13 @@ def grouper(base_model, _params):
     with model:
         pass
     return DATA
+
+
+def get_list_like(obj):
+    if obj is None:
+        return []
+    list_like = [obj] if is_scalar(obj) else obj
+    return list_like
 
 
 class ConfigProblem:
@@ -185,7 +193,9 @@ class ConfigProblem:
             retry_rate: int,
             threads: bool,
             engine: str,
-            chunk_size: int = 100
+            chunk_size: int = 100,
+            groupings: list | None = None,
+            tables: list | None = None
     ):
         """
         Run APSIM simulations and return outputs and raw results.
@@ -194,13 +204,16 @@ class ConfigProblem:
         from apsimNGpy.core.mult_cores import MultiCoreManager, core_count
         db_path = generate_default_db_path(table_prefix)
         n_cores = core_count(n_cores, threads=threads)
-        dF = pd.DataFrame(X)
-        dF['ID'] = range(dF.shape[0])
+        PROB_NAMES = self.problem.get('names')
 
+        def run_in_multi_core(data_db):
+            # send the grouping to the subset variables
+            group = list(get_list_like(groupings))
+            sub_sets_columns = get_list_like(self.outputs)
+            group.extend(sub_sets_columns)
+            sub_sets_columns = group
 
-        def run_in_multi_core(db):
-
-            with MultiCoreManager(agg_func=agg_func, db_path=db, table_prefix=table_prefix) as mc:
+            with MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix) as mc:
                 mc.run_all_jobs(
                     self.job_maker(X),
                     n_cores=n_cores,
@@ -208,16 +221,20 @@ class ConfigProblem:
                     threads=threads,
                     clear_db=True,
                     display_failures=True,
-                    subset=self.outputs,
+                    subset=sub_sets_columns,
                     ignore_runtime_errors=False,
                     engine=engine,
-                    chunk_size=chunk_size
+                    chunk_size=chunk_size,
+                    table_name=tables,
+                    total_chunks=10,
                 )
                 df = mc.get_simulated_output(axis=0)
 
                 #################################################################
                 # The simulations are organized according to index_id to match with input variables samplesd by SALib
                 df.sort_values(self.index_id, inplace=True)
+                from xlwings import view
+                view(df)
                 self.raw_results = df
                 self.incomplete_jobs = mc.incomplete_jobs
                 if mc.incomplete_jobs:
@@ -226,35 +243,53 @@ class ConfigProblem:
                 #     self.outputs = self.outputs[0]
                 if is_scalar(self.outputs):
                     self.outputs = [self.outputs]
-                out_df = pd.DataFrame()
-                # for filtering None values
-                for output in self.outputs:
-                    data = df.copy()
-                    data.dropna(subset=[output], inplace=True)
-                    data.reset_index(drop=True, inplace=True)
+
+                def clean_a_group(dff):
+                    if not self.outputs:
+                        raise ValueError("outputs must be specified")
+                    outputs = [self.outputs] if is_scalar(self.outputs) else self.outputs
+                    data = dff.copy()
                     data.sort_values(by=self.index_id, inplace=True)
 
+                    out = data.dropna(subset=outputs)
+                    if out.empty:
+                        raise ValueError(
+                            "Dataframe contains no data after dropping all are you sure it is coming from the same table")
 
-                    out_df[output] = data[output]
-                out_df['ID'] = data['ID']
-                # in case it mult year simulations, no aggregations
-                out_df = out_df.set_index('ID')
-                dF.set_index('ID', inplace=True)
-                dF_columns = dF.columns.tolist()
-                join_df = out_df.join(dF, how='outer',)
-                self.NewXVars = join_df[dF_columns].to_numpy()
-                # drop inD fcolums
-                join_df.drop(dF_columns, axis=1, inplace=True)
+                    Xs = out[PROB_NAMES].copy()
+                    Ys = out[outputs].copy()
+                    if Ys.shape[0] != X.shape[0]:
+                        raise ValueError("Data are not equal after processing")
+                    if Xs.shape != X.shape:
+                        raise ValueError("X vars are not equal after processing")
+                    return Xs, Ys
 
-                # merge with
+                # check if multiple tables exist
+                if 'source_table' in df:
+                    existing_tables = df['source_table'].unique()
+                    print(len(existing_tables), 'tables')
+                    DATA_TABLES = []
+                    for _, dif in df.groupby('source_table'):
+                        DATA_TABLES.append(dif)
+                else:
+                    DATA_TABLES = [df, ]
 
-               #data.merge(dF, on='ID')
-                out = join_df.to_numpy()
-                del df
-                return out
+                if groupings:
+
+                    df.reset_index(drop=True, inplace=True)
+                    for keys, group_df in df.groupby(groupings):
+                        print(f"Working on group {keys}", file=sys.stderr)
+                        XX, get_out = clean_a_group(group_df)
+                        arr = get_out.to_numpy() if isinstance(get_out, pd.DataFrame) else get_out
+                        yield keys, XX, arr
+                else:
+
+                    xx, df = clean_a_group(df)
+                    arr = df.to_numpy() if isinstance(df, pd.DataFrame) else df
+                    yield agg_func, xx, arr
 
         try:
-            return run_in_multi_core(db=db_path)
+            return run_in_multi_core(data_db=db_path)
         finally:
             try:
                 db = Path(db_path).resolve()
@@ -306,14 +341,16 @@ def run_sensitivity(
         method: str = 'morris',
         N: int | None = None,
         seed: int | None = 48,
-        agg_func: str = "sum",
+        agg_func: str | None = "sum",
         n_cores: int = -2,
         retry_rate: int = 3,
         threads: bool = False,
         sample_options: dict | None = None,
         analyze_options: dict | None = None,
         engine='python',
-        chunk_size: int = 100
+        chunk_size: int = 100,
+        grouping: None | list = None,
+        tables: None | list = None
 ):
     """
     Run a complete sensitivity analysis.
@@ -515,7 +552,13 @@ def run_sensitivity(
        For Sobol sensitivity analysis, ``calc_second_order`` must be consistent between
        sampling and analysis. If specified in only one of ``sample_options`` or
        ``analyze_options``, a value error is raised.
+
 """
+    if tables is None:
+        raise ValueError("Please specify the table names")
+    if agg_func and grouping:
+        logger.warning(f'Both grouping and {agg_func} aggregation function are provided, only grouping will be used')
+        agg_func = None
     from apsimNGpy.core.mult_cores import core_count
     n_cores = core_count(n_cores, threads=threads)
 
@@ -547,33 +590,56 @@ def run_sensitivity(
         retry_rate=retry_rate,
         threads=threads,
         engine=engine,
-        chunk_size=chunk_size
+        chunk_size=chunk_size,
+        groupings=grouping,
+        tables=tables
     )
 
-    sampler = getattr(configured_prob.problem, f"sample_{method}")
     sample_options.setdefault('seed', seed)
+    eva_data = []
+    X = generate_samples(configured_prob, N=N, method=method, **sample_options)
+    frames = evaluate(X)
+    from apsimNGpy.sensitivity.evaluate_salib import evaluate_sensitivity
+    from apsimNGpy.sensitivity.fstr import format_salib_results
     try:
-        stp = sampler(N=N, **sample_options)
-        stp.X = configured_prob.NewXVars
-        stp.evaluate(evaluate)
+        for index, XX, dif in frames:
+            analyze_options['X'] = XX
 
-        analyzer = getattr(stp, f"analyze_{method}")
-        setattr(stp, 'apsim_results', configured_prob.raw_results)
-        # ---- analyze ----
-        ans = analyzer(**analyze_options)
-        ##########################################################################
-        # check if there are no missing row wise values from the evaluated results
-        #######################################################################
+            if dif.ndim == 1 and len(dif) == XX.shape[0]:
+                ans = evaluate_sensitivity(configured_prob, method=method, Y=dif, **analyze_options)
+                if is_scalar(configured_prob.outputs):
+                    output = configured_prob.outputs
+                else:
+                    raise ValueError(f'Why is response variables are: {len(configured_prob.outputs)} expected 1')
+                ans = format_salib_results(ans, method, output)
+                if is_scalar(grouping):
+                    ans[grouping] = index
+                else:
+                    ans[[*grouping]] = index
+            else:
+                outputs = configured_prob.outputs if not is_scalar(configured_prob.outputs) else [
+                    configured_prob.outputs]
+                for count, resp in enumerate(outputs):
+                    if isinstance(dif, pd.DataFrame):
+                        Y = dif.iloc[:, count].to_numpy()
+                    else:
+                        Y = dif[:, count]
 
-        if ans.results.shape[0] != ans.samples.shape[0]:
-            logger.info('re-running results, lengths of samples and evaluated results were not the same')
-            # evaluate and analyse again
+                    if len(Y) == XX.shape[0]:
+                        print(len(Y))
+                        ans = evaluate_sensitivity(configured_prob, method=method, Y=Y, **analyze_options)
+                        ans = format_salib_results(ans, method, resp)
+                        if grouping:
+                            if is_scalar(grouping):
+                                ans[grouping] = index
+                            else:
+                                ans[[*grouping]] = index
+                        eva_data.append(ans)
 
-            stp.evaluate(evaluate)
-            ans = analyzer(**analyze_options)
-        return ans
+        out_df = pd.concat(eva_data)
+        del eva_data
+        return out_df
     finally:
-        del sampler
         gc.collect()
 
 
@@ -608,6 +674,7 @@ class Factor(BaseModel):
 class CustomSensitivityManager:
 
     def __init__(self, base_model: str, response_vars):
+        self.grouping = None
         self.partial_run = None
         self._factors: dict = {}
         self.base_model = base_model
@@ -648,11 +715,9 @@ class CustomSensitivityManager:
                           method: str = 'morris',
                           N: int | None = None,
                           seed: int | None = 48,
-                          agg_func: str | None = "sum",
-                          n_cores: int = -2,
-
                           sample_options: dict | None = None,
                           analyze_options: dict | None = None,
+                          grouping: None | list = None
 
                           ):
         if not self.runner:
@@ -663,11 +728,13 @@ class CustomSensitivityManager:
             raise ValueError(
                 msg
             )
+        self.grouping = grouping
         self.partial_run = partial(run_sensitivity, configured_prob=self.runner,
-                                   method=method, n_cores=n_cores,
-                                   N=N, seed=seed, agg_func=agg_func,
+                                   method=method,
+                                   N=N, seed=seed,
                                    sample_options=sample_options,
                                    analyze_options=analyze_options,
+                                   grouping=grouping
                                    )
         return self
 
@@ -675,11 +742,12 @@ class CustomSensitivityManager:
             agg_func='mean', engine='python', chunk_size=200,
             retry_rate=1,
             threads=False):
+
         if self.partial_run is None:
             raise RuntimeError('can not non initialized or built senstivity model use sense model before continuing')
-        self.partial_run(n_cores=n_cores, engine=engine, chunk_size=chunk_size,
-                         agg_func=agg_func,
-                         retry_rate=retry_rate, threads=threads)
+        return self.partial_run(n_cores=n_cores, engine=engine, chunk_size=chunk_size,
+                                agg_func=agg_func,
+                                retry_rate=retry_rate, threads=threads)
 
         # return run_sensitivity(
         #     configured_prob=self.runner,
@@ -694,7 +762,7 @@ class CustomSensitivityManager:
 
 
 if __name__ == "__main__":
-    cc = CustomSensitivityManager(base_model='Maize', response_vars=["Yield", "Maize.AboveGround.N"])
+    cc = CustomSensitivityManager(base_model='maize.apsimx', response_vars=["Yield", "Maize.AboveGround.N"])
     cc.add_sens_factor(
         **{'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10),
            'managers': {1: 2}})
@@ -708,7 +776,12 @@ if __name__ == "__main__":
          },
         dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
              param="[Leaf].Photosynthesis.RUE.FixedValue", bounds=(
-                0.7, 2.2), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize')
+                0.7, 2.2), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'),
+        # dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+        #      param='[Maize].Grain.MaximumNConc.InitialPhase.InitialNconc.FixedValue',
+        #      bounds=(0.015, 0.045), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'
+        #      )
+
     ]
 
     # custom
@@ -738,7 +811,8 @@ if __name__ == "__main__":
     #         "calc_second_order": True,
     #     },
     # )
-    ccMorris = cc.build_sense_model(method="morris", n_cores=10, N=1000,agg_func=None,
+    ccMorris = cc.build_sense_model(method="morris", N=10,
+                                    grouping=['year', ],
                                     sample_options={
                                         'seed': 42,
                                         "num_levels": 6,
@@ -750,37 +824,62 @@ if __name__ == "__main__":
                                         "print_to_console": True,
                                         'seed': 42
                                     }, )
-    ccMorris.run()
+    # cm = ccMorris.run(agg_func=None)
+    # print(cm)
     runner = ConfigProblem(
-        base_model="Maize",
+        base_model="maize.apsimx",
         params=params,
         outputs=["Yield", "Maize.AboveGround.N"],
     )
-    Si_morris = run_sensitivity(
-        runner,
-        method="morris", n_cores=10,
-        sample_options={
-            'seed': 42,
-            "num_levels": 6,
-            "optimal_trajectories": 6,
-        },
-        analyze_options={
-            'conf_level': 0.95,
-            "num_resamples": 1000,
-            "print_to_console": True,
-            'seed': 42
-        },
-    )
-    # si_fast = run_sensitivity(
+    # Si_morris = run_sensitivity(
     #     runner,
-    #     method="fast",
+    #     method="morris", n_cores=10,
     #     sample_options={
-    #         "M": 2,
-    #
+    #         'seed': 42,
+    #         "num_levels": 6,
+    #         "optimal_trajectories": 6,
     #     },
     #     analyze_options={
     #         'conf_level': 0.95,
     #         "num_resamples": 1000,
     #         "print_to_console": True,
+    #         'seed': 42
     #     },
     # )
+    # si_sobol = run_sensitivity(
+    #     runner,
+    #     method="sobol",
+    #     agg_func=None,
+    #     grouping=['year'],
+    #     N=10,
+    #     sample_options={
+    #         "calc_second_order": False,
+    #
+    #     },
+    #     analyze_options={
+    #         "calc_second_order": False,
+    #         "conf_level": 0.95,
+    #         "num_resamples": 1000,
+    #         "print_to_console": True,
+    #     },
+    # )
+    si_fast = run_sensitivity(
+        runner,
+        method="fast",
+        tables=['Report'],
+        N=50,
+        # grouping=['year'],
+        sample_options={
+            "M": 2,
+
+        },
+        analyze_options={
+            'conf_level': 0.95,
+            "num_resamples": 1000,
+            "print_to_console": True,
+        },
+    )
+    ans = runner.raw_results
+    from xlwings import view
+
+    view(ans)

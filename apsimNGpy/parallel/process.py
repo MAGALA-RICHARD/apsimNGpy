@@ -278,6 +278,8 @@ def custom_parallel_chunks(
     .. seealso::
 
            :func:`~apsimNGpy.parallel.process.custom_parallel`
+           @param func:
+           @param iterable:
            @param jobs:
 
 
@@ -296,6 +298,7 @@ def custom_parallel_chunks(
     desc = (progress_message or "Processing.. wait!") + ": "
 
     total_chunks = kwargs.get('n_chunks', 10)
+
     chunked = chunker(iterable, n_chunks=total_chunks)
     resume = kwargs.pop('resume', False)
     db_session = kwargs.get('db_session', False)
@@ -360,7 +363,7 @@ def custom_parallel_chunks(
 
 
 def worker(x):
-    time.sleep(0.1)
+    time.sleep(0.000000001)
 
 
 if __name__ == '__main__':
@@ -388,6 +391,7 @@ if __name__ == '__main__':
         custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True, ))
     fai = list(
         custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
-
+    x= 0
     for i in custom_parallel_chunks(worker, range(10000), use_thread=False, n_chunks=102, void=False, resume=True):
+        x+=1
         pass

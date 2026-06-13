@@ -60,11 +60,12 @@ AUTO = object()
 from pandas import Series
 
 
+@timer
 def run_apsim_by_path(
         model: Union[str, Path, Iterable[str], Iterable[Path]],
         *,
         bin_path: Union[str, Path, object] = AUTO,
-        timeout: int = 800,
+        timeout: int | None = None,
         n_cores: int = -1,
         verbose: bool = False,
         to_csv: bool = False,
@@ -120,10 +121,10 @@ def run_apsim_by_path(
     apsim_exec = _ensure_exec(get_apsim_executable(bin_path))
     if not is_scalar(model):
         # assumes it is an iterable other than a str
-        files = (_ensure_model(m) for m in model)  # check before sending to apsim models.exe
+        _files = (_ensure_model(m) for m in model)  # check before sending to apsim models.exe
         cmd: list[str] = [
             str(apsim_exec),
-            *(_ensure_model(p) for p in files),
+            *(_ensure_model(p) for p in _files),
             "--cpu-count",
             str(n_cores),
         ]
@@ -1090,8 +1091,16 @@ if __name__ == '__main__':
     from apsimNGpy.starter.starter import CLR
     from apsimNGpy import load_crop_from_disk
 
+    Dpath = Path("D:/scratch")
+    Dpath.mkdir(parents=True, exist_ok=True)
     maize = load_crop_from_disk('Maize', out=Path('Maize.apsimx').resolve())
     maize2 = load_crop_from_disk('Maize', out=Path('Maize2.apsimx').resolve())
+
+
+    def create_apsimx(idx):
+       return load_crop_from_disk('Maize', out=Dpath / f'{idx}.apsimx')
+
+
     read = CLR.APsimCore.FileFormat.ReadFromFile[CLR.Models.Core.Simulations]
 
     import APSIM.Core as c
@@ -1099,30 +1108,4 @@ if __name__ == '__main__':
     model = read(str(maize), None, True)
     import ApsimNG
 
-    xc = run_apsim_by_path([maize, maize2])
-    import APSIM.Shared as ap
-    from apsimNGpy.starter.starter import CLR
-    from System.Collections.Generic import List
-
-    files = List[CLR.Models.Core.Run.Runner]()
-    fi = ap.JobRunning.IJobManager
-    runtype = CLR.Models.Core.Run.Runner.RunTypeEnum.MultiThreaded
-
-    _rn = CLR.Models.Core.Run.Runner(model.Model, wait=False, runTests=False,
-                                     RunTypeEnum=runtype,
-                                     numberOfProcessors=9)
-    rn = _rn.Run()
-    files.Add(_rn)
-    from apsimNGpy.core.apsim import ApsimModel
-
-    with ApsimModel('Maize') as model:
-        model.run()
-        df = model.results
-        # model.Simulations.Node.Set('[Grain].MaximumGrainsPerCob.FixedValue', 10)
-        from model_tools import get_or_check_model
-
-        mn = get_or_check_model(search_scope=model.Simulations, model_type='Models.Manager',
-                                model_name='Sow using a variable rule', action='get')
-        model.run()
-        df2 = model.results
-
+    xc = run_apsim_by_path([create_apsimx(i) for i in range(100)])

@@ -19,14 +19,13 @@ import pandas as pd
 import sqlalchemy
 from tqdm import tqdm
 from apsimNGpy.core.plotmanager import PlotManager
-from apsimNGpy.core._multi_core import edit_to_folder, IDENTIFICATION
-from apsimNGpy.core._multi_core import single_runner
+from apsimNGpy.core._multi_core import edit_to_folder, IDENTIFICATION, single_runner, harmonise_groups
 from apsimNGpy.core.runner import _run_from_dir
 from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_table,
                                                  get_db_table_names, read_with_pandas, write_df_to_sql)
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.parallel.process import custom_parallel
-
+from apsimNGpy.core_utils.utils import get_list_like
 __all__ = ['MultiCoreManager']
 ID = 0
 csv_doc = pd.DataFrame().to_csv.__doc__
@@ -100,13 +99,14 @@ def get_results(file_name, db_or_con, prefix, agg_func=None, sub=None):
             df[['source_table', IDENTIFICATION]] = [tn, stem_ID]
             data.append(df)
         df = pd.concat(data, ignore_index=True)
-    if sub is not None:
-        sub = [sub] if isinstance(sub, str) else sub
 
-        if set(sub).issubset(df.columns):
-            others = ['source_table', IDENTIFICATION]
+    sub = get_list_like(sub)
+    if 'source_table' in df and 'source_table' not in sub:
+        sub = [*sub, 'source_table']
+    if set(sub).issubset(df.columns):
+        others = get_list_like(IDENTIFICATION)
 
-            df = df[[*sub, *others]].copy()
+        df = df[[*sub, *others]].copy()
 
     table_name = f"{prefix}_pid_{os.getpid()}"
     write_df_to_sql(out=df, db_or_con=db_or_con, table_name=table_name, if_exists='append', index=False,

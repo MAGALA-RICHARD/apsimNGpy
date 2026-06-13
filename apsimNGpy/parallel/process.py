@@ -336,6 +336,7 @@ def custom_parallel_chunks(
                         # yield results for THIS iterable (kept separate)
                         yield result
                     break  # return to top-up loop
+
                 # register completed chunk
                 register_key(idx, data_db)
                 if key and resume:
@@ -348,6 +349,7 @@ def custom_parallel_chunks(
                 if idx + 1 == total_chunks:
                     # tracking completed
                     clear_db(db=data_db)
+                time.sleep(1.5)
 
         finally:
             if bar is not None:

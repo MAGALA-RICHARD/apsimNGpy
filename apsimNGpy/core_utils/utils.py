@@ -29,14 +29,23 @@ from shapely.ops import unary_union
 from apsimNGpy.logger import logger
 import inspect
 
+
 def select_process(use_thread, ncores):
     return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
 
 
 def is_scalar(x):
+    """Treats strings or bites as scalars and else iterables if not itn or floats"""
     if isinstance(x, (str, bytes)):  # treat strings as scalar
         return True
     return not isinstance(x, Iterable)
+
+
+def get_list_like(obj):
+    if not obj:
+        return []
+    list_like = [obj] if is_scalar(obj) else list(obj)
+    return list_like
 
 
 def evaluate_commands_and_values_types(commands, values):
@@ -124,6 +133,7 @@ def collect_classes(obj, seen=None):
             types.extend(collect_classes(value, seen))
 
     return types
+
 
 def open_apsimx_file_in_window(filepath, bin_path):
     """

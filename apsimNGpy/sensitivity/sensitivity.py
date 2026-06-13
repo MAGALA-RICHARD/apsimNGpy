@@ -34,7 +34,6 @@ class Params:
     others: dict
     node_types: dict
 
-
 def grouper(base_model, _params):
     from collections import defaultdict
     grouped_pairs = defaultdict(list)
@@ -363,7 +362,6 @@ class ConfigProblem:
             engine=engine
         )
         return part(X)
-
 
 def run_sensitivity(
         configured_prob: ConfigProblem,
@@ -817,6 +815,8 @@ class CustomSensitivityManager:
 
 
 if __name__ == "__main__":
+
+
     cc = CustomSensitivityManager(base_model='maize.apsimx', response_vars=["Yield", "Maize.AboveGround.N"])
     cc.add_sens_factor(
         **{'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10),
@@ -918,23 +918,29 @@ if __name__ == "__main__":
     #         "print_to_console": True,
     #     },
     # )
-    si_fast = run_sensitivity(
-        runner,
-        total_chunks=8,
-        method="fast",
-        tables=['Report'],
-        N=50,
-        # grouping=['year'],
-        sample_options={
-            "M": 2,
 
-        },
-        analyze_options={
-            'conf_level': 0.95,
-            "num_resamples": 1000,
-            "print_to_console": True,
-        },
-    )
+    def run_sens():
+        run_sensitivity(
+            runner,
+            total_chunks=8,
+            engine='python',
+            method="fast",
+            tables=['Report'],
+            N=50,
+            # grouping=['year'],
+            sample_options={
+                "M": 2,
+
+            },
+            analyze_options={
+                'conf_level': 0.95,
+                "num_resamples": 1000,
+                "print_to_console": True,
+            },
+        )
+
+
+    si_fast = run_sens()
     ans = runner.raw_results
     from xlwings import view
 

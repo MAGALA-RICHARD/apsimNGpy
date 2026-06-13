@@ -14,9 +14,10 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core_utils.database_utils import write_df_to_sql, read_with_pandas, get_db_table_names
 from apsimNGpy.exceptions import ApsimRuntimeError
+from apsimNGpy.core_utils.utils import get_list_like
 from apsimNGpy.logger import logger
 
-aggs = {'sum', 'mean', 'max', 'min', 'median', 'std'}
+AGGS = {'sum', 'mean', 'max', 'min', 'median', 'std'}
 
 counter = Value("i", 0)
 lock = Lock()
@@ -51,7 +52,16 @@ def auto_generate_schema_id(columns, prefix):
 def merge_dict(data):
     merged = {}
     for d in data:
-        d.pop(PATH, None)
+        if hasattr(d, 'pop'):
+            d.pop(PATH, None)
+        if not isinstance(d, dict):
+            dd = data[d]
+            if not isinstance(dd, dict):
+                merged[d] = data[d]
+            else:
+                for k, v in dd.items():
+                    merged.update({k: v})
+            continue
 
         for k, v in d.items():
             if k in {'commands', 'command'} and isinstance(v, dict):
@@ -146,17 +156,43 @@ def edit_to_folder(job, *, folder_path: str, prefix, db_or_conn, call_back=None)
             PID = os.getpid()
             # avoid duplicates columns
             merged_inputs = merge_dict(inputs)
+            merged_inputs = merge_dict(merged_inputs)
             merged_inputs['MetaProcessID'] = PID
-            metadata = {**metadata, **merged_inputs}
+            metadata = {**merge_dict(metadata), **merged_inputs}
+            # print(metadata, 'metadata')
             # metadata['ApsimReports'] = f"{reps}"
-            out = DataFrame([metadata])
+            out = pd.DataFrame.from_records([metadata])
+
             schema_hash = schema_id(tuple(out.dtypes))
             table_name = f"meta{prefix}{schema_hash}_{PID}"
-            write_df_to_sql(out, db_or_con=db_or_conn, table_name=table_name, if_exists='append',
-                            chunk_size=None)
+            try:
+                write_df_to_sql(out, db_or_con=db_or_conn, table_name=table_name, if_exists='append',
+                                chunk_size=None)
+            except Exception as e:
+
+                raise
 
         finally:
             pass
+
+
+def harmonise_groups(agg_func, index):
+    if agg_func:
+        if agg_func not in AGGS:
+            raise ValueError(
+                f"Unsupported aggregation function '{agg_func}'"
+            )
+        if not index or index == "source_table":
+            grp = ["source_table"]
+        elif is_scalar(index):
+            grp = [index, 'source_table']
+        else:
+            if 'source_table' in index:
+                grp = [*index]
+            else:
+                grp = [*index, 'source_table']
+        return grp
+    return []
 
 
 def single_runner(
@@ -264,23 +300,11 @@ def single_runner(
                         # set before running
                         for in_put in inputs:
                             _model.set_params(**in_put)
-                    _model.run(timeout=timeout, cpu_count=2, report_name=table_to_use)
+                    _model.run(timeout=timeout, cpu_count=1, report_name=table_to_use)
 
                     # Aggregate results if requested
                     if agg_func:
-                        if agg_func not in aggs:
-                            raise ValueError(
-                                f"Unsupported aggregation function '{agg_func}'"
-                            )
-                        if not index or index == "source_table":
-                            grp = ["source_table"]
-                        elif is_scalar(index):
-                            grp = [index, 'source_table']
-                        else:
-                            if 'source_table' in index:
-                                grp = [*index]
-                            else:
-                                grp = [*index, 'source_table']
+                        grp = harmonise_groups(agg_func=agg_func, index=index)
                         grp = list(grp)
                         dat = _model.results.groupby(grp)
                         out = dat.agg(agg_func, numeric_only=True)
@@ -290,10 +314,9 @@ def single_runner(
                         out = _model.results
 
                     if sub:
-                        if is_scalar(sub):
-                            sub = [sub]
+                        sub = get_list_like(sub)
                         if 'source_table' in out and 'source_table' not in sub:
-                            sub =  [*sub, 'source_table']
+                            sub = [*sub, 'source_table']
 
                         if set(sub).issubset(out.columns):
                             out = out[[*sub]].copy()

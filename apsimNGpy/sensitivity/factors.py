@@ -2,13 +2,11 @@ import os
 from pathlib import Path
 
 import pandas as pd
-from xlwings import view
-from apsimNGpy.core.model_loader import get_node_by_path
-from apsimNGpy.core.model_tools import find_child
+
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.exceptions import NodeNotFoundError
-from apsimNGpy.tests.unittests.senstivity_study.cultivars_params import parameters
 from apsimNGpy.sensitivity.sensitivity import run_sensitivity, ConfigProblem
+from apsimNGpy.tests.unittests.senstivity_study.cultivars_params import parameters
 
 
 def factor(base_model, model_name, model_type, param, bounds):
@@ -50,6 +48,7 @@ if __name__ == '__main__':
         NRate = p['Parameters']['Amount']
 
     soil = 'N'
+    Crop = 'Maize'
     para_ms = []
     for p in parameters:
         lb = p['LowerBound']
@@ -76,6 +75,7 @@ if __name__ == '__main__':
     def fast():
         return run_sensitivity(
             runner,
+            threads= True,
             method="fast",
             agg_func='mean',
             N=Base_N,
@@ -128,11 +128,11 @@ if __name__ == '__main__':
     os.startfile(name)
     ans = runner.raw_results
 
-    from xlwings import view
+
     import json
 
     si_fast, ans = attach_meta_data(dict(BaseSample=Base_N, Soil=soil,
-                                         Nrate=NRate,
+                                         Nrate=NRate,CropsRotation=Crop,
                                          TotalParams=len(para_ms)), si_fast, ans)
     path = Path('D:/sensitivity_study')
     path.mkdir(exist_ok=True)
@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
     parm_len = len(para_ms)
 
-    view(ans)
+    # view(ans)
     config_file = Path(path / "database_manifest.json")
 
     with open(config_file, "r") as f:
@@ -156,7 +156,8 @@ if __name__ == '__main__':
                 engine = create_engine(f"sqlite:///{db_path}")
                 table = cfg["table"]
                 if 'raw' in table:
-                    ans.to_sql(table, con=engine, if_exists='replace')
+                    ans.to_sql(table, con=engine, if_exists='append')
                 elif 'statistics' in table:
 
-                    si_fast.to_sql(table, con=engine, if_exists='replace')
+                    si_fast.to_sql(table, con=engine, if_exists='append')
+

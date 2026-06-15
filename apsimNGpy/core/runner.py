@@ -27,6 +27,7 @@ from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.core_utils.utils import timer, is_scalar
 from apsimNGpy.logger import logger
 from apsimNGpy import logger as logging
+
 AUTO = object()
 SchemaKey = Tuple[Tuple[Hashable, str], ...]  # ((column_name, dtype_str), ...)
 
@@ -60,7 +61,7 @@ AUTO = object()
 from pandas import Series
 
 
-
+@timer
 def run_apsim_by_path(
         model: Union[str, Path, Iterable[str], Iterable[Path]],
         *,
@@ -113,31 +114,28 @@ def run_apsim_by_path(
 
        files should have distinct names and valid path
     """
-
     # Resolve APSIM binary
     if bin_path is AUTO:
         bin_path = configuration.bin_path
 
-    apsim_exec = _ensure_exec(get_apsim_executable(bin_path))
+    apsim_exec = str(_ensure_exec(get_apsim_executable(bin_path)))
+
     if not is_scalar(model):
-        # assumes it is an iterable other than a str
-        _files = (_ensure_model(m) for m in model)  # check before sending to apsim models.exe
+        # Multiple APSIM files
+        model_paths = {str(_ensure_model(m)) for m in model}
+
         cmd: list[str] = [
-            str(apsim_exec),
-            *(_ensure_model(p) for p in _files),
+            apsim_exec,
+            *model_paths,
             "--cpu-count",
             str(n_cores),
         ]
     else:
-        # assumes that it is str or path as one unit
-        # NOTE:
-        # When processing multiple files, passing them as a list in a single run is more
-        # efficient than invoking separate runs for each file individually.
-
-        model_path = _ensure_model(model)
+        # Single APSIM file
+        model_path = str(_ensure_model(model))
 
         cmd: list[str] = [
-            str(apsim_exec),
+            apsim_exec,
             model_path,
             "--cpu-count",
             str(n_cores),
@@ -145,6 +143,7 @@ def run_apsim_by_path(
 
     if verbose:
         cmd.append("--verbose")
+
     if to_csv:
         cmd.append("--csv")
 
@@ -156,7 +155,7 @@ def run_apsim_by_path(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             timeout=timeout,
-            check=False,  # we handle errors explicitly
+            check=False,
             text=True,
         )
 
@@ -166,21 +165,21 @@ def run_apsim_by_path(
             f"APSIM execution exceeded timeout ({timeout}s)"
         ) from exc
 
-    # Log outputs
     if verbose and result.stdout:
         logger.info(result.stdout.strip())
 
     if result.stderr:
         logger.error(result.stderr.strip())
 
-    # Non-zero return code → failure
     if result.returncode != 0:
         raise ApsimRuntimeError(
-            f"APSIM failed (exit code: {result.returncode})\n"
+            f"APSIM failed with exit code {result.returncode}\n"
             f"STDERR:\n{result.stderr}\n"
             f"STDOUT:\n{result.stdout}"
         )
+
     return result
+
 
 
 def invoke_csharp_gc():
@@ -1081,7 +1080,7 @@ if __name__ == '__main__':
     maize = load_crop_from_disk('Maize', out='maizee.apsimx')
     try:
         a1 = time.perf_counter()
-        run_apsim_by_path(maize)
+        run_apsim_by_path(maize, n_cores=1)
         b = time.perf_counter()
         print(b - a1, 'seconds in dir mode')
     finally:
@@ -1098,14 +1097,11 @@ if __name__ == '__main__':
 
 
     def create_apsimx(idx):
-       return load_crop_from_disk('Maize', out=Dpath / f'{idx}.apsimx')
+        return load_crop_from_disk('Maize', out=Dpath / f'{idx}.apsimx')
 
 
     read = CLR.APsimCore.FileFormat.ReadFromFile[CLR.Models.Core.Simulations]
 
-    import APSIM.Core as c
-
     model = read(str(maize), None, True)
-    import ApsimNG
 
-    xc = run_apsim_by_path([create_apsimx(i) for i in range(100)])
+    xc = run_apsim_by_path([create_apsimx(i) for i in range(20)])

@@ -44,7 +44,7 @@ if __name__ == '__main__':
     from apsimNGpy.core.edit import get_model_paths_to_edit
     base = Path(r"D:\Elimin_rye_cover_crop_2026\APSIMX\s2.apsimx")
     Base_N = 500
-    NRate = 252
+    NRate = 84
     fertilize_maize_script = 'AddfertlizerRotationMAize'
     model = ApsimModel(base)
     model.edit_model('Models.Manager', model_name=fertilize_maize_script, Amount=NRate)
@@ -90,7 +90,7 @@ if __name__ == '__main__':
             agg_func='mean',
             N=Base_N,
             total_chunks=20,
-            n_cores=14,
+            n_cores=8,
             tables=['MaizeR'],
             grouping=['Year'],
             sample_options={

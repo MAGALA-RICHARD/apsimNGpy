@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from apsimNGpy import logger
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.exceptions import NodeNotFoundError
 from apsimNGpy.sensitivity.sensitivity import run_sensitivity, ConfigProblem
@@ -40,15 +41,24 @@ def cultivar_factor(base_model, name, param, managers, plant, bounds):
 
 
 if __name__ == '__main__':
+    from apsimNGpy.core.edit import get_model_paths_to_edit
+    base = Path(r"D:\Elimin_rye_cover_crop_2026\APSIMX\s2.apsimx")
+    Base_N = 500
+    NRate = 252
+    fertilize_maize_script = 'AddfertlizerRotationMAize'
+    model = ApsimModel(base)
+    model.edit_model('Models.Manager', model_name=fertilize_maize_script, Amount=NRate)
+    model.save()
+    p = model.inspect_model_parameters("Models.Manager", fertilize_maize_script, parameters='Parameters')
+    NRat = p['Parameters']['Amount']
+    print(type(NRat))
+    assert NRat == f"{NRate}"
+    A_110_path = get_model_paths_to_edit(model, 'Models.PMF.Cultivar', "A_110")
+    A_110 = list(set(A_110_path))[0]
 
-    base = Path(r"D:\Elimin_rye_cover_crop_2026\APSIMX\N_2.apsimx")
-    Base_N = 300
-    with ApsimModel(base) as model:
-        p = model.inspect_model_parameters("Models.Manager", 'AddfertlizerRotationMAize', parameters='Parameters')
-        NRate = p['Parameters']['Amount']
 
-    soil = 'N'
-    Crop = 'Maize'
+    soil = 'S'
+    Crop = 'Maize, Wheat'
     para_ms = []
     for p in parameters:
         lb = p['LowerBound']
@@ -58,14 +68,14 @@ if __name__ == '__main__':
         for n in pp:
             if n in {'RUE', 'Juvenile', 'MaximumNConc'}:
                 pass
-        cc = cultivar_factor(base, 'A_110', bounds=(lb, ub),
+        cc = cultivar_factor(model.path, 'A_110', bounds=(lb, ub),
                              param=path,
                              managers={'SowMaize': 'CultivarName'}, plant='Maize')
-        cc['base'] = '.Simulations.Nicollet.Field1.Maize.CultivarFolder.Generic.A_110'
+        cc['base'] = A_110
         para_ms.append(cc)
     assert para_ms, "params is empty can not continue"
     runner = ConfigProblem(
-        base_model=base,
+        base_model=model.path,
         params=para_ms,
 
         outputs=["Yield", "AGB", 'TopN2O', 'soc0_10cm', 'Top_respiration'],
@@ -75,7 +85,7 @@ if __name__ == '__main__':
     def fast():
         return run_sensitivity(
             runner,
-            threads= True,
+            threads=True,
             method="fast",
             agg_func='mean',
             N=Base_N,
@@ -128,11 +138,10 @@ if __name__ == '__main__':
     os.startfile(name)
     ans = runner.raw_results
 
-
     import json
 
     si_fast, ans = attach_meta_data(dict(BaseSample=Base_N, Soil=soil,
-                                         Nrate=NRate,CropsRotation=Crop,
+                                         Nrate=NRate, CropsRotation=Crop,
                                          TotalParams=len(para_ms)), si_fast, ans)
     path = Path('D:/sensitivity_study')
     path.mkdir(exist_ok=True)
@@ -160,4 +169,6 @@ if __name__ == '__main__':
                 elif 'statistics' in table:
 
                     si_fast.to_sql(table, con=engine, if_exists='append')
+    del ans
+    logger.info(f'Finished {NRate}')
 

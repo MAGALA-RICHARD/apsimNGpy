@@ -817,7 +817,7 @@ class CustomSensitivityManager:
 if __name__ == "__main__":
 
 
-    cc = CustomSensitivityManager(base_model='maize.apsimx', response_vars=["Yield", "Maize.AboveGround.N"])
+    cc = CustomSensitivityManager(base_model='Maize', response_vars=["Yield", "Maize.AboveGround.N"])
     cc.add_sens_factor(
         **{'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10),
            'managers': {1: 2}})
@@ -882,7 +882,7 @@ if __name__ == "__main__":
     # cm = ccMorris.run(agg_func=None)
     # print(cm)
     runner = ConfigProblem(
-        base_model="maize.apsimx",
+        base_model="Maize",
         params=params,
         outputs=["Yield", "Maize.AboveGround.N"],
     )

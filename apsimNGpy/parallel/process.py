@@ -303,6 +303,7 @@ def custom_parallel_chunks(
     resume = kwargs.pop('resume', False)
     db_session = kwargs.get('db_session', False)
 
+
     with Executor(max_workers=ncores) as pool:
         submitted = 0
         completed = 0
@@ -317,16 +318,19 @@ def custom_parallel_chunks(
             data_db = Path(data_db).with_suffix('.db').resolve()
 
             for idx, chunk in enumerate(chunked):
+
                 key = get_key(value=idx, db=data_db)
 
                 start = time.perf_counter()
+                # refresh pool
+                #with Executor(max_workers=ncores) as pool:
                 futures = [pool.submit(func, qi, *args) for qi in chunk]
                 submitted += 1
                 # Collect at least one finished chunk
                 for fut in as_completed(futures, timeout=None):
 
                     result = fut.result()  # propagate exceptions
-                    completed += 1
+
                     elapsed = time.perf_counter() - start
                     if completed and elapsed > 0:
                         avg = elapsed / completed
@@ -350,6 +354,7 @@ def custom_parallel_chunks(
                     # tracking completed
                     clear_db(db=data_db)
                 time.sleep(1.5)
+                completed += 1
 
         finally:
             if bar is not None:
@@ -361,7 +366,7 @@ def custom_parallel_chunks(
 
 
 def worker(x):
-    time.sleep(0.000000001)
+   return x
 
 
 if __name__ == '__main__':
@@ -391,6 +396,6 @@ if __name__ == '__main__':
     fai = list(
         custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
     x = 0
-    for i in custom_parallel_chunks(worker, range(10000), use_thread=False, n_chunks=102, void=False, resume=True):
+    for i in custom_parallel_chunks(worker, range(1000), use_thread=False, n_chunks=102, void=False, resume=True):
         x += 1
         pass

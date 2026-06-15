@@ -23,7 +23,7 @@ HIGH_LEVEL_MODELS = ['Models.Sobol', 'Models.Core.Simulations',
                      'Models.Morris']
 
 
-@timer
+
 def get_models_of_type(model: "ApsimModel", model_type) -> dict:
     model_cls = validate_model_obj(model_type)
     model_type_name = model_cls().ToString()

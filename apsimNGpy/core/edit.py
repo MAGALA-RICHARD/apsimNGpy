@@ -228,4 +228,6 @@ if __name__ == "__main__":
         edit_model_by_name(m1, 'Models.Surface.SurfaceOrganicMatter', 'SurfaceOrganicMatter', InitialCNR=85)
     with ApsimModel('Morris') as sob:
         switch_sensitivity_method(sob, 'sobol', num_path=104)
-        sob.open_in_gui(watch=True)
+       # sob.open_in_gui(watch=True)
+        sob.run()
+        print(sob.results)

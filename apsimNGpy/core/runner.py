@@ -61,7 +61,7 @@ AUTO = object()
 from pandas import Series
 
 
-@timer
+
 def run_apsim_by_path(
         model: Union[str, Path, Iterable[str], Iterable[Path]],
         *,

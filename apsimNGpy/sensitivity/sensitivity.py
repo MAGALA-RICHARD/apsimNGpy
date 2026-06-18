@@ -82,10 +82,10 @@ def get_list_like(obj):
     return list_like
 
 
-def check_all_completed(res, X_arr, index_name):
-    completed_ids = set(res[index_name].unique())
-    all_ids = set(range(X_arr.shape[0]))
-    return tuple(all_ids - completed_ids)
+def check_all_completed(res, expected_ids, index_name):
+    completed_ids = set(res[index_name])
+    expected = set(expected_ids)
+    return list(expected - completed_ids)
 
 
 class ConfigProblem:
@@ -247,9 +247,8 @@ class ConfigProblem:
             df = manager.get_simulated_output(axis=0)
             completed = [df, ]
             logger.info('Checking incomplete outputs')
-            pending = list(check_all_completed(df, X, self.index_id))
-            # mimick pending
-            pending = [1, ]
+            pending = check_all_completed(df, expected_ids=np.arange(X.shape[0]), index_name=self.index_id)
+
             with manager:
                 pass
             pending_runner = 0
@@ -266,7 +265,7 @@ class ConfigProblem:
                     completed.append(dif)
                     # the data frame must the newly returned
                     pending = list(
-                        check_all_completed(dif, sub_x, self.index_id)
+                        check_all_completed(dif, expected_ids=pending, index_name=self.index_id)
                     )
                 pending_runner += 1
                 if pending_runner > 2 and pending:

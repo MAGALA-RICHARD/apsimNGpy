@@ -55,8 +55,6 @@ if __name__ == '__main__':
     assert NRat == f"{NRate}"
     A_110_path = get_model_paths_to_edit(model, 'Models.PMF.Cultivar', "A_110")
     A_110 = list(set(A_110_path))[0]
-
-
     soil = 'S'
     Crop = 'Maize, Wheat'
     para_ms = []
@@ -90,7 +88,7 @@ if __name__ == '__main__':
             agg_func='mean',
             N=Base_N,
             total_chunks=20,
-            n_cores=8,
+            n_cores=12,
             tables=['MaizeR'],
             grouping=['Year'],
             sample_options={

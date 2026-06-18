@@ -1104,4 +1104,4 @@ if __name__ == '__main__':
 
     model = read(str(maize), None, True)
 
-    xc = run_apsim_by_path([create_apsimx(i) for i in range(20)])
+    xc = run_apsim_by_path([create_apsimx(i) for i in range(2)])

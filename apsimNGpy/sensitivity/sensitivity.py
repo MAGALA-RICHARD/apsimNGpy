@@ -34,6 +34,7 @@ class Params:
     others: dict
     node_types: dict
 
+
 def grouper(base_model, _params):
     from collections import defaultdict
     grouped_pairs = defaultdict(list)
@@ -82,9 +83,9 @@ def get_list_like(obj):
 
 
 def check_all_completed(res, X_arr, index_name):
-    completed_ids = set(res[index_name])
+    completed_ids = set(res[index_name].unique())
     all_ids = set(range(X_arr.shape[0]))
-    return all_ids - completed_ids
+    return tuple(all_ids - completed_ids)
 
 
 class ConfigProblem:
@@ -222,7 +223,7 @@ class ConfigProblem:
             group.extend(sub_sets_columns)
             sub_sets_columns = group
 
-            mc= MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix)
+            mc = MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix)
             mc.run_all_jobs(
                 self.job_maker(sample_matrix, pending=pending_retry),
                 n_cores=n_cores,
@@ -238,33 +239,41 @@ class ConfigProblem:
                 total_chunks=chunks,
             )
             return mc
+
         try:
 
             manager = run_in_multi_core(data_db=db_path, sample_matrix=X)
 
             df = manager.get_simulated_output(axis=0)
-            completed = [df,]
+            completed = [df, ]
             logger.info('Checking incomplete outputs')
             pending = list(check_all_completed(df, X, self.index_id))
+            # mimick pending
+            pending = [1, ]
             with manager:
                 pass
+            pending_runner = 0
             while pending:
                 logger.info(f'{len(pending)} pending simulation IDs found. Rerunning them')
                 sub_x = X[pending]
                 manager = run_in_multi_core(
                     data_db=db_path,
                     sample_matrix=sub_x, pending_retry=pending,
-                    chunks=2,
+                    chunks=1,
                 )
                 with manager:
                     dif = manager.get_simulated_output(axis=0)
                     completed.append(dif)
-
+                    # the data frame must the newly returned
                     pending = list(
-                        check_all_completed(df, X, self.index_id)
+                        check_all_completed(dif, sub_x, self.index_id)
                     )
-
-            print(pending, 'not simulated')
+                pending_runner += 1
+                if pending_runner > 2 and pending:
+                    raise RuntimeError(
+                        f"Maximum retry limit exceeded ({pending_runner}). "
+                        f"The following simulations could not be completed: {pending}"
+                    )
 
             #################################################################
             # The simulations are organized according to index_id to match with input variables samplesd by SALib
@@ -284,13 +293,21 @@ class ConfigProblem:
                 pass
 
     def clean_a_group(self, dff, *, problem_names, X):
+        """
+        Clean results, remove duplicate entries by ID, drop missing values, and
+        align the remaining data with the sampled X matrix.
+        Raises ValueError if:
+            - The resulting dataset is empty.
+            - If simulated output != input variable length
+        """
         if not self.outputs:
             raise ValueError("outputs must be specified")
         outputs = self.outputs
         data = dff.copy()
         data.sort_values(by=self.index_id, inplace=True)
-
         out = data.dropna(subset=outputs)
+        # we also like unique IDs
+        out.drop_duplicates(inplace=True, subset=self.index_id)
         if out.empty:
             raise ValueError(
                 "Dataframe contains no data after dropping all are you sure it is coming from the same table")
@@ -319,7 +336,7 @@ class ConfigProblem:
             df.reset_index(drop=True, inplace=True)
             for keys, group_df in df.groupby(grp):
                 print(f"Working on group {keys}", file=sys.stderr)
-                XX, get_out = self.clean_a_group(group_df,problem_names=problem_name, X=X)
+                XX, get_out = self.clean_a_group(group_df, problem_names=problem_name, X=X)
                 arr = get_out.to_numpy() if isinstance(get_out, pd.DataFrame) else get_out
                 yield keys, XX, arr
         else:
@@ -362,6 +379,7 @@ class ConfigProblem:
             engine=engine
         )
         return part(X)
+
 
 def run_sensitivity(
         configured_prob: ConfigProblem,
@@ -757,7 +775,7 @@ class CustomSensitivityManager:
                           analyze_options: dict | None = None,
                           grouping: None | list = None,
                           tables: None | list = None,
-                          total_chunks: int =10
+                          total_chunks: int = 10
 
                           ):
         """
@@ -815,8 +833,6 @@ class CustomSensitivityManager:
 
 
 if __name__ == "__main__":
-
-
     cc = CustomSensitivityManager(base_model='Maize', response_vars=["Yield", "Maize.AboveGround.N"])
     cc.add_sens_factor(
         **{'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10),
@@ -886,6 +902,8 @@ if __name__ == "__main__":
         params=params,
         outputs=["Yield", "Maize.AboveGround.N"],
     )
+
+
     # Si_morris = run_sensitivity(
     #     runner,
     #     method="morris", n_cores=10,

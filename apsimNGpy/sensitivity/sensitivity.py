@@ -217,6 +217,12 @@ class ConfigProblem:
         PROB_NAMES = self.problem.get('names')
 
         def run_in_multi_core(data_db, sample_matrix, pending_retry=None, chunks=total_chunks):
+            if __name__ != '__main__':
+                logger.warning(
+                    "Multiprocessing may require a protected entry point. "
+                    "Place this call inside 'if __name__ == \"__main__\":' and run the file "
+                    "as a script rather than importing it or executing it from an interactive session."
+                )
             # send the grouping to the subset variables
             group = list(get_list_like(groupings))
             sub_sets_columns = self.outputs

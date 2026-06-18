@@ -40,6 +40,8 @@ Links
 
 `Publication <https://www.sciencedirect.com/science/article/pii/S2352711025004625>`_.
 
+Version 1.5.5 passed unit tests under Python 3.14+
+
 For the complete list of new features, improvements, and bug fixes, see the
 `v1.5.3 release notes <https://github.com/MAGALA-RICHARD/apsimNGpy/releases/tag/v1.5.3>`_.
 

@@ -14,7 +14,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core_utils.database_utils import write_df_to_sql, read_with_pandas, get_db_table_names
 from apsimNGpy.exceptions import ApsimRuntimeError
-from apsimNGpy.core_utils.utils import get_list_like
+from apsimNGpy.core_utils.utils import get_array_like
 from apsimNGpy.logger import logger
 
 AGGS = {'sum', 'mean', 'max', 'min', 'median', 'std'}
@@ -145,6 +145,7 @@ def edit_to_folder(job, *, folder_path: str, prefix, db_or_conn, call_back=None)
             if inputs:
                 # set before running
                 for in_put in inputs:
+
                     _model.set_params(**in_put)
             # reps = _model.inspect_model('Models.Report', fullpath=False)
             _model.Simulations.Name = f"{_model.Simulations.Name}_{ID}"
@@ -299,6 +300,7 @@ def single_runner(
                     if inputs:
                         # set before running
                         for in_put in inputs:
+
                             _model.set_params(**in_put)
                     _model.run(timeout=timeout, cpu_count=1, report_name=table_to_use)
 
@@ -314,7 +316,7 @@ def single_runner(
                         out = _model.results
 
                     if sub:
-                        sub = get_list_like(sub)
+                        sub = get_array_like(sub)
                         if 'source_table' in out and 'source_table' not in sub:
                             sub = [*sub, 'source_table']
 

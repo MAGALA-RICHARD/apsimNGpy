@@ -10,7 +10,6 @@ from functools import wraps
 from os.path import exists
 from typing import Union, Mapping, Any
 
-
 from pandas import read_sql_query as rsq
 from sqlalchemy import create_engine, inspect
 from sqlalchemy import Table, MetaData
@@ -484,6 +483,7 @@ def drop_table(db: Union[str, Path, sqlite3.Connection, Engine, Connection],
     # Case 1: SQLite database path
     # ------------------------------------------------------------------
     if isinstance(db, (str, Path)):
+        db = str(db)
         with sqlite3.connect(db) as conn:
             conn.execute(query)
             conn.commit()
@@ -515,6 +515,13 @@ def drop_table(db: Union[str, Path, sqlite3.Connection, Engine, Connection],
         )
 
     return True
+
+
+def dispose(dab):
+    """drop all tables in a database"""
+    tables = get_db_table_names(dab)
+    drop = [drop_table(dab, tb) for tb in tables]
+    return all(drop)
 
 
 def write_df_to_sql(out: DataFrame, *,

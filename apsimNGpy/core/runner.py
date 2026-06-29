@@ -26,7 +26,7 @@ from apsimNGpy.core_utils.database_utils import write_schema_grouped_tables
 from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.core_utils.utils import timer, is_scalar
 from apsimNGpy.logger import logger
-from apsimNGpy import logger as logging
+from apsimNGpy.logger import logger as logging
 
 AUTO = object()
 SchemaKey = Tuple[Tuple[Hashable, str], ...]  # ((column_name, dtype_str), ...)
@@ -59,7 +59,6 @@ def get_apsim_executable(bin_path) -> str:
 AUTO = object()
 
 from pandas import Series
-
 
 
 def run_apsim_by_path(
@@ -179,7 +178,6 @@ def run_apsim_by_path(
         )
 
     return result
-
 
 
 def invoke_csharp_gc():

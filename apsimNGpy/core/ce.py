@@ -3,10 +3,11 @@ The role of this module is to provide explicit support for editing cultivars
 """
 
 from typing import Iterable
-from apsimNGpy import is_scalar
+
+from apsimNGpy.core_utils.utils import is_scalar
 from apsimNGpy.exceptions import NodeNotFoundError
 from apsimNGpy.starter.starter import CLR
-from apsimNGpy import timer
+
 Models = CLR.Models
 
 REPLACEMENTS = 'Replacements'
@@ -95,7 +96,7 @@ def format_cmd_values(commands: Iterable, values: Iterable):
     return commands
 
 
-def attach_cultivar(model, name: str, manager: str, param_name: str):
+def attach_cultivar(model, name: str, manager: str, param_name: str, simulations=None):
     """
     Attach a cultivar to a manager script by updating the specified parameter.
 
@@ -130,6 +131,7 @@ def attach_cultivar(model, name: str, manager: str, param_name: str):
         model.edit_model(
             model_type='Models.Manager',
             model_name=manager,
+            simulations =simulations,
             **{param_name: name}
         )
 
@@ -167,7 +169,7 @@ def _format_cmds(old_commands, new_commands: dict | list, clear_old=False):
     return fmt_cmds
 
 
-def derive_cultivar(model, *, commands, plant, template=None, rename=None, managers=None):
+def derive_cultivar(model, *, commands, plant, template=None, rename=None, managers=None, simulations=None):
     # template can be None
     command_inspection = model.inspect_model_parameters("Models.PMF.Cultivar", model_name=template)[
         'Command'] if template else {}
@@ -195,7 +197,7 @@ def derive_cultivar(model, *, commands, plant, template=None, rename=None, manag
                         })
     if managers:
         for k, v in managers.items():
-            attach_cultivar(model, rename, manager=k, param_name=v, )
+            attach_cultivar(model, rename, manager=k, param_name=v, simulations=simulations)
 
 
 if __name__ == "__main__":
@@ -234,9 +236,9 @@ if __name__ == "__main__":
 
         assert out.get('Parameters', out)['CultivarName']=='modified_maize_cultivar'
         #mod.open_in_gui(watch=True)
-        derive_cultivar(mod, template=None, commands=cms_tup, rename="None", plant='maize',
+        derive_cultivar(mod, template=None, commands=cms_tup, rename='th', plant='maize',
                         managers={'Sow using a variable rule': "CultivarName"})
-        if 'None' in set(mod.inspect_model('Models.PMF.Cultivar', fullpath=False)):
+        if 'th' in set(mod.inspect_model('Models.PMF.Cultivar', fullpath=False)):
             # check if edits were successful
              p = mod.inspect_model_parameters('Models.PMF.Cultivar', 'modified_maize_cultivar')
              juv = p.get('Command', p)['[Phenology].Juvenile.Target.FixedValue']

@@ -22,7 +22,7 @@ GC = CLR.System.GC
 List, KeyValuePair = CLR.System.Collections.Generic.List, CLR.System.Collections.Generic.KeyValuePair
 
 GLOBAL_IS_FILE_MODIFIED = CLR.file_format_modified
-scratch_dir = Path.cwd().joinpath('scratch')
+scratch_dir = Path.cwd().joinpath('.scratch')
 scratch_dir.mkdir(exist_ok=True)
 SCRATCH = os.environ.get('WS', str(scratch_dir))
 AUTO_PATH = object()
@@ -437,7 +437,7 @@ def get_node_by_path(node, node_path, cast_as=None):
                     raise TypeError(f'{n} can not be converted to {cast_as} un supported cast type')
 
     else:
-        raise AttributeError(f"Node supplied has no attribute: Walk")
+        raise AttributeError(f"Node {node} supplied has no attribute: Walk")
     raise NodeNotFoundError(f'Node with supplied path: `{node_path}` was not found')
 
 

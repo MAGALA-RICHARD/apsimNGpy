@@ -41,11 +41,39 @@ def is_scalar(x):
     return not isinstance(x, Iterable)
 
 
-def get_list_like(obj):
-    if not obj:
-        return []
-    list_like = [obj] if is_scalar(obj) else list(obj)
-    return list_like
+from collections.abc import Iterable
+from pandas.api.types import is_scalar
+
+
+def get_array_like(obj, container=list):
+    """
+    Convert an object to an array-like container for iteration need where we expect some scalar values and iterables.
+
+    Scalars are wrapped as a single element, dictionaries are treated as
+    single objects, and iterable objects are passed to ``caller`` directly.
+
+    Parameters
+    ----------
+    obj : Any
+        Object to convert.
+    container : callable, default=list
+        Container constructor used to create the array-like object.
+
+    Returns
+    -------
+    Any
+        Object converted using ``caller``.
+    """
+    if obj is None:
+        return container([])
+
+    if isinstance(obj, dict):
+        return container([obj])
+
+    if is_scalar(obj):
+        return container([obj])
+
+    return container(obj)
 
 
 def evaluate_commands_and_values_types(commands, values):

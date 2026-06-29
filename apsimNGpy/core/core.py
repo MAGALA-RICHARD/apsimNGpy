@@ -198,78 +198,6 @@ class CoreModel(PlotManager):
         sim = self.get_sim_by_name_or_index(sim)
         return sim.MemberwiseClone()
 
-    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str = None,
-                          payload: Union[dict, tuple, list] = None) -> None:
-        """
-        Add a simulation to the simulations collection.
-
-        Parameters
-        ----------
-        simulation : Union[str, int]
-            Simulation object or identifier to append.
-
-        rename : str
-            Unique name assigned to the appended simulation.
-            Renaming is expensive as appended simulations grows, since the method first checks if the suggested name exists in the simulation, use external simulation and rename them before insertion
-
-        payload: list[dict] or dict
-            list of edits following the edit_model methods that should be applied to the appended simulations. exception is that no ned to specify the simulation
-
-        Raises
-        ------
-        ValueError
-            If a simulation with the same name already exists.
-
-        Unlike ``clone_simulation``, the ``append_simulation` method supports appending
-        external simulations originating from other ``ApsimModel`` objects,
-        making it more flexible for workflows involving cross-model simulation
-        transfer and aggregation. In addition to external simulations,
-        ``append`` can also duplicate or append existing simulations already
-        present within the current ``ApsimModel`` instance.
-
-        .. note::
-
-           This method should not be used with ``ExperimentManager`` objects,
-           even though ``ExperimentManager`` inherits from ``ApsimModel``.
-           Experiment-related simulation structures are managed differently and
-           may produce unintended behavior when appended directly.
-
-           If you want to test 2–10 different model input combinations, this
-            method is typically fast because APSIM executes simulations using
-            threads internally. However, it may not be efficient for large-scale
-            parameter permutations or factorial experiment designs. For such
-            workflows, please use ``ExperimentManager`` instead.
-        """
-        if rename:
-            existing_names = {s.Name for s in self}
-            rename = rename.strip()
-            if rename in existing_names:
-                raise ValueError(
-                    f"Simulation '{rename}' already exists. "
-                    "Choose a unique simulation name."
-                )
-
-        # Add simulation
-        self.Simulations.Children.Add(simulation)
-
-        # Retrieve newly added simulation
-        # cloned_sim = self.simulations[-1]
-
-        # Rename safely
-        if rename:
-            simulation.Name = rename
-        # Persist changes
-        self.save()
-        if payload:
-            # payload is from one node
-            if isinstance(payload, dict):
-                payload['simulations'] = simulation.Name
-                self.edit_model(**payload)
-            # multiple nodes enclosed in an iterabale, each defined in a dict
-            else:
-                for params in payload:
-                    params['simulations'] = simulation.Name
-                    self.edit_model(**params)
 
     def __getitem__(self, name_or_index: Union[int, str]):
         """
@@ -1895,6 +1823,7 @@ class CoreModel(PlotManager):
 
            Related API: :meth:`edit_model`.
         """
+        _simulations = kwargs.pop('simulations', None)
         verbose = kwargs.get('verbose')
         for p in {'simulation', 'simulations', 'verbose'}:
             kwargs.pop(p, None)
@@ -1962,7 +1891,7 @@ class CoreModel(PlotManager):
                     kwargs['managers'] = None
                 command = kwargs.get('command') or kwargs.get('commands')
                 derive_cultivar(self, managers=_managers, commands=command, rename=rename,
-                                plant=plant_name, template=template)
+                                plant=plant_name, template=template, simulations=_simulations)
                 # self.edit_model(model_type=Models.PMF.Cultivar,
                 #                 model_name=template, **kwargs)
             case Models.Clock:
@@ -2262,7 +2191,8 @@ class CoreModel(PlotManager):
                     "parameter_name='CultivarName'`."
                 )
 
-            partial__editor = partial(derive_cultivar, self, template=model_name, rename=rename, plant=plant_name,
+            partial__editor = partial(derive_cultivar, self, template=model_name,
+                                      rename=rename, plant=plant_name,simulations=simulations,
                                       managers=manager_map)
 
             match commands:

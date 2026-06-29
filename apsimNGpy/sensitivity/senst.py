@@ -17,11 +17,12 @@ from pydantic import BaseModel
 from apsimNGpy import is_scalar
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_loader import get_node_by_path, Models
+from apsimNGpy.parallel.batch_simulator import run_multiple_simulations, load_all_results
 from apsimNGpy.sensitivity.helpers import (default_n, define_problem,
                                            generate_default_db_path)
+from apsimNGpy.sensitivity.salib_sample import generate_samples
 from apsimNGpy.settings import logger
 from apsimNGpy.starter import CLR
-from apsimNGpy.sensitivity.salib_sample import generate_samples
 
 dataError = sqlalchemy.exc.OperationalError
 
@@ -83,9 +84,29 @@ def get_list_like(obj):
 
 
 def check_all_completed(res, expected_ids, index_name):
-    completed_ids = set(res[index_name])
-    expected = set(expected_ids)
-    return list(expected - completed_ids)
+    """
+    Return IDs that are expected but not present in the results.
+
+    Parameters
+    ----------
+    res : pd.DataFrame
+        Results dataframe.
+    expected_ids : Iterable
+        Expected IDs.
+    index_name : str
+        Column containing IDs.
+
+    Returns
+    -------
+    list
+        Missing IDs.
+    """
+    completed_ids = set(map(str, res[index_name]))
+    expected = set(map(str, expected_ids))
+
+    pending = list(expected - completed_ids)
+    print('pending: ', pending)
+    return pending
 
 
 class ConfigProblem:
@@ -199,75 +220,60 @@ class ConfigProblem:
             *,
             agg_func: str,
             n_cores: int,
-            retry_rate: int,
             threads: bool,
-            engine: str,
-            chunk_size: int = 100,
+            chunk_size: int = 10,
             groupings: list | None = None,
             tables: list | None = None,
-            total_chunks: int = 10,
     ):
         """
         Run APSIM simulations and return outputs and raw results.
         """
         table_prefix = '__sens__'
-        from apsimNGpy.core.mult_cores import MultiCoreManager, core_count
+        from apsimNGpy.core.mult_cores import core_count
         db_path = generate_default_db_path(table_prefix)
         n_cores = core_count(n_cores, threads=threads)
         PROB_NAMES = self.problem.get('names')
 
-        def run_in_multi_core(data_db, sample_matrix, pending_retry=None, chunks=total_chunks):
-
+        def run_in_multi_core(data_db, sample_matrix, pending_retry=None, ):
+            """
+            Run the simulations in multi-core, dispose all tables if are available in the data_db
+            @param data_db:
+            @param sample_matrix:
+            @param pending_retry:
+            @return:
+            """
+            from apsimNGpy.parallel.batch_simulator import dispose
+            dispose(data_db)
             # send the grouping to the subset variables
             group = list(get_list_like(groupings))
             sub_sets_columns = self.outputs
             group.extend(sub_sets_columns)
-            sub_sets_columns = group
-
-            mc = MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix)
-            mc.run_all_jobs(
-                self.job_maker(sample_matrix, pending=pending_retry),
-                n_cores=n_cores,
-                retry_rate=retry_rate,
-                threads=threads,
-                clear_db=True,
-                display_failures=True,
-                subset=sub_sets_columns,
-                ignore_runtime_errors=False,
-                engine=engine,
-                chunk_size=chunk_size,
-                table_name=tables,
-                total_chunks=chunks,
-            )
-            return mc
+            sim_pay_load = self.job_maker(sample_matrix, pending=pending_retry)
+            run_multiple_simulations(sim_pay_load, n_cores=n_cores, tables=tables, threads=threads,
+                                     batch_size=chunk_size, db_or_con=data_db, )
+            return load_all_results(data_db)
 
         try:
-
-            manager = run_in_multi_core(data_db=db_path, sample_matrix=X)
-
-            df = manager.get_simulated_output(axis=0)
+            df = run_in_multi_core(data_db=db_path, sample_matrix=X)
+            from apsimNGpy.core_utils.database_utils import clear_all_tables
+            clear_all_tables(db_path)
             completed = [df, ]
             logger.info('Checking incomplete outputs')
             pending = check_all_completed(df, expected_ids=np.arange(X.shape[0]), index_name=self.index_id)
-
-            with manager:
-                pass
             pending_runner = 0
             while pending:
                 logger.info(f'{len(pending)} pending simulation IDs found. Rerunning them')
                 sub_x = X[pending]
-                manager = run_in_multi_core(
+                dif = run_in_multi_core(
                     data_db=db_path,
                     sample_matrix=sub_x, pending_retry=pending,
-                    chunks=1,
                 )
-                with manager:
-                    dif = manager.get_simulated_output(axis=0)
-                    completed.append(dif)
-                    # the data frame must the newly returned
-                    pending = list(
-                        check_all_completed(dif, expected_ids=pending, index_name=self.index_id)
-                    )
+
+                completed.append(dif)
+                # the data frame must the newly returned
+                pending = list(
+                    check_all_completed(dif, expected_ids=pending, index_name=self.index_id)
+                )
                 pending_runner += 1
                 if pending_runner > 2 and pending:
                     raise RuntimeError(
@@ -276,13 +282,47 @@ class ConfigProblem:
                     )
 
             #################################################################
-            # The simulations are organized according to index_id to match with input variables samplesd by SALib
+            # The simulations are organized according to index_id to match with input variables samples by SALib
 
             from xlwings import view
-            ag_df = pd.concat(completed)
+            # Concatenate completed simulation outputs
+            ag_df = pd.concat(completed, ignore_index=True)
+
+            # Ensure deterministic ordering
             ag_df.sort_values(self.index_id, inplace=True)
-            self.raw_results = ag_df.reset_index()
-            return self.grouper(ag_df, groupings=groupings, agg_func=agg_func, X=X, problem_name=PROB_NAMES)
+            self.problem_names = PROB_NAMES
+            # Create parameter dataframe
+            xdf = pd.DataFrame(X, columns=PROB_NAMES)
+
+            # Add IDs corresponding to the original parameter samples
+            xdf[self.index_id] = pd.RangeIndex(len(xdf)).astype(str)
+
+            # Ensure matching dtypes before merging
+            ag_df[self.index_id] = ag_df[self.index_id].astype(str)
+
+            # Check for overlapping columns prior to merge
+            overlapping = (
+                    set(ag_df.columns)
+                    .intersection(xdf.columns)
+                    - {self.index_id}
+            )
+            if overlapping:
+                raise ValueError(
+                    "Cannot merge because the following columns exist in both "
+                    f"DataFrames: {sorted(overlapping)}. Please rename the following columns {overlapping}: "
+                )
+            # Merge outputs with sampled parameters
+            agd = ag_df.merge(
+                xdf,
+                on=self.index_id,
+                how="inner",
+            )
+
+            # Clean index
+            agd.reset_index(drop=True, inplace=True)
+
+            self.raw_results = agd
+            return self.grouper(agd, groupings=groupings, agg_func=agg_func, X=X, problem_name=PROB_NAMES)
 
         finally:
             try:
@@ -304,32 +344,27 @@ class ConfigProblem:
             raise ValueError("outputs must be specified")
         outputs = self.outputs
         data = dff.copy()
-        data.sort_values(by=self.index_id, inplace=True)
+
         out = data.dropna(subset=outputs)
-        # we also like unique IDs
-        out.drop_duplicates(inplace=True, subset=self.index_id)
+
         if out.empty:
             raise ValueError(
                 "Dataframe contains no data after dropping all are you sure it is coming from the same table")
 
-        Xs = out[problem_names].copy()
+        out[self.index_id] = out[self.index_id].astype(int)
+        out.drop_duplicates(subset=self.index_id, inplace=True)
+        out.sort_values(by=self.index_id, inplace=True, ascending=True)
         Ys = out[outputs].copy()
-        if Ys.shape[0] != X.shape[0]:
-            raise ValueError("Data are not equal after processing")
-        if Xs.shape != X.shape:
+        Xd = out[problem_names].copy()
+        if Ys.shape[0] != X.shape[0] and Xd.shape != X.shape:
+            msg = f"Expected {X.shape[0]} rows got {Ys.shape[0]}"
+            raise ValueError("Data are not equal after processing\n {}".format(msg))
+        if Xd.shape != X.shape:
             raise ValueError("X vars are not equal after processing")
-        return Xs, Ys
+        return Xd, Ys
 
     def grouper(self, df, groupings, agg_func, X, problem_name):
         # check if multiple tables exist
-        if 'source_table' in df:
-            existing_tables = df['source_table'].unique()
-            print(len(existing_tables), 'tables')
-            DATA_TABLES = []
-            for _, dif in df.groupby('source_table'):
-                pass  # DATA_TABLES.append(dif)
-        else:
-            DATA_TABLES = [df, ]
 
         if groupings:
             grp = get_list_like(groupings)
@@ -340,7 +375,20 @@ class ConfigProblem:
                 arr = get_out.to_numpy() if isinstance(get_out, pd.DataFrame) else get_out
                 yield keys, XX, arr
         else:
-            xx, df = self.clean_a_group(df, problem_names=problem_name, X=X)
+            # We group by iD and aggregate values
+            out_p = get_list_like(self.outputs)
+            xd = df[[*self.problem_names, self.index_id]]
+
+            grouped = df.groupby(self.index_id)[out_p]
+
+            if agg_func:
+                df = getattr(grouped, agg_func)()
+            else:
+                raise ValueError(f'No grouping and no aggregation function specified')
+
+            df.reset_index(drop=False, inplace=True)
+            dif = df.merge(xd, on=self.index_id, how='inner')
+            xx, df = self.clean_a_group(dif, problem_names=problem_name, X=X)
             arr = df.to_numpy() if isinstance(df, pd.DataFrame) else df
             yield agg_func, xx, arr
 
@@ -351,7 +399,7 @@ class ConfigProblem:
                  threads=False,
                  engine='python'):
         """
-        The problem is already defined but user want to control the inputs or use a procedural approach after.
+        The problem is already defined, but user wants to control the inputs or use a procedural approach after.
 
         agg_func : str, default="sum"
            Aggregation function for APSIM outputs.
@@ -360,12 +408,10 @@ class ConfigProblem:
             n_cores may be specified as a negative integer to indicate relative allocation from the total available CPU cores.
             In this case, the absolute value of n_cores is subtracted from the total CPU budget, and the remaining cores are used.
             If the resulting number of cores is less than or equal to zero, a ValueError is raised.
-        retry_rate : int, default=2
-            Number of retries for failed simulations.
         threads : bool, default=False
             Use multithreading instead of multiprocessing.
-        engine: str optional default is 'python'
-        if 'csharp' results are written to a directory then forwarded to Models.exe. this is 2 times faster all the time
+
+
         """
         from apsimNGpy.core.mult_cores import core_count
         n_cores = core_count(n_cores, threads=threads)
@@ -389,15 +435,13 @@ def run_sensitivity(
         seed: int | None = 48,
         agg_func: str | None = "sum",
         n_cores: int = -2,
-        retry_rate: int = 3,
         threads: bool = False,
         sample_options: dict | None = None,
         analyze_options: dict | None = None,
-        engine='python',
-        chunk_size: int = 100,
+        chunk_size: int = 10,
         grouping: None | list = None,
         tables: None | list = None,
-        total_chunks: int = 10
+
 ):
     """
     Run a complete sensitivity analysis.
@@ -493,11 +537,15 @@ def run_sensitivity(
     analyze_options : dict, optional
         Options forwarded to the SALib analyzer. The available options are described in the
         SALIB documentation fore each method.
-    engine: str optional default is 'python'
-        if 'csharp' results are written to a directory then forwarded to Models.exe. This is 50-100% times faster than python all the time.
-        The csharp engine is considerably faster on powerful machines but exhibits stability issues in some older APSIM versions, whereas the Python engine is more stable. For this reason, the default engine is set to "python".
-    chunk_size : int, optional, default=100
-        Relevant only when engine="csharp".
+
+   chunk_size : int, optional, default=10
+        Number of simulations assigned to each APSIMX file. Simulations are
+        executed in batches to minimize the overhead associated with repeatedly
+        starting and stopping ``Models.exe``, which can be computationally
+        expensive. Larger batch sizes generally improve throughput; however,
+        values greater than 15 are not recommended as they may increase memory
+        usage and reduce load balancing efficiency.
+
     grouping : list | None, optional, default=None
         If provided, results will be grouped according to the specified
         grouping variable(s), and evaluations will be performed separately
@@ -505,8 +553,7 @@ def run_sensitivity(
     tables : list | None, required
         None is retained only for backward compatibility. The function
         will raise a ValueError if tables are not provided.
-    total_chunks : int, optional, default=10
-        Relevant only when engine="python".
+
     Examples
     ---------
 
@@ -642,13 +689,10 @@ def run_sensitivity(
         configured_prob._evaluate,
         agg_func=agg_func,
         n_cores=n_cores,
-        retry_rate=retry_rate,
         threads=threads,
-        engine=engine,
         chunk_size=chunk_size,
         groupings=grouping,
         tables=tables,
-        total_chunks=total_chunks,
     )
 
     sample_options.setdefault('seed', seed)
@@ -815,7 +859,7 @@ class CustomSensitivityManager:
             threads=False):
 
         if self.partial_run is None:
-            raise RuntimeError('can not non initialized or built senstivity model use sense model before continuing')
+            raise RuntimeError('can not non initialized or built sensitivity model use sense model before continuing')
         return self.partial_run(n_cores=n_cores, engine=engine, chunk_size=chunk_size,
                                 agg_func=agg_func,
                                 retry_rate=retry_rate, threads=threads)
@@ -842,16 +886,16 @@ if __name__ == "__main__":
     print(cc._factors)
     print(cc.get_list_sens_factors())
     params = [
-        {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
+        # {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
         {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300),
          },
-        dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+        dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Generic.B_100",
              param="[Leaf].Photosynthesis.RUE.FixedValue", bounds=(
-                0.7, 2.2), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'),
-        # dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
-        #      param='[Maize].Grain.MaximumNConc.InitialPhase.InitialNconc.FixedValue',
-        #      bounds=(0.015, 0.045), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'
-        #      )
+                0.7, 3), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'),
+        dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+             param='[Maize].Grain.MaximumNConc.InitialPhase.InitialNconc.FixedValue',
+             bounds=(0.015, 0.045), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'
+             )
 
     ]
 
@@ -938,14 +982,15 @@ if __name__ == "__main__":
     # )
 
     def run_sens():
-        run_sensitivity(
+        rr = run_sensitivity(
             runner,
-            total_chunks=8,
-            engine='python',
             method="fast",
+            n_cores=11,
+            chunk_size=6,
             tables=['Report'],
-            N=50,
-            # grouping=['year'],
+            N=100,
+            agg_func='mean',
+            # grouping=['Clock.Today',],
             sample_options={
                 "M": 2,
 
@@ -956,6 +1001,7 @@ if __name__ == "__main__":
                 "print_to_console": True,
             },
         )
+        return rr
 
 
     si_fast = run_sens()

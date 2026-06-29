@@ -25,7 +25,7 @@ from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_tabl
                                                  get_db_table_names, read_with_pandas, write_df_to_sql)
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.parallel.process import custom_parallel
-from apsimNGpy.core_utils.utils import get_list_like
+from apsimNGpy.core_utils.utils import get_array_like
 __all__ = ['MultiCoreManager']
 ID = 0
 csv_doc = pd.DataFrame().to_csv.__doc__
@@ -100,11 +100,11 @@ def get_results(file_name, db_or_con, prefix, agg_func=None, sub=None):
             data.append(df)
         df = pd.concat(data, ignore_index=True)
 
-    sub = get_list_like(sub)
+    sub = get_array_like(sub)
     if 'source_table' in df and 'source_table' not in sub:
         sub = [*sub, 'source_table']
     if set(sub).issubset(df.columns):
-        others = get_list_like(IDENTIFICATION)
+        others = get_array_like(IDENTIFICATION)
 
         df = df[[*sub, *others]].copy()
 

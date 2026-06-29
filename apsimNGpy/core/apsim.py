@@ -15,8 +15,6 @@ from typing import Union
 from apsimNGpy.starter.starter import CLR
 import numpy as np
 import pandas as pd
-# from System import *
-# from System.Collections.Generic import *
 from apsimNGpy.core.core import CoreModel, ModelTools
 
 Models = CLR.Models
@@ -25,6 +23,7 @@ from apsimNGpy.core.model_loader import AUTO_PATH
 from apsimNGpy.core.model_loader import get_node_by_path
 from apsimNGpy.core.model_tools import find_child_of_class
 from apsimNGpy.core.soiler import SoilManager
+from apsimNGpy.core_utils.utils import get_array_like
 from apsimNGpy import logger, timer, NodeNotFoundError, is_scalar
 from apsimNGpy.soils.helpers import soil_water_param_fill
 from System.Collections.Generic import List
@@ -115,6 +114,106 @@ class ApsimModel(CoreModel):
 
         return hash((model_hash, path_hash, extras_hash))
 
+    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str = None,
+                          payload: Union[dict, tuple, list] = None, fp=False) -> None:
+        """
+        Add a simulation to the simulation collection.
+
+        Parameters
+        ----------
+        simulation : Union[str, int]
+            Simulation object or identifier to append.
+
+        rename : str
+            Unique name assigned to the appended simulation.
+            Renaming is expensive as appended simulations grow, since the method first checks if the suggested name exists in the simulation, use external simulation and rename them before insertion
+
+        payload: list[dict] or dict
+            list of edits following the edit_model methods that should be applied to the appended simulations. exception is that no ned to specify the simulation
+
+        fp : bool, default=False
+            Selects the parameter update method. If `False`, updates are performed via
+            `edit_model()`, where parameters are identified by their simulation name,
+            model type, and model name. If `True`, updates are performed via
+            `set_params()`, where each parameter must be specified using its full path relative to the root of the simulation
+            path. All these must be defined properly in the payload argument
+
+        Raises
+        ------
+        ValueError
+            If a simulation with the same name already exists.
+
+        Unlike ``clone_simulation``, the ``append_simulation` method supports appending
+        external simulations originating from other ``ApsimModel`` objects,
+        making it more flexible for workflows involving cross-model simulation
+        transfer and aggregation. In addition to external simulations,
+        ``append`` can also duplicate or append existing simulations already
+        present within the current ``ApsimModel`` instance.
+
+        .. note::
+
+           This method should not be used with ``ExperimentManager`` objects,
+           even though ``ExperimentManager`` inherits from ``ApsimModel``.
+           Experiment-related simulation structures are managed differently and
+           may produce unintended behavior when appended directly.
+
+           If you want to test 2–10 different model input combinations, this
+            method is typically fast because APSIM executes simulations using
+            threads internally. However, it may not be efficient for large-scale
+            parameter permutations or factorial experiment designs. For such
+            workflows, please use ``ExperimentManager`` instead.
+        """
+
+        if rename:
+            existing_names = {s.Name for s in self}
+            rename = rename.strip()
+            if rename in existing_names:
+                raise ValueError(
+                    f"Simulation '{rename}' already exists. "
+                    "Choose a unique simulation name."
+                )
+
+        # Add simulation
+        self.Simulations.Children.Add(simulation)
+        if rename:
+            simulation.Name = rename
+        # Persist changes
+        self.save(reload=True)
+        if payload:
+            payload = get_array_like(payload, container=tuple)
+
+            def edit_with_no_fp(pa):
+                pa_copy = dict(pa)
+                pa_copy['simulations'] = simulation.Name
+                if pa_copy.get('commands') or pa_copy.get('command'):
+                    rename_cultivar = f"CultivarFor{simulation.Name}"
+                    pa_copy['rename'] = pa_copy.get('rename') or rename_cultivar
+                    self.edit_model(**pa_copy)
+
+            if not fp:
+                _ = [edit_with_no_fp(p) for p in payload]
+            else:
+                def re_organize(pyload):
+                    pl = dict(pyload)
+                    if pyload.get('commands') or pyload.get('command'):
+                        _rename_cultivar = f"CultivarFor{simulation.Name}"
+                        pl['rename'] = pyload.get('rename') or _rename_cultivar
+                    node_p = pyload['path'].split(".")
+                    node_p[2] = simulation.Name
+                    nfp = '.'.join(node_p).strip()
+                    if 'Replacements' not in node_p:
+                        # node_in = get_node_by_path(self.Simulations, nfp, cast_as='auto')
+                        pl['path'] = nfp
+                        return pl
+                    return pl
+
+                def edit_with_fp(pa):
+                    pa['simulations'] = simulation.Name
+                    pld = re_organize(pa)
+                    self.set_params(**pld)
+
+                _ = [edit_with_fp(p) for p in payload]
+
     def evaluate_simulated_output(
             self,
             ref_data: pd.DataFrame,
@@ -149,7 +248,6 @@ class ApsimModel(CoreModel):
 
     def edit_model_by_name(self, model_type, model_name, simulations=None, clear_old=False, **kwargs):
         edit_model_by_name(self, model_type, model_name, simulations=simulations, clear_old=clear_old, **kwargs)
-
 
     def evaluate(
             self,
@@ -329,11 +427,10 @@ class ApsimModel(CoreModel):
 
         # Apply to model
         if 'values' in pa and 'commands' in pa:
-            cmds, vals = pa['commands'],  pa['values']
+            cmds, vals = pa['commands'], pa['values']
             if len(cmds) != len(vals):
                 raise ValueError(" values and commands must be equal")
             pa['commands'] = dict(zip(cmds, vals))
-
 
         self.edit_model_by_path(**pa)
         self.save()
@@ -677,6 +774,7 @@ class ApsimModel(CoreModel):
         if soil_kwargs:
             soil_water_param_fill(self, **soil_kwargs)
         return self
+
     @timer
     def remove_node(self, node):
         """

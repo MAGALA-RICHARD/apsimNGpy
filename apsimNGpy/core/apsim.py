@@ -1137,10 +1137,10 @@ class ApsimModel(CoreModel):
                 clean_candidates.update({path.with_suffix(f'.{rep}.csv') for rep in reps})
         # Optionally include the SQLite .db sidecar (force GC on pythonnet/.NET first)
         if db_flag:
-            with suppress(Exception, CLR.System.Exception):
-               # CLR.System.GC.Collect()
-               pass
-                #CLR.System.GC.WaitForPendingFinalizers()
+            # with suppress(Exception, CLR.System.Exception):
+            #    # CLR.System.GC.Collect()
+            #    pass
+            #     #CLR.System.GC.WaitForPendingFinalizers()
             clean_candidates.add(_db)
 
         # Remove files if present

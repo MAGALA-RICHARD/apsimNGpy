@@ -1,0 +1,18 @@
+{
+    "completed": [
+        {
+            "NRate": 0,
+            "Base_N": 350,
+            "Soil": "S",
+            "Crops": "Maize",
+            "Nparams": 12
+        },
+        {
+            "NRate": 0,
+            "Base_N": 452,
+            "Soil": "S",
+            "Crops": "Maize",
+            "Nparams": 12
+        }
+    ]
+}

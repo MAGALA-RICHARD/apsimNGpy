@@ -1138,8 +1138,9 @@ class ApsimModel(CoreModel):
         # Optionally include the SQLite .db sidecar (force GC on pythonnet/.NET first)
         if db_flag:
             with suppress(Exception, CLR.System.Exception):
-                CLR.System.GC.Collect()
-                CLR.System.GC.WaitForPendingFinalizers()
+               # CLR.System.GC.Collect()
+               pass
+                #CLR.System.GC.WaitForPendingFinalizers()
             clean_candidates.add(_db)
 
         # Remove files if present

@@ -42,21 +42,23 @@ def cultivar_factor(base_model, name, param, managers, plant, bounds):
 
 if __name__ == '__main__':
     from apsimNGpy.core.edit import get_model_paths_to_edit
+    from apsimNGpy.sensitivity.combs import add_comb_json
     base = Path(r"D:\Elimin_rye_cover_crop_2026\APSIMX\s2.apsimx")
-    Base_N = 500
-    NRate = 84
+    Base_N = 502
+    NRate = 0
     fertilize_maize_script = 'AddfertlizerRotationMAize'
     model = ApsimModel(base)
+
     model.edit_model('Models.Manager', model_name=fertilize_maize_script, Amount=NRate)
     model.save()
     p = model.inspect_model_parameters("Models.Manager", fertilize_maize_script, parameters='Parameters')
     NRat = p['Parameters']['Amount']
     print(type(NRat))
     assert NRat == f"{NRate}"
-    A_110_path = get_model_paths_to_edit(model, 'Models.PMF.Cultivar', "A_110")
+    A_110_path = get_model_paths_to_edit(model, 'Models.PMF.Cultivar', "B_100")
     A_110 = list(set(A_110_path))[0]
     soil = 'S'
-    Crop = 'Maize, Wheat'
+    Crop = 'Maize'
     para_ms = []
     for p in parameters:
         lb = p['LowerBound']
@@ -66,10 +68,11 @@ if __name__ == '__main__':
         for n in pp:
             if n in {'RUE', 'Juvenile', 'MaximumNConc'}:
                 pass
-        cc = cultivar_factor(model.path, 'A_110', bounds=(lb, ub),
+        cc = cultivar_factor(model.path, 'B_100', bounds=(lb, ub),
                              param=path,
                              managers={'SowMaize': 'CultivarName'}, plant='Maize')
         cc['base'] = A_110
+        print(A_110)
         para_ms.append(cc)
     assert para_ms, "params is empty can not continue"
     runner = ConfigProblem(
@@ -86,8 +89,9 @@ if __name__ == '__main__':
             threads=True,
             method="fast",
             agg_func='mean',
+            total_chunks=38,
             N=Base_N,
-            total_chunks=20,
+            chunk_size=105,
             n_cores=12,
             tables=['MaizeR'],
             grouping=['Year'],
@@ -98,7 +102,7 @@ if __name__ == '__main__':
             analyze_options={
                 'conf_level': 0.95,
                 "num_resamples": 1000,
-                "print_to_console": True,
+                "print_to_console": False,
             },
         )
 
@@ -168,5 +172,7 @@ if __name__ == '__main__':
 
                     si_fast.to_sql(table, con=engine, if_exists='append')
     del ans
+    combs = dict(NRate=NRate, Base_N=Base_N, Soil=soil, Crops=Crop, Nparams=len(para_ms))
+    add_comb_json(combs)
     logger.info(f'Finished {NRate}')
 

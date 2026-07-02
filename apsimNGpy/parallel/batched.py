@@ -87,7 +87,7 @@ def collect_results(db, tables=None):
     return pd.concat((read_db_table(db, table).assign(source_table=table) for table in tables), ignore_index=True)
 
 
-def agg_simulations(payload, reports=None, base_dir=None):
+def agg_simulations(payload, reports=None, base_dir=None, inner_threads= 4):
     """
     iterable of jobs
     @param payload:
@@ -126,7 +126,7 @@ def agg_simulations(payload, reports=None, base_dir=None):
 
     files = [_batch(jj) for _, jj in enumerate(payload)]
     cpu = max(1, int(TOTAL_THREADS / 2.5))
-    ret = run_apsim_by_path(model=files, timeout=None, n_cores=cpu)
+    ret = run_apsim_by_path(model=files, timeout=None, n_cores=inner_threads)
     if ret.returncode == 0:
         out = pd.concat(collect_results(db, tables=reports) for db in files)
         out['PID'] = os.getpid()
@@ -156,11 +156,11 @@ def split_jobs(jobs: Iterable[Any], size: int = 10):
         yield {'batch_id': counter, 'batch_data': jy}
 
 
-def runner(batch: dict, tables, db_or_con, prefix='Batch', base_dir=None):
+def runner(batch: dict, tables, db_or_con, prefix='Batch', base_dir=None, inner_threads=4):
     batch_id = batch[Config.BATCH_ID_KEY]
     batch_data = batch['batch_data']
     fn = f"{prefix}_{batch_id}.apsimx"
-    res = agg_simulations(batch_data, reports=tables, base_dir=base_dir)
+    res = agg_simulations(batch_data, reports=tables, base_dir=base_dir, inner_threads=inner_threads)
     tables = Path(fn).stem
     write_df_to_sql(out=res, db_or_con=db_or_con, table_name=tables, if_exists='replace', index=False,
                     chunk_size=None)
@@ -168,14 +168,16 @@ def runner(batch: dict, tables, db_or_con, prefix='Batch', base_dir=None):
 
 @timer
 def run_multiple_simulations(iterable, n_cores: int = 1, batch_size: int = 20, tables=None, db_or_con=None,
-                             threads=False, base_dir=None, prefix='batch'):
+                             threads=False, base_dir=None, prefix='batch', inner_threads=None):
     # all tables are from  the provided db before running
     if not dispose(db_or_con):
         raise ValueError("failed to dispose all database tables")
     if db_or_con is None:
         raise ValueError("db_or_con must be specified for storing the data")
     batches = split_jobs(iterable, batch_size)
-    jobs = custom_parallel(runner, batches, tables, db_or_con, prefix, base_dir, ncores=n_cores, use_thread=threads,
+    inner = inner_threads or TOTAL_THREADS/n_cores
+    inner_threads= max(3, int(round(inner)))
+    jobs = custom_parallel(runner, batches, tables, db_or_con, prefix, base_dir,inner_threads, ncores=n_cores, use_thread=threads,
                            unit='batch',
                            progressbar=True)
     for _ in jobs:
@@ -219,7 +221,7 @@ if __name__ == '__main__':
     [drop_table('db.db', tb) for tb in get_db_table_names('db.db')]
     tabs = get_db_table_names('db.db')
     print(tabs)
-    rt = run_multiple_simulations(job, n_cores=12, batch_size=10, tables="Report", db_or_con='db.db')
+    rt = run_multiple_simulations(job, n_cores=6, batch_size=10, tables="Report", db_or_con='db.db')
     df = load_all_results('db.db')
     assert len(df.ID.unique()) == len(nconc), 'Some entries are being left out perhaps'
     end = time.perf_counter()

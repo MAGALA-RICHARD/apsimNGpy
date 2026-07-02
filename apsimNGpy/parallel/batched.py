@@ -219,7 +219,7 @@ if __name__ == '__main__':
     [drop_table('db.db', tb) for tb in get_db_table_names('db.db')]
     tabs = get_db_table_names('db.db')
     print(tabs)
-    rt = run_multiple_simulations(job, n_cores=10, batch_size=6, tables="Report", db_or_con='db.db')
+    rt = run_multiple_simulations(job, n_cores=12, batch_size=10, tables="Report", db_or_con='db.db')
     df = load_all_results('db.db')
     assert len(df.ID.unique()) == len(nconc), 'Some entries are being left out perhaps'
     end = time.perf_counter()

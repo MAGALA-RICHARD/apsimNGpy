@@ -35,7 +35,7 @@ from apsimNGpy.core.water import (swim_data, layer_struct,
                                   ci, sub_surface_tile_drainage,
                                   geometric_layers, )
 from apsimNGpy.core.runner import run_apsim_by_path
-import apsim_runner
+
 
 # expose some models
 # ===================================

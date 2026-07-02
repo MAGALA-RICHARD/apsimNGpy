@@ -7,7 +7,7 @@ xc = Path(sys.executable).parent
 import os
 from apsimNGpy.core_utils.database_utils import read_db_table
 
-os.startfile(str(xc))
+#os.startfile(str(xc))
 import apsim_runner
 from apsimNGpy.core.runner import APSIM_EXEC
 from apsimNGpy import load_crop_from_disk
@@ -17,7 +17,7 @@ out = Path(r'D:/')
 maize = load_crop_from_disk('Maize', out='out.apsimx')
 dp = out / 'temp'
 dp.mkdir(parents=True, exist_ok=True)
-crops = [load_crop_from_disk('Soybean', out=dp / f'i__{i}.apsimx') for i in range(400)]
+crops = [load_crop_from_disk('Soybean', out=dp / f'i__{i}.apsimx') for i in range(10)]
 try:
     a = time.perf_counter()
     ap = apsim_runner.run_apsim_by_path([str(i) for i in crops], str(APSIM_EXEC), n_cores=12, verbose=True)

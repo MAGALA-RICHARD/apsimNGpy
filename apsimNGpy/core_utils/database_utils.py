@@ -21,11 +21,12 @@ from typing import Iterable, Iterator, Optional, TypeVar, Callable
 import pandas as pd
 from typing import Dict, Tuple, Hashable, List
 from apsimNGpy.logger import logger
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
 T = TypeVar("T")
 
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
+
 
 UNKNOWN_FLAG = 'UNKNOWN'
 

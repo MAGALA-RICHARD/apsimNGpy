@@ -16,6 +16,7 @@ from apsimNGpy.starter.starter import CLR
 import numpy as np
 import pandas as pd
 from apsimNGpy.core.core import CoreModel, ModelTools
+from apsimNGpy.core_utils.utils import get_array_like
 
 Models = CLR.Models
 CastHelper = CLR.CastHelper
@@ -33,6 +34,8 @@ from apsimNGpy.core.water import (swim_data, layer_struct,
                                   set_swim_lower_bc,
                                   ci, sub_surface_tile_drainage,
                                   geometric_layers, )
+from apsimNGpy.core.runner import run_apsim_by_path
+import apsim_runner
 
 # expose some models
 # ===================================
@@ -113,6 +116,13 @@ class ApsimModel(CoreModel):
         extras_hash = hash(tuple(sorted(self._extra_kwargs.items())))
 
         return hash((model_hash, path_hash, extras_hash))
+
+    @timer
+    def runner(self, cpu_counts=-1, verbose=True, files=None, to_csv=False, timeout=None):
+        file_to_run = get_array_like(files or self.path, container=list)
+        ret = run_apsim_by_path(file_to_run, verbose=verbose, n_cores=cpu_counts, to_csv=to_csv, timeout=timeout)
+        if ret.returncode == 0:
+            self.ran_ok = True
 
     def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str = None,
                           payload: Union[dict, tuple, list] = None, fp=False) -> None:

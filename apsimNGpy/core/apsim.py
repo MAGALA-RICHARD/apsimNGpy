@@ -2104,7 +2104,7 @@ if __name__ == '__main__':
     print(model[0])
 
     model.add_model_from_apsimx(source=dict(model="Soybean", model_type='Models.Clock', identifier="Clock"),
-                                target=dict(identifier=".Simulations.Simulation", model_type=Models.Core.Simulation),
+                                target=dict(identifier=".Simulations.new_sim", model_type=Models.Core.Simulation),
                                 replace=True,
                                 rename='our_clock')
     clocks1 = model.inspect_model('Models.Clock', fullpath=False)
@@ -2294,9 +2294,9 @@ if __name__ == '__main__':
     with ApsimModel('Maize') as mo:
         # mo.clear_water_model('soil water')
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={}, swim_model_params={}
-                              )
-        mo.run()
+        # mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage={}, swim_model_params={}
+        #                       )
+        mo.run(verbose=True)
         mo.save()
         sp = mo.inspect_model(Models.WaterModel.WaterBalance)
         print(mo.results.Yield.mean())

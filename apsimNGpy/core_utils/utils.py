@@ -1,48 +1,35 @@
-from collections import deque
-import functools
 import glob
+import inspect
 import os
 import random
 import re
 import shutil
 import string
 import sys
-import time
 import traceback
 from collections import deque
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from os.path import join as opj
 from pathlib import Path
 from platform import system
 from subprocess import call, Popen
 from threading import Thread
-from time import perf_counter
-from typing import Iterable
 from typing import List
 
-import pandas as pd
-from scipy.optimize import curve_fit
-from shapely import wkt
-from shapely.geometry import Polygon
-from shapely.ops import unary_union
+from pandas.api.types import is_scalar
 
 from apsimNGpy.logger import logger
-import inspect
 
 
-def select_process(use_thread, ncores):
-    return ThreadPoolExecutor(ncores) if use_thread else ProcessPoolExecutor(ncores)
+def select_process(use_thread):
+    from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+    return ThreadPoolExecutor if use_thread else ProcessPoolExecutor
 
 
-def is_scalar(x):
-    """Treats strings or bites as scalars and else iterables if not itn or floats"""
-    if isinstance(x, (str, bytes)):  # treat strings as scalar
-        return True
-    return not isinstance(x, Iterable)
-
-
-from collections.abc import Iterable
-from pandas.api.types import is_scalar
+# def is_scalar(x):
+#     """Treats strings or bites as scalars and else iterables if not itn or floats"""
+#     if isinstance(x, (str, bytes)):  # treat strings as scalar
+#         return True
+#     return not isinstance(x, Iterable)
 
 
 def get_array_like(obj, container=list):
@@ -381,6 +368,7 @@ def convert_fc_to_numpy(fc):
 
 
 def get_centroid(polygon):
+    from shapely.ops import unary_union
     from shapely.geometry import Point
     import geopandas as gpd
     gdf = gpd.read_file(polygon)
@@ -396,6 +384,7 @@ def get_centroid(polygon):
 
 
 def create_polygon(lat, lon, lon_step, lat_step):
+    from shapely.geometry import Polygon
     return Polygon([(lon, lat), (lon + lon_step, lat), (lon + lon_step, lat + lat_step), (lon, lat + lat_step)])
 
 
@@ -405,7 +394,8 @@ def create_fishnet(min_lat, min_lon, max_lat, max_lon, lon_step, lat_step):
     lons = np.arange(min_lon, max_lon, lon_step)
 
     polygons = []
-    with ThreadPoolExecutor(max_workers=18) as executor:  # Adjust max_workers as needed
+    threader = select_process(use_thread=True)
+    with threader(max_workers=18) as executor:  # Adjust max_workers as needed
         x = 0
         for lon in lons:
             x += 1
@@ -422,6 +412,7 @@ crs = "EPSG:4326"
 
 
 def create_polygon1(args):
+    from shapely.geometry import Polygon
     lon, lat, lon_step, lat_step = args
     return Polygon([(lon, lat), (lon + lon_step, lat), (lon + lon_step, lat + lat_step), (lon, lat + lat_step)])
 
@@ -434,9 +425,8 @@ def create_fishnet1(pt, lon_step=20, lat_step=20, ncores=2, process=False):
     min_lon, min_lat, max_lon, max_lat = gdf_shape.total_bounds
     lats = np.arange(min_lat, max_lat, lat_step)
     lons = np.arange(min_lon, max_lon, lon_step)
-    polygons = []
 
-    with select_process(process, ncores) as executor:
+    with select_process(process)(ncores) as executor:
         args = [(lon, lat, lon_step, lat_step) for lon in lons for lat in lats]
         polygons = list(executor.map(create_polygon1, args))
     gdf = gpd.GeoDataFrame({'geometry': polygons}, crs=CRS)
@@ -487,7 +477,7 @@ def add_wheat(string_object, word_to_insert="Wheat"):
     words = string_object.split(', ')
     last_target_index = -1
     target_words = [words[0]] + ["Soybean"]
-    ["Maize", "Soybean"]
+
     # Iterate through the words in the list
     for i, word in enumerate(words):
         result.append(word)  # Add the current word to the result list
@@ -509,27 +499,6 @@ def assign_management_practices(locations, object_ids, num_practices):
         # Append the location, objectID, and management practice ID to the watershed_data
         watershed_data.append({"location": location, "objectID": obj_id, "practiceID": management_practice_id})
     return watershed_data
-
-
-def idex_excutor(self, x):  # We supply x from the rotations idex which inherits objectid
-    try:
-        a = time.perf_counter()
-        print(f"downloading for: {x}")
-        data_dic = {}
-        fn = "daymet_wf_" + str(x) + '.met'
-        cod = pol_object.record_array["Shape"][x]
-
-        filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2020, cleanup=False, filename=fn)
-        return filex
-    except Exception as e:
-        # raise
-        print(e, "has occured")
-        try:
-            print("trying again")
-            filex = weather.daymet_bylocation_nocsv(cod, start=1998, end=2000, cleanup=True, filename=fn)
-            return filex
-        except:
-            print("unresolved errors at the momentt try again")
 
 
 def threaded_weather_download(self, iter_arable):
@@ -584,6 +553,7 @@ def decreasing_exponential_function(x, a, b):  # has potential to cythonize
 
 def optimize_exponetial_data(x_data, y_data, initial_guess=[0.5, 0.5],
                              bounds=([0.1, 0.01], [np.inf, np.inf])):  # defaults for carbon
+    from scipy.optimize import curve_fit
 
     best_fit_params, _ = curve_fit(decreasing_exponential_function, x_data, y_data, p0=initial_guess,
                                    bounds=bounds)
@@ -604,7 +574,9 @@ def number_of_cells(r, cell_size):
 
 
 def timer(func):
-    @functools.wraps(func)  # Preserves metadata
+    from time import perf_counter
+    from functools import wraps
+    @wraps(func)  # Preserves metadata
     def wrapper(*args, **kwargs):
         start_time = perf_counter()
         result = func(*args, **kwargs)
@@ -617,6 +589,7 @@ def timer(func):
 
 
 def filter_df(df, **kwargs):
+    import pandas as pd
     """
     Filter a DataFrame based on values in specified columns.
 
@@ -680,6 +653,7 @@ def convert_df_to_gdf(df, CRS):
     The 'wkt' module from 'shapely' needs to be imported to convert geometries from WKT.
     """
     import geopandas as gpd
+    from shapely import wkt
     df['geometry'] = df['geometry'].apply(wkt.loads)
     gdf = gpd.GeoDataFrame(df, crs=CRS)
     return gdf
@@ -754,7 +728,8 @@ def exception_handler(re_raise=False):
     """
 
     def decorator(func):
-        @functools.wraps(func)
+        from functools import wraps
+        @wraps(func)
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)

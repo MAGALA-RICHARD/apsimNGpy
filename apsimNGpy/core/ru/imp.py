@@ -1,6 +1,6 @@
 import shutil
-from pathlib import Path
 import sys
+from pathlib import Path
 
 base = Path(__file__).parent / 'target/maturin/apsim_runner.dll'
 xc = Path(sys.executable).parent
@@ -9,7 +9,6 @@ from apsimNGpy.core_utils.database_utils import read_db_table
 
 os.startfile(str(xc))
 import apsim_runner
-from apsimNGpy import configuration
 from apsimNGpy.core.runner import APSIM_EXEC
 from apsimNGpy import load_crop_from_disk
 import time

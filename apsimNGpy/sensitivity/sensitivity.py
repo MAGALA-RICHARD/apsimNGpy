@@ -14,7 +14,7 @@ import pandas as pd
 import sqlalchemy
 from pydantic import BaseModel
 
-from apsimNGpy import is_scalar
+from apsimNGpy import is_scalar, timer
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_loader import get_node_by_path, Models
 from apsimNGpy.sensitivity.helpers import (default_n, define_problem,
@@ -83,8 +83,8 @@ def get_list_like(obj):
 
 
 def check_all_completed(res, expected_ids, index_name):
-    completed_ids = set(res[index_name])
-    expected = set(expected_ids)
+    completed_ids = set(res[index_name].astype('str'))
+    expected = set(pd.Series(expected_ids).astype('str'))
     return list(expected - completed_ids)
 
 
@@ -216,58 +216,69 @@ class ConfigProblem:
         n_cores = core_count(n_cores, threads=threads)
         PROB_NAMES = self.problem.get('names')
 
+        @timer
         def run_in_multi_core(data_db, sample_matrix, pending_retry=None, chunks=total_chunks):
-
+            from apsimNGpy.parallel.batched import run_multiple_simulations, load_all_results
             # send the grouping to the subset variables
             group = list(get_list_like(groupings))
             sub_sets_columns = self.outputs
             group.extend(sub_sets_columns)
-            sub_sets_columns = group
 
-            mc = MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix)
-            mc.run_all_jobs(
-                self.job_maker(sample_matrix, pending=pending_retry),
-                n_cores=n_cores,
-                retry_rate=retry_rate,
-                threads=threads,
-                clear_db=True,
-                display_failures=True,
-                subset=sub_sets_columns,
-                ignore_runtime_errors=False,
-                engine=engine,
-                chunk_size=chunk_size,
-                table_name=tables,
-                total_chunks=chunks,
-            )
-            return mc
+            def merged(dt):
+                xd = pd.DataFrame(X, columns=PROB_NAMES)
+                xd[self.index_id] = range(xd.shape[0])
+                xd[self.index_id] = xd[self.index_id].astype('str')
+                dt[self.index_id] = dt[self.index_id].astype('str')
+                mgd = dt.merge(xd, on=self.index_id, how='inner')
+                return mgd
+
+            sub_sets_columns = group
+            rt = run_multiple_simulations(self.job_maker(sample_matrix, pending=pending_retry),
+                                          n_cores=n_cores, batch_size=chunk_size, tables=tables, db_or_con=data_db)
+            df = load_all_results(data_db)
+            if not set(PROB_NAMES).issubset(df.columns):
+                df = merged(df)
+            return df
+            # mc = MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix)
+            # mc.run_all_jobs(
+            #     self.job_maker(sample_matrix, pending=pending_retry),
+            #     n_cores=n_cores,
+            #     retry_rate=retry_rate,
+            #     threads=threads,
+            #     clear_db=True,
+            #     display_failures=True,
+            #     subset=sub_sets_columns,
+            #     ignore_runtime_errors=False,
+            #     engine=engine,
+            #     chunk_size=chunk_size,
+            #     table_name=tables,
+            #     total_chunks=chunks,
+            # )
+            # return mc
 
         try:
 
-            manager = run_in_multi_core(data_db=db_path, sample_matrix=X)
-
-            df = manager.get_simulated_output(axis=0)
+            df = run_in_multi_core(data_db=db_path, sample_matrix=X)
+            # df = manager.get_simulated_output(axis=0)
             completed = [df, ]
             logger.info('Checking incomplete outputs')
             pending = check_all_completed(df, expected_ids=np.arange(X.shape[0]), index_name=self.index_id)
 
-            with manager:
-                pass
             pending_runner = 0
             while pending:
                 logger.info(f'{len(pending)} pending simulation IDs found. Rerunning them')
                 sub_x = X[pending]
-                manager = run_in_multi_core(
+                dif = run_in_multi_core(
                     data_db=db_path,
                     sample_matrix=sub_x, pending_retry=pending,
                     chunks=1,
                 )
-                with manager:
-                    dif = manager.get_simulated_output(axis=0)
-                    completed.append(dif)
-                    # the data frame must the newly returned
-                    pending = list(
-                        check_all_completed(dif, expected_ids=pending, index_name=self.index_id)
-                    )
+
+                completed.append(dif)
+                # the data frame must the newly returned
+                pending = list(
+                    check_all_completed(dif, expected_ids=pending, index_name=self.index_id)
+                )
                 pending_runner += 1
                 if pending_runner > 2 and pending:
                     raise RuntimeError(
@@ -842,7 +853,7 @@ if __name__ == "__main__":
     print(cc._factors)
     print(cc.get_list_sens_factors())
     params = [
-        {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
+        # {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
         {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300),
          },
         dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
@@ -940,11 +951,13 @@ if __name__ == "__main__":
     def run_sens():
         run_sensitivity(
             runner,
+            n_cores=8,
             total_chunks=8,
+            chunk_size=5,
             engine='python',
             method="fast",
             tables=['Report'],
-            N=50,
+            N=1000,
             # grouping=['year'],
             sample_options={
                 "M": 2,

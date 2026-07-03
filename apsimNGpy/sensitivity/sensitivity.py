@@ -335,7 +335,7 @@ class ConfigProblem:
         # check if multiple tables exist
         if 'source_table' in df:
             existing_tables = df['source_table'].unique()
-            print(len(existing_tables), 'tables')
+            #print(len(existing_tables), 'tables')
             DATA_TABLES = []
             for _, dif in df.groupby('source_table'):
                 pass  # DATA_TABLES.append(dif)
@@ -693,7 +693,7 @@ def run_sensitivity(
                         Y = dif[:, count]
 
                     if len(Y) == XX.shape[0]:
-                        print(len(Y))
+
                         ans = evaluate_sensitivity(configured_prob, method=method, Y=Y, **analyze_options)
                         ans = format_salib_results(ans, method, resp)
                         if grouping:

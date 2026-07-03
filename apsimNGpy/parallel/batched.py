@@ -170,8 +170,8 @@ def split_jobs(jobs: Iterable[Any], size: int = 10):
     tuple
         A batch containing up to ``size`` jobs.
     """
-    if not 5 <= size <= 15:
-        raise ValueError("'size' must be between 5 and 15 inclusive")
+    if not 2 <= size <= 200:
+        raise ValueError("'size' must be between 2 and 200 inclusive")
     for counter, jy in enumerate(batched(jobs, size)):
         yield {'batch_id': counter, 'batch_data': jy}
 

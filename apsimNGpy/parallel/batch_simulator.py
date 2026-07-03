@@ -1,3 +1,5 @@
+# Retained for cases where combining simulations into one APSIM file is useful,
+# although appending many simulations can become computationally expensive.
 import os
 from pathlib import Path
 

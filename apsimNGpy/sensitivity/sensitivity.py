@@ -854,15 +854,15 @@ if __name__ == "__main__":
     print(cc.get_list_sens_factors())
     params = [
         # {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
-        {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300),
-         },
+        # {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300),
+        #  },
         dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
              param="[Leaf].Photosynthesis.RUE.FixedValue", bounds=(
                 0.7, 2.2), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'),
-        # dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
-        #      param='[Maize].Grain.MaximumNConc.InitialPhase.InitialNconc.FixedValue',
-        #      bounds=(0.015, 0.045), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'
-        #      )
+        dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+             param='[Maize].Grain.MaximumNConc.InitialPhase.InitialNconc.FixedValue',
+             bounds=(0.015, 0.045), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'
+             )
 
     ]
 
@@ -957,7 +957,7 @@ if __name__ == "__main__":
             engine='python',
             method="fast",
             tables=['Report'],
-            N=1000,
+            N=700,
             # grouping=['year'],
             sample_options={
                 "M": 2,

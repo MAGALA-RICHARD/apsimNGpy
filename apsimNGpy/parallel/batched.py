@@ -1,3 +1,23 @@
+"""
+The `batched.py` script is designed to run APSIM files in batches, where send a specified number of edited apsimx files to Models.exe or Models
+ while still supporting parallel execution.
+ The initial approach was to combine multiple simulations into a single APSIM file and run them together.
+ However, this became computationally expensive as the number of simulations increased because appending
+ simulations to one file introduced substantial overhead.
+
+ The implementation of that approach is retained in `batch_simulator`. Although this method has not
+  been rigorously benchmarked, it may still be useful in specific cases where batching simulations into a
+  single file is more convenient or where the overhead remains manageable.
+
+  The underlying motivation for both batching approaches is that starting the APSIM executable, `Models.exe` on Windows
+   or `Models` on other platforms can be computationally expensive. Each new process launch introduces startup overhead
+   because the executable must initialize, load model assemblies, parse input files, and prepare the simulation environment
+    before any actual simulation work begins. For large simulation workflows, repeatedly starting APSIM for individual files
+    can therefore waste substantial time. These batching utilities attempt to reduce that overhead by grouping simulations so
+     that each APSIM process simulate more at a go after startup.
+
+
+"""
 import dataclasses
 import os
 import shutil
@@ -87,7 +107,7 @@ def collect_results(db, tables=None):
     return pd.concat((read_db_table(db, table).assign(source_table=table) for table in tables), ignore_index=True)
 
 
-def agg_simulations(payload, reports=None, base_dir=None, inner_threads= 4):
+def agg_simulations(payload, reports=None, base_dir=None, inner_threads=4):
     """
     iterable of jobs
     @param payload:
@@ -175,9 +195,10 @@ def run_multiple_simulations(iterable, n_cores: int = 1, batch_size: int = 20, t
     if db_or_con is None:
         raise ValueError("db_or_con must be specified for storing the data")
     batches = split_jobs(iterable, batch_size)
-    inner = inner_threads or TOTAL_THREADS/n_cores
-    inner_threads= max(3, int(round(inner)))
-    jobs = custom_parallel(runner, batches, tables, db_or_con, prefix, base_dir,inner_threads, ncores=n_cores, use_thread=threads,
+    inner = inner_threads or TOTAL_THREADS / n_cores
+    inner_threads = max(3, int(round(inner)))
+    jobs = custom_parallel(runner, batches, tables, db_or_con, prefix, base_dir, inner_threads, ncores=n_cores,
+                           use_thread=threads,
                            unit='batch',
                            progressbar=True)
     for _ in jobs:
@@ -203,10 +224,10 @@ if __name__ == '__main__':
     job = []
     import numpy as np
 
-    nconc = np.arange(0.5, 3, 0.002)
-    for i, data in enumerate(nconc):
+    radiations = np.arange(0.5, 3, 0.055)
+    for i, data in enumerate(radiations):
         ip = {"model": "Maize", 'ID': i,
-              "inputs": [{'path': '.Simulations.Simulation.Field.Sow using a variable rule', 'Population': 12},
+              "inputs": [
                          {'path': ".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
                           'commands': {"[Leaf].Photosynthesis.RUE.FixedValue": data},
                           'managers': {'Sow using a variable rule': 'CultivarName'}, 'plant': 'Maize'},
@@ -216,13 +237,56 @@ if __name__ == '__main__':
 
     # rt = agg_simulations(job, 's.apsimx')
     start = time.perf_counter()
-    from apsimNGpy.core_utils.database_utils import get_db_table_names, drop_table, clear_all_tables
+    from apsimNGpy.core_utils.database_utils import get_db_table_names, drop_table
 
-    [drop_table('db.db', tb) for tb in get_db_table_names('db.db')]
-    tabs = get_db_table_names('db.db')
-    print(tabs)
-    rt = run_multiple_simulations(job, n_cores=6, batch_size=10, tables="Report", db_or_con='db.db')
-    df = load_all_results('db.db')
-    assert len(df.ID.unique()) == len(nconc), 'Some entries are being left out perhaps'
+    rt = run_multiple_simulations(job, n_cores=6, batch_size=5, tables="Report", db_or_con='db.db')
+    mdf = load_all_results('db.db')
+    assert len(mdf.ID.unique()) == len(radiations), 'Some entries are being left out perhaps'
     end = time.perf_counter()
-    print((end - start) / len(nconc), 'seconds')
+    print((end - start) / len(radiations), 'seconds')
+
+    from apsimNGpy import ApsimModel
+
+    #  tmp = uuid.uuid4()
+    wd = Path('.scrat')
+    wd.mkdir(parents=True, exist_ok=True)
+
+
+    @timer
+    def single():
+        data = []
+        for ID, rue in enumerate(radiations):
+            tmp = uuid.uuid4()
+            print(f'Simulating: , {ID}')
+            file_name = wd / f"{tmp}.apsimx"
+            model = ApsimModel('Maize', out_path=file_name)
+            model.set_params(path=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+                             commands={"[Leaf].Photosynthesis.RUE.FixedValue": rue},
+                             managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize')
+            model.run('Report')
+            d = model.results
+            d['ID'] = ID
+            data.append(d)
+        sgd = pd.concat(data, ignore_index=True)
+        shutil.rmtree(wd, ignore_errors=True)
+        return sgd
+
+
+    sgf = single()
+    xd = df = pd.DataFrame(
+        {
+            "rue": radiations,
+            "ID": range(len(radiations)),
+        }
+    )
+    single = sgf.merge(xd, on="ID", how="inner")
+    single.sort_values(by='ID', inplace=True)
+    mdf['ID'] = mdf['ID'].astype('int')
+    multiple = mdf.merge(xd, on="ID", how="inner")
+    multiple.sort_values(by='ID', inplace=True)
+    import shutil
+    shutil.rmtree(wd, ignore_errors=True)
+    yd = multiple['Yield'] - single['Yield']
+    assert yd.mean() == 0, 'data is different'
+    from apsimNGpy import logger
+    logger.info('As of the above test no major differences between single and multiple processing in the simulation output')

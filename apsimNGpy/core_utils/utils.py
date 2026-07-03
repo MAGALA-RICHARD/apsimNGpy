@@ -582,7 +582,7 @@ def timer(func):
         result = func(*args, **kwargs)
         end_time = perf_counter()
         elapsed_time = end_time - start_time
-        logger.info(f"{func.__name__} took {elapsed_time:.4f} seconds to execute.")
+        logger.info("Executed function: %s in %.4f seconds.", func.__name__, elapsed_time)
         return result
 
     return wrapper

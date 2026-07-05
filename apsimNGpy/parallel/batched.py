@@ -21,8 +21,10 @@ The `batched.py` script is designed to run APSIM files in batches, where send a 
 import dataclasses
 import os
 import shutil
+import sys
+from concurrent.futures.process import ProcessPoolExecutor
 from pathlib import Path
-
+from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 from pathlib import Path
 from apsimNGpy.core.apsim import ApsimModel
@@ -43,7 +45,7 @@ PAYLOAD = 'payload'
 INPUTS = 'inputs'
 PATH = 'path'
 INPUTS_KEY = 'inputs'
-TEMP = Path('.batched.scratch')
+TEMP = Path('./../.batched.scratch')
 TEMP.mkdir(exist_ok=True)
 TOTAL_THREADS = psutil.cpu_count(logical=True)
 
@@ -107,51 +109,6 @@ def collect_results(db, tables=None):
     return pd.concat((read_db_table(db, table).assign(source_table=table) for table in tables), ignore_index=True)
 
 
-def agg_simulations(payload, reports=None, base_dir=None, inner_threads=4):
-    """
-    iterable of jobs
-    @param payload:
-    @param out_path:
-    @return:
-    """
-    base_Dir = base_dir or TEMP
-
-    if not Path(base_Dir).exists():
-        raise ValueError(f"Base directory `{base_Dir}` does not exists on the computer")
-    base_Dir = Path(base_Dir)
-    WDConfig.BASE_DIR = base_Dir
-
-    def _batch(jj):
-        jobs = extract_jobs(jj)
-        data = jobs[Config.DATA_KEY]
-        model_v = jobs[Config.MODEL_KEY]
-        tmp = uuid.uuid4().hex
-
-        out_path = base_Dir / f"tmp_{tmp}_.apsimx"
-        model = ApsimModel(model_v, out_path=out_path)
-        if len(model) != 1:
-            raise ValueError(f"Expected one simulation got {len(model)} simulations")
-        in_puts = jobs[Config.INPUTS_KEY]
-        ID = data.get(IDENTIFICATION, None) if data else None
-        if ID is None:
-            raise ValueError(f"identification {IDENTIFICATION} required")
-
-        _ = [model.edit_model('Models.Report', rep, variable_spec=['[Simulation].Name as ID']
-                              ) for rep in model.inspect_model('Models.Report', fullpath=False)]
-
-        _ = [model.set_params(job) for job in in_puts]
-        model[0].Name = f"{ID}"
-        model.save()
-        return model.path
-
-    files = [_batch(jj) for _, jj in enumerate(payload)]
-    cpu = max(1, int(TOTAL_THREADS / 2.5))
-    ret = run_apsim_by_path(model=files, timeout=None, n_cores=inner_threads)
-    if ret.returncode == 0:
-        out = pd.concat(collect_results(db, tables=reports) for db in files)
-        out['PID'] = os.getpid()
-        del files, ret
-        return out
 
 
 def split_jobs(jobs: Iterable[Any], size: int = 10):
@@ -176,14 +133,6 @@ def split_jobs(jobs: Iterable[Any], size: int = 10):
         yield {'batch_id': counter, 'batch_data': jy}
 
 
-def runner(batch: dict, tables, db_or_con, prefix='Batch', base_dir=None, inner_threads=4):
-    batch_id = batch[Config.BATCH_ID_KEY]
-    batch_data = batch['batch_data']
-    fn = f"{prefix}_{batch_id}.apsimx"
-    res = agg_simulations(batch_data, reports=tables, base_dir=base_dir, inner_threads=inner_threads)
-    tables = Path(fn).stem
-    write_df_to_sql(out=res, db_or_con=db_or_con, table_name=tables, if_exists='replace', index=False,
-                    chunk_size=None)
 
 
 @timer
@@ -195,18 +144,53 @@ def run_multiple_simulations(iterable, n_cores: int = 1, batch_size: int = 20, t
     if db_or_con is None:
         raise ValueError("db_or_con must be specified for storing the data")
     batches = split_jobs(iterable, batch_size)
-    inner = inner_threads or TOTAL_THREADS / n_cores
-    inner_threads = max(3, int(round(inner)))
-    jobs = custom_parallel(runner, batches, tables, db_or_con, prefix, base_dir, inner_threads, ncores=n_cores,
-                           use_thread=threads,
-                           unit='batch',
-                           progressbar=True)
-    for _ in jobs:
-        pass
-    # try to delete files
-    wd = Path(WDConfig.BASE_DIR)
-    if wd.exists():
-        shutil.rmtree(wd, ignore_errors=True)
+    inner = inner_threads or n_cores
+    print(f'selected core: {inner}')
+    inner_threads = inner
+    from apsimNGpy.parallel.wks import agg_simulations, runner, WDConfig
+    size= 0
+    ba = 0
+    import time
+    start = time.perf_counter()
+    try:
+        print(f'Processing batched jobs...', end="", file=sys.stderr)
+        while True:
+
+            batch = next(batches, None)
+
+            if batch is None:
+
+                break
+            bs = len(batch['batch_data'])
+            runner(batch, tables, db_or_con, prefix, base_dir, int(inner_threads), threads)
+            wd = Path(WDConfig.BASE_DIR)
+            if wd.exists():
+                shutil.rmtree(wd, ignore_errors=True)
+            elapsed = time.perf_counter() - start
+            h, rem = divmod(int(elapsed), 3600)
+            m, s = divmod(rem, 60)
+            size+=bs
+            ba += 1
+            print(
+                f"\rProgress: {size} simulations ({ba} batches) completed "
+                f"| Elapsed: {h:02}:{m:02}:{s:02}",
+                end="",
+                flush=True,
+                file=sys.stderr,
+            )
+        print(file=sys.stderr)  # Move to a new line after completion.
+    finally:
+        print(file=sys.stderr)
+
+
+    # jobs = custom_parallel(runner, batches, tables, db_or_con, prefix, base_dir, inner_threads, ncores=n_cores,
+    #                        use_thread=threads,
+    #                        unit='batch',
+    #                        progressbar=True)
+    # for _ in jobs:
+    #     pass
+    # # try to delete files
+
 
 
 @timer
@@ -224,7 +208,7 @@ if __name__ == '__main__':
     job = []
     import numpy as np
 
-    radiations = np.arange(0.5, 3, 0.055)
+    radiations = np.arange(0.5, 3, 0.0055)
     for i, data in enumerate(radiations):
         ip = {"model": "Maize", 'ID': i,
               "inputs": [
@@ -239,7 +223,7 @@ if __name__ == '__main__':
     start = time.perf_counter()
     from apsimNGpy.core_utils.database_utils import get_db_table_names, drop_table
 
-    rt = run_multiple_simulations(job, n_cores=6, batch_size=5, tables="Report", db_or_con='db.db')
+    rt = run_multiple_simulations(job, n_cores=6, batch_size=100,inner_threads=10, tables="Report", db_or_con='db.db')
     mdf = load_all_results('db.db')
     assert len(mdf.ID.unique()) == len(radiations), 'Some entries are being left out perhaps'
     end = time.perf_counter()

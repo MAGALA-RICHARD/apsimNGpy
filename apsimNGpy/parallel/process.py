@@ -303,70 +303,69 @@ def custom_parallel_chunks(
     resume = kwargs.pop('resume', False)
     db_session = kwargs.get('db_session', False)
 
+    # rewritten to avoid clogging
+    idx = 0
+    completed = 0
+    submitted = 0
+    bar = tqdm(
+        total=total_chunks,
+        desc=desc,
+        unit=unit,
+        dynamic_ncols=True,
+        miniters=1,
+        bar_format=(
+            "{desc} {bar} {percentage:3.0f}% "
+            "({n_fmt}/{total} chunks) > completed "
+            "(elapsed=>{elapsed}, eta=>{remaining}) {postfix}"
+        ),
+    ) if verbose else None
 
-    with Executor(max_workers=ncores) as pool:
-        submitted = 0
-        completed = 0
-        bar = tqdm(
-            total=total_chunks, desc=desc, unit=unit,
-            dynamic_ncols=True, miniters=1,
-            bar_format=("{desc} {bar} {percentage:3.0f}% "
-                        "({n_fmt}/{total} chunks) > completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}")
-        ) if verbose else None
-        try:
-            data_db = db_session or Path(f'__data__{total_chunks}.db')
-            data_db = Path(data_db).with_suffix('.db').resolve()
+    while True:
+        chunk = next(chunked, [])
 
-            for idx, chunk in enumerate(chunked):
+        if not chunk:
+            break
 
-                key = get_key(value=idx, db=data_db)
+        chunk_size = len(chunk)
+
+        with Executor(max_workers=ncores) as pool:
+            try:
+                data_db = db_session or Path(f"__data__{total_chunks}.db")
+                data_db = Path(data_db).with_suffix(".db").resolve()
 
                 start = time.perf_counter()
-                # refresh pool
-                #with Executor(max_workers=ncores) as pool:
+
                 futures = [pool.submit(func, qi, *args) for qi in chunk]
                 submitted += 1
-                # Collect at least one finished chunk
-                for fut in as_completed(futures, timeout=None):
 
+                for fut in as_completed(futures, timeout=None):
                     result = fut.result()  # propagate exceptions
 
-                    elapsed = time.perf_counter() - start
-                    if completed and elapsed > 0:
-                        avg = elapsed / completed
+                    if not void:
+                        yield result
+
+                completed += chunk_size
+                elapsed = time.perf_counter() - start
+
+                if bar is not None:
+                    if elapsed > 0:
+                        avg = elapsed / max(chunk_size, 1)
                         bar.set_postfix_str(f"[{avg:.3f} s/{unit}]")
 
-                    if not void:
-                        # yield results for THIS iterable (kept separate)
-                        yield result
-                    break  # return to top-up loop
-
-                # register completed chunk
-                register_key(idx, data_db)
-                if key and resume:
-                    if bar is not None:
-                        bar.update(1)
-                    continue
-                if bar is not None:
                     bar.update(1)
-                gc.collect()
-                if idx + 1 == total_chunks:
-                    # tracking completed
-                    clear_db(db=data_db)
-                time.sleep(1.5)
-                completed += 1
 
-        finally:
-            if bar is not None:
-                bar.close()
+            finally:
+               pass
 
-        if void:
-            return None
+    if bar is not None:
+        bar.close()
+
+    if void:
         return None
 
 
 def worker(x):
-   return x
+    return x
 
 
 if __name__ == '__main__':
@@ -388,14 +387,17 @@ if __name__ == '__main__':
 
     # quick example
 
-    success = list(
-        custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True,
-                        progressbar=False))
-    fail = list(
-        custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True, ))
-    fai = list(
-        custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
-    x = 0
-    for i in custom_parallel_chunks(worker, range(1000), use_thread=False, n_chunks=102, void=False, resume=True):
-        x += 1
+    # success = list(
+    #     custom_parallel(mock_success, range(100), use_thread=True, ncores=10, void=True, display_failures=True,
+    #                     progressbar=False))
+    # fail = list(
+    #     custom_parallel(mock_failure, range(1000), use_thread=True, ncores=10, void=False, display_failures=True, ))
+    # fai = list(
+    #     custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
+    # x = 0
+    for i in custom_parallel_chunks(worker, range(6600), use_thread=False, n_chunks=2, void=False, resume=True):
+
+        pass
+    for i in custom_parallel(worker, range(6600), use_thread=False, void=False, resume=True):
+
         pass

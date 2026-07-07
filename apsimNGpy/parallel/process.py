@@ -365,7 +365,7 @@ def custom_parallel_chunks(
 
 
 def worker(x):
-    return x
+    return [x  ** i for i in range(2)]
 
 
 if __name__ == '__main__':

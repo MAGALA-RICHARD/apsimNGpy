@@ -336,7 +336,7 @@ class ConfigProblem:
         # check if multiple tables exist
         if 'source_table' in df:
             existing_tables = df['source_table'].unique()
-            #print(len(existing_tables), 'tables')
+            # print(len(existing_tables), 'tables')
             DATA_TABLES = []
             for _, dif in df.groupby('source_table'):
                 pass  # DATA_TABLES.append(dif)
@@ -855,15 +855,15 @@ if __name__ == "__main__":
     print(cc.get_list_sens_factors())
     params = [
         # {'base': ".Simulations.Simulation.Field.Sow using a variable rule", 'param': "Population", 'bounds': (2, 10), },
-        # {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300),
-        #  },
+        {"base": ".Simulations.Simulation.Field.Fertilise at sowing", "param": "Amount", 'bounds': (0, 300),
+         },
         dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
              param="[Leaf].Photosynthesis.RUE.FixedValue", bounds=(
                 0.7, 2.2), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'),
-        dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
-             param='[Maize].Grain.MaximumNConc.InitialPhase.InitialNconc.FixedValue',
-             bounds=(0.015, 0.045), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'
-             )
+        # dict(base=".Simulations.Simulation.Field.Maize.CultivarFolder.Dekalb_XL82",
+        #      param='[Maize].Grain.MaximumNConc.InitialPhase.InitialNconc.FixedValue',
+        #      bounds=(0.015, 0.045), managers={'Sow using a variable rule': 'CultivarName'}, plant='Maize'
+        #      )
 
     ]
 
@@ -954,11 +954,11 @@ if __name__ == "__main__":
             runner,
             n_cores=8,
             total_chunks=8,
-            chunk_size=5,
+            chunk_size=100,
             engine='python',
             method="fast",
             tables=['Report'],
-            N=100,
+            N=80,
             # grouping=['year'],
             sample_options={
                 "M": 2,

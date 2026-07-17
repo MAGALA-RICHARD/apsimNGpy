@@ -145,7 +145,6 @@ def edit_to_folder(job, *, folder_path: str, prefix, db_or_conn, call_back=None)
             if inputs:
                 # set before running
                 for in_put in inputs:
-
                     _model.set_params(**in_put)
             # reps = _model.inspect_model('Models.Report', fullpath=False)
             _model.Simulations.Name = f"{_model.Simulations.Name}_{ID}"
@@ -299,9 +298,7 @@ def single_runner(
                         call_back(_model)
                     if inputs:
                         # set before running
-                        for in_put in inputs:
-
-                            _model.set_params(**in_put)
+                        _ = [_model.set_params(**pt) for pt in inputs]
                     _model.run(timeout=timeout, cpu_count=1, report_name=table_to_use)
 
                     # Aggregate results if requested

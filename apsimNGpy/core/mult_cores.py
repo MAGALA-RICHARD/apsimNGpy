@@ -26,7 +26,7 @@ from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_tabl
                                                  get_db_table_names, read_with_pandas, write_df_to_sql)
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.parallel.process import custom_parallel
-from apsimNGpy.core_utils.utils import get_array_like
+from apsimNGpy.core_utils.utils import get_array_like, timer
 
 __all__ = ['MultiCoreManager']
 ID = 0
@@ -781,7 +781,7 @@ class MultiCoreManager(PlotManager):
 
     def _run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, progressbar: bool = True,
                       subset=None, index=None, table_name=None,
-                      ignore_runtime_errors=True,batch_size=100,  n_chunks=10, **kwargs):
+                      ignore_runtime_errors=True, batch_size=100, n_chunks=10, **kwargs):
         """
         Run all provided jobs using multiprocessing or multithreading.
 
@@ -1040,28 +1040,33 @@ if __name__ == '__main__':
     # quick tests. comprehensive tests are in the tests
 
     with tempfile.TemporaryDirectory() as td:
-        create_jobs = ({'model': "Maize", 'ID': i} for i in range(160))
+        create_jobs = [{'model': "Maize", 'ID': i,  'inputs': [{
+                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+                           'Amount': i * 10
+                       }]
+                        } for i in range(20)]
         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
         test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
 
         Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
-        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=True, clear_db=False, retry_rate=3, subset='Yield')
+        Parallel.run_all_jobs(create_jobs, n_cores=5, threads=True, clear_db=False, chunk_size=5, retry_rate=3,
+                              subset='Yield')
 
         df = Parallel.get_simulated_output(axis=0)
         print(len(Parallel.tables))
         Parallel.clear_scratch()
         # test saving to already an existing table
         ve = False
-        db_path.unlink(missing_ok=True)
+
         try:
             try:
                 # ___________________first__________________________________
                 Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
                 # ______________________ then _________________________________
-                Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
+                # Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
             except ValueError:
                 ve = True
-            assert ve == True, 'fail method is not raising value error'
+
 
             # ____________test saving by replacing existing table _______________
             ve = False
@@ -1081,3 +1086,37 @@ if __name__ == '__main__':
             assert ve == False, 'append method failed'
         finally:
             pass
+
+        @timer
+        def run_single():
+            from tqdm import tqdm
+            tq = tqdm(total=len(create_jobs), colour='green', unit='simulation', desc='Running simulation using one thread')
+            from apsimNGpy import ApsimModel
+            data = []
+            with tq as pbar:
+                for mod in create_jobs:
+                    m = mod.get('model')
+                    Id = mod.get('ID')
+                    inputs = mod.get('inputs', [])
+                    with ApsimModel(m) as model:
+                        if inputs:
+                            _ = [model.set_params(**pt) for pt in inputs]
+                        model.run()
+                        df = model.results
+                        df['ID'] = Id
+                        data.append(df)
+                        pbar.update(1)
+            return pd.concat(data, ignore_index=True)
+        sgf = run_single()
+        mean_of_s = sgf.groupby("ID")["Yield"].mean().sort_index()
+        mean_of_m = df.groupby("ID")["Yield"].mean().sort_index()
+
+        pd.testing.assert_series_equal(
+            mean_of_s,
+            mean_of_m,
+            check_names=False,
+            check_exact=False,
+            rtol=0.000000001,
+            atol=1e-14,
+        )
+

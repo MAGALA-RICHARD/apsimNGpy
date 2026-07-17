@@ -226,7 +226,7 @@ def parallelize_chunks(func, iterable: Iterable, *args, **kwargs):
                 for item in itd_chunks
             ]
 
-            # Add the newly submitted jobs to the overall total.
+            # need to add the newly submitted jobs to the overall total.
             pbar.total += len(futures)
             pbar.refresh()
 

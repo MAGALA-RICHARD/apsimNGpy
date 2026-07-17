@@ -233,33 +233,33 @@ class ConfigProblem:
                 return mgd
 
             sub_sets_columns = group
-            rt = run_multiple_simulations(self.job_maker(sample_matrix, pending=pending_retry),
-                                          n_cores=n_cores, batch_size=chunk_size, tables=tables, db_or_con=data_db)
-            df = load_all_results(data_db)
-            if not set(PROB_NAMES).issubset(df.columns):
-                df = merged(df)
-            return df
-            # mc = MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix)
-            # mc.run_all_jobs(
-            #     self.job_maker(sample_matrix, pending=pending_retry),
-            #     n_cores=n_cores,
-            #     retry_rate=retry_rate,
-            #     threads=threads,
-            #     clear_db=True,
-            #     display_failures=True,
-            #     subset=sub_sets_columns,
-            #     ignore_runtime_errors=False,
-            #     engine=engine,
-            #     chunk_size=chunk_size,
-            #     table_name=tables,
-            #     total_chunks=chunks,
-            # )
-            # return mc
+            # rt = run_multiple_simulations(self.job_maker(sample_matrix, pending=pending_retry),
+            #                               n_cores=n_cores, batch_size=chunk_size, tables=tables, db_or_con=data_db)
+            # df = load_all_results(data_db)
+            # if not set(PROB_NAMES).issubset(df.columns):
+            #     df = merged(df)
+            # return df
+            mc = MultiCoreManager(agg_func=agg_func, db_path=data_db, table_prefix=table_prefix)
+            mc.run_all_jobs(
+                self.job_maker(sample_matrix, pending=pending_retry),
+                n_cores=n_cores,
+                retry_rate=retry_rate,
+                threads=threads,
+                clear_db=True,
+                display_failures=True,
+                subset=sub_sets_columns,
+                ignore_runtime_errors=False,
+                engine=engine,
+                chunk_size=chunk_size,
+                table_name=tables,
+                total_chunks=chunks,
+            )
+            return mc
 
         try:
 
-            df = run_in_multi_core(data_db=db_path, sample_matrix=X)
-            # df = manager.get_simulated_output(axis=0)
+            manager = run_in_multi_core(data_db=db_path, sample_matrix=X)
+            df = manager.get_simulated_output(axis=0)
             completed = [df, ]
             logger.info('Checking incomplete outputs')
             pending = check_all_completed(df, expected_ids=np.arange(X.shape[0]), index_name=self.index_id)
@@ -268,14 +268,15 @@ class ConfigProblem:
             while pending:
                 logger.info(f'{len(pending)} pending simulation IDs found. Rerunning them')
                 sub_x = X[pending]
-                dif = run_in_multi_core(
+                man = run_in_multi_core(
                     data_db=db_path,
                     sample_matrix=sub_x, pending_retry=pending,
                     chunks=1,
                 )
+                dif = man.get_simulated_output(axis=0)
 
                 completed.append(dif)
-                # the data frame must the newly returned
+                # the data frame must be the newly returned
                 pending = list(
                     check_all_completed(dif, expected_ids=pending, index_name=self.index_id)
                 )
@@ -957,7 +958,7 @@ if __name__ == "__main__":
             engine='python',
             method="fast",
             tables=['Report'],
-            N=700,
+            N=100,
             # grouping=['year'],
             sample_options={
                 "M": 2,

@@ -5656,7 +5656,7 @@ class CoreModel(PlotManager):
 APSIMNG = CoreModel
 # Attach docs
 CoreModel.edit_model.__doc__ = EDIT_MODEL_DOC
-gc.collect()
+
 if __name__ == '__main__':
     from pathlib import Path
     from time import perf_counter

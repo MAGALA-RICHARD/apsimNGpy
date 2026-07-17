@@ -7,14 +7,6 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from apsimNGpy.config import (set_apsim_bin_path, get_apsim_bin_path, path_checker,
-                              apsim_bin_context, load_crop_from_disk, configuration, start_pythonnet, DLL_DIR,
-                              Configuration, locate_model_bin_path, scan_dir_for_bin, auto_detect_apsim_bin_path)
-from apsimNGpy.core_utils.utils import is_scalar, timer, collect_classes
-from apsimNGpy.exceptions import ApsimRuntimeError, NodeNotFoundError, TableNotFoundError, CastCompilationError
-from apsimNGpy.logger import logger
-from apsimNGpy.parallel.process import custom_parallel
-
 _AutoBin = object()
 
 #  Option 1
@@ -30,11 +22,15 @@ _AutoBin = object()
 # -----------------------------------------------------------------------------
 
 _LAZY_IMPORTS = {
+    # logging util
+    "logger": ("apsimNGpy.logger", 'logger'),
     # APSIM engine
     "ApsimModel": ("apsimNGpy.core.apsim", "ApsimModel"),
 
     # multicore utilities
     "MultiCoreManager": ("apsimNGpy.core.mult_cores", "MultiCoreManager"),
+
+    'custom_parallel':('apsimNGpy.parallel.process', 'custom_parallel'),
 
     # runner
     "run_apsim_by_path": ("apsimNGpy.core.runner", "run_apsim_by_path"),
@@ -73,6 +69,30 @@ _LAZY_IMPORTS = {
     'RandintVar': ('apsimNGpy.optimizer.problems.variables', 'RandintVar'),
     'ChoiceVar': ('apsimNGpy.optimizer.problems.variables', 'ChoiceVar'),
     'GridVar': ('apsimNGpy.optimizer.problems.variables', 'GridVar'),
+    # core utilities
+    'set_apsim_bin_path': ('apsimNGpy.config', 'set_apsim_bin_path'),
+    'get_apsim_bin_path': ('apsimNGpy.config', 'get_apsim_bin_path'),
+    'path_checker': ('apsimNGpy.config', 'path_checker'),
+    'apsim_bin_context': ('apsimNGpy.config', 'apsim_bin_context'),
+    'load_crop_from_disk': ('apsimNGpy.config', 'load_crop_from_disk'),
+    'configuration': ('apsimNGpy.config', 'configuration'),
+    'start_pythonnet': ('apsimNGpy.config', 'start_pythonnet'),
+    'DLL_DIR': ('apsimNGpy.config', 'DLL_DIR'),
+    'Configuration': ('apsimNGpy.config', 'Configuration'),
+    'locate_model_bin_path': ('apsimNGpy.config', 'locate_model_bin_path'),
+    'scan_dir_for_bin': ('apsimNGpy.config', 'scan_dir_for_bin'),
+    'auto_detect_apsim_bin_path': (
+        'apsimNGpy.config',
+        'auto_detect_apsim_bin_path',
+    ),
+    'is_scalar': ('apsimNGpy.core_utils.utils', 'is_scalar'),
+    'timer': ('apsimNGpy.core_utils.utils', 'timer'),
+    'collect_classes': ('apsimNGpy.core_utils.utils', 'collect_classes'),
+    # error classes
+    'ApsimRuntimeError': ('apsimNGpy.exceptions', 'ApsimRuntimeError'),
+    'NodeNotFoundError': ('apsimNGpy.exceptions', 'NodeNotFoundError'),
+    'TableNotFoundError': ('apsimNGpy.exceptions', 'TableNotFoundError'),
+    'CastCompilationError': ('apsimNGpy.exceptions', 'CastCompilationError'),
 }
 
 
@@ -137,6 +157,14 @@ if TYPE_CHECKING:
     from apsimNGpy.tests import unittests  # noqa: F401
     from apsimNGpy.optimizer.problems.variables import (UniformVar, QrandintVar, QuniformVar  # noqa: F401
                                                         )  # noqa: F401
+    from apsimNGpy.config import (get_apsim_bin_path, path_checker,
+                                  apsim_bin_context, load_crop_from_disk, configuration, start_pythonnet, DLL_DIR,
+                                  Configuration, locate_model_bin_path, scan_dir_for_bin, auto_detect_apsim_bin_path
+                                  )  # noqa: F401
+    from apsimNGpy.core_utils.utils import is_scalar, timer, collect_classes # noqa: F401
+
+    from apsimNGpy.exceptions import ApsimRuntimeError, NodeNotFoundError, TableNotFoundError, CastCompilationError  # noqa: F401
+    from apsimNGpy.parallel.process import custom_parallel # noqa: F401
 
 
 # option 2
@@ -360,23 +388,6 @@ class Apsim:
 __all__ = [
     'Apsim',
     'start_pythonnet',
-    "set_apsim_bin_path",
-    "get_apsim_bin_path",
-    "apsim_bin_context",
-    "load_crop_from_disk",
-    "Configuration",
-    "locate_model_bin_path",
-    "logger",
-    "ApsimRuntimeError",
-    "NodeNotFoundError",
-    "TableNotFoundError",
-    "CastCompilationError",
-    'auto_detect_apsim_bin_path',
-    'scan_dir_for_bin',
-    'custom_parallel',
-    'timer',
-    'is_scalar',
-    'configuration',
     'DLL_DIR',
     *_LAZY_IMPORTS.keys()
 ]
@@ -419,15 +430,16 @@ if __name__ == '__main__':
                         print(i, 'failed due to AttributeError')
                 m.inspect_model(Models.Functions.Constant)
                 import re
+
                 params = m.inspect_model_parameters(
-                            model_type="Models.Report",
-                            model_name="Report"
-                        )
+                    model_type="Models.Report",
+                    model_name="Report"
+                )
 
                 v = [re.sub(r"\[|\]", "", s) for s in params['VariableNames']]
                 out = []
                 for values in v:
-                    obj  = re.search(r"as\s+(\w+)$", values)
+                    obj = re.search(r"as\s+(\w+)$", values)
                     str_var = obj.group(1) if obj else []
                     if str_var:
                         out.append(str_var)

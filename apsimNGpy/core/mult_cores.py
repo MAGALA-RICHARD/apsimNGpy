@@ -6,6 +6,7 @@ import os.path
 import re
 import shutil
 import sqlite3
+import tempfile
 import time
 import uuid
 from contextlib import contextmanager
@@ -26,6 +27,7 @@ from apsimNGpy.core_utils.database_utils import (write_results_to_sql, drop_tabl
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.parallel.process import custom_parallel
 from apsimNGpy.core_utils.utils import get_array_like
+
 __all__ = ['MultiCoreManager']
 ID = 0
 csv_doc = pd.DataFrame().to_csv.__doc__
@@ -560,9 +562,11 @@ class MultiCoreManager(PlotManager):
         progressbar: bool, optional. Default is True,
             a progress bar will be displayed if True.
         chunk_size: int, optional default is 100, the maximum allowed is 150.
-              Used to determine the size of the individual chunk to send to the runner at a time. Only used when engine is csharp.
+              Used to determine the size of the individual chunk to send to the runner at a time.
         callback: callable, optional default is None
               A function to be called before model run, can me an intermediate function
+        total_chunks: int
+            @deprecated
 
         Returns
         -------
@@ -729,6 +733,7 @@ class MultiCoreManager(PlotManager):
            hardware, operating system, available memory, number of CPU cores,
            background workload, and simulation configuration.
 
+
         """
         n_cores = core_count(n_cores, threads=threads)
         ch_size = chunk_size
@@ -768,14 +773,15 @@ class MultiCoreManager(PlotManager):
 
         elif engine.lower() == 'python':
             self._run_all_jobs(jobs=jobs, n_cores=n_cores, threads=threads, subset=subset, table_name=table_name,
-                               clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors,n_chunks=total_chunks,
+                               clear_db=clear_db, retry_rate=retry_rate, ignore_runtime_errors=ignore_runtime_errors,
+                               n_chunks=total_chunks, batch_size=chunk_size,
                                call_back=callback)
         else:
             raise ValueError(f"Unsupported engine expected str as (python or csharp) got {engine}")
 
     def _run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, progressbar: bool = True,
                       subset=None, index=None, table_name=None,
-                      ignore_runtime_errors=True, n_chunks=10, **kwargs):
+                      ignore_runtime_errors=True,batch_size=100,  n_chunks=10, **kwargs):
         """
         Run all provided jobs using multiprocessing or multithreading.
 
@@ -879,6 +885,9 @@ class MultiCoreManager(PlotManager):
 
         retry_rate : int, optional
             Number of times to retry a job upon failure before giving up.
+        batch_size: int, Optional
+            for running the iterable in batches, specify the size of each batchdf
+
         subset:
            subset of the data columns to forward to sql or save. It is handled silently if the subset does not exist, the entire table will be saved
         ignore_runtime_errors: bool, optional. Default is True
@@ -938,10 +947,11 @@ class MultiCoreManager(PlotManager):
                          ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate, table_name=table_name,
                          db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
         try:
-            from apsimNGpy.parallel.process import custom_parallel_chunks
-            for _ in custom_parallel_chunks(func=worker, iterable=jobs, ncores=n_cores, use_threads=threads,
-                                            progress_message=f'APSIM running', unit='chunk', void=False,n_chunks=n_chunks,
-                                            progressbar=progressbar):
+            from apsimNGpy.parallel.process import custom_parallel_chunks, parallelize_chunks, batch
+            batches = batch(jobs, k=batch_size)
+            for _ in parallelize_chunks(func=worker, iterable=batches, ncores=n_cores, use_threads=threads,
+                                        progress_message=f'APSIM running', unit='chunk', void=False, n_chunks=n_chunks,
+                                        progressbar=progressbar):
                 pass
 
         finally:
@@ -1026,48 +1036,48 @@ MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLi
         during simulation and you need a durable copy\n.
         """ + csv_doc
 
-# if __name__ == '__main__':
-#     # quick tests. comprehensive tests are in the tests
-#
-#     with tempfile.TemporaryDirectory() as td:
-#         create_jobs = ({'model': "Maize", 'ID': i} for i in range(1600))
-#         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
-#         test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
-#
-#         Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
-#         Parallel.run_all_jobs(create_jobs, n_cores=12, threads=False, clear_db=False, retry_rate=3, subset='Yield')
-#
-#         df = Parallel.get_simulated_output(axis=0)
-#         print(len(Parallel.tables))
-#         Parallel.clear_scratch()
-#         # test saving to already an existing table
-#         ve = False
-#         db_path.unlink(missing_ok=True)
-#         try:
-#             try:
-#                 # ___________________first__________________________________
-#                 Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
-#                 # ______________________ then _________________________________
-#                 Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
-#             except ValueError:
-#                 ve = True
-#             assert ve == True, 'fail method is not raising value error'
-#
-#             # ____________test saving by replacing existing table _______________
-#             ve = False
-#             try:
-#
-#                 Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
-#             except ValueError:
-#                 ve = True
-#             assert ve == False, 'replace method failed'
-#
-#             # ____________test appending to an existing table _______________
-#             ve = False
-#             try:
-#                 Parallel.save_tosql(db_path, table_name='results', if_exists='append')
-#             except ValueError:
-#                 ve = True
-#             assert ve == False, 'append method failed'
-#         finally:
-#             pass
+if __name__ == '__main__':
+    # quick tests. comprehensive tests are in the tests
+
+    with tempfile.TemporaryDirectory() as td:
+        create_jobs = ({'model': "Maize", 'ID': i} for i in range(160))
+        db_path = Path(td) / f"{uuid.uuid4().hex}.db"
+        test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
+
+        Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
+        Parallel.run_all_jobs(create_jobs, n_cores=12, threads=True, clear_db=False, retry_rate=3, subset='Yield')
+
+        df = Parallel.get_simulated_output(axis=0)
+        print(len(Parallel.tables))
+        Parallel.clear_scratch()
+        # test saving to already an existing table
+        ve = False
+        db_path.unlink(missing_ok=True)
+        try:
+            try:
+                # ___________________first__________________________________
+                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+                # ______________________ then _________________________________
+                Parallel.save_tosql(db_path, table_name='results', if_exists='fail')
+            except ValueError:
+                ve = True
+            assert ve == True, 'fail method is not raising value error'
+
+            # ____________test saving by replacing existing table _______________
+            ve = False
+            try:
+
+                Parallel.save_tosql(db_path, table_name='results', if_exists='replace')
+            except ValueError:
+                ve = True
+            assert ve == False, 'replace method failed'
+
+            # ____________test appending to an existing table _______________
+            ve = False
+            try:
+                Parallel.save_tosql(db_path, table_name='results', if_exists='append')
+            except ValueError:
+                ve = True
+            assert ve == False, 'append method failed'
+        finally:
+            pass

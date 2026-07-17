@@ -1,19 +1,28 @@
 from __future__ import annotations
 
-import gc
 import time
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+from itertools import batched
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Any, Callable, Iterable, List, Sequence, Optional
+
 from tqdm import tqdm
+import os
 from apsimNGpy.core_utils.database_utils import read_db_table
-from apsimNGpy.parallel._process import register_key, get_key, clear_db
 from apsimNGpy.parallel.data_manager import chunker
 from apsimNGpy.settings import NUM_CORES
 
+# default cores
+CORES = max(2, int(os.cpu_count() / 2))
+SMOOTH_BLOCKS = " ▃"
+
+
+def batch(iterable, k=10):
+    yield from batched(iterable, k)
+
+
 CPU = int(int(cpu_count()) * 0.5)
-CORES = NUM_CORES
 
 
 def select_type(use_thread: bool, n_cores: int):
@@ -118,6 +127,117 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
 
         if void:
             return None
+        return None
+
+
+def parallelize_chunks(func, iterable: Iterable, *args, **kwargs):
+    """
+    Run a function in parallel using threads or processes.
+
+    Parameters
+    ----------
+    func : callable
+        The function to run in parallel.
+    iterable : iterable
+        An iterable of items to be processed by ``func``.
+    *args
+        Additional positional arguments to pass to ``func``.
+
+    Yields
+    ------
+    Any
+        The result of ``func`` for each item in ``iterable``.
+
+   kwargs
+    ----------------
+    use_thread : bool, optional, default=False
+        If ``True``, use threads; if ``False``, use processes (recommended for CPU-bound work).
+    ncores : int, optional
+        Number of worker threads/processes. Defaults to ~50% of available CPU cores.
+    verbose : bool, optional, default=True
+        Whether to display a progress indicator.
+    progress_message : str, optional
+        Message shown alongside the progress indicator.
+        Defaults to ``f"Processing multiple jobs via {func.__name__}, please wait!"``.
+    void : bool, optional, default=False
+        If ``True``, consume results internally (do not yield). Useful for
+        side-effect–only functions.
+    unit : str, optional, default="iteration"
+        Label for the progress indicator (cosmetic only).
+    display_failures: bool, optional, default=False
+        if ``True``, func must return False or True. For simulations written to a database, this adquate
+        .. versionadded:: 1.0.0
+    progressbar : bool, optional, default=True
+
+    Examples
+    --------
+    Run with processes (CPU-bound):
+
+    >>> list(parallelize(work, range(5), use_thread=False, ncores=4))
+
+    Run with threads (I/O-bound):
+
+    >>> for _ in parallelize(download, urls, use_thread=True, verbose=True):
+    ...     pass
+
+    .. seealso::
+
+           :func:`~apsimNGpy.parallel.process.custom_parallel_chunks`
+    """
+    if isinstance(iterable, str):
+        raise ValueError('jobs must an iterable but not strings')
+    use_thread, cpu_cores = kwargs.get('use_thread', False), kwargs.get('ncores', CORES)
+    progress_message = kwargs.get('progress_message', f"Processing..!")
+    void = kwargs.get('void', False)
+    unit = kwargs.get('unit', 'iteration')
+    progressbar = kwargs.get('progressbar', True)
+    bar_color = kwargs.get('bar_color', 'green')
+    selection = select_type(use_thread=use_thread,
+                            n_cores=cpu_cores)
+
+    def fmt_tqdm(total=0):
+        return tqdm(
+            total=total,
+            desc=progress_message,
+            unit=unit,
+            colour=bar_color,
+            smoothing=0.0,
+            mininterval=0.05,
+            ascii=SMOOTH_BLOCKS,
+            bar_format=(
+                "{desc} {bar} {percentage:3.0f}% "
+                "({n_fmt}/{total_fmt}) >> completed "
+                "(elapsed=>{elapsed}, eta=>{remaining}) {postfix}"
+            ),
+            dynamic_ncols=False,
+            miniters=1,
+        )
+
+    with selection as pool, fmt_tqdm(total=0) as pbar:
+
+        while True:
+            itd_chunks = next(iterable, None)
+
+            if itd_chunks is None:
+                break
+
+            futures = [
+                pool.submit(func, item, *args)
+                for item in itd_chunks
+            ]
+
+            # Add the newly submitted jobs to the overall total.
+            pbar.total += len(futures)
+            pbar.refresh()
+
+            for future in as_completed(futures):
+                result = future.result()
+                pbar.update(1)
+
+                if not void:
+                    yield result
+
+    if void:
         return None
 
 
@@ -355,7 +475,7 @@ def custom_parallel_chunks(
                     bar.update(1)
 
             finally:
-               pass
+                pass
 
     if bar is not None:
         bar.close()
@@ -365,7 +485,7 @@ def custom_parallel_chunks(
 
 
 def worker(x):
-    return [x  ** i for i in range(2)]
+    return [x ** i for i in range(2080)]
 
 
 if __name__ == '__main__':
@@ -396,8 +516,6 @@ if __name__ == '__main__':
     #     custom_parallel(mock_none, range(1000), use_thread=True, ncores=10, void=True, display_failures=True))
     # x = 0
     for i in custom_parallel_chunks(worker, range(6600), use_thread=False, n_chunks=2, void=False, resume=True):
-
         pass
     for i in custom_parallel(worker, range(6600), use_thread=False, void=False, resume=True):
-
         pass

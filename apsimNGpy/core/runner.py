@@ -4,38 +4,26 @@ import contextlib
 import gc
 import os.path
 import platform
-import sqlite3
+import subprocess
 from functools import lru_cache, cache
+from pathlib import Path
 from subprocess import *
 from subprocess import Popen, PIPE
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Hashable
 from typing import Mapping
-import subprocess
-from pathlib import Path
 from typing import Union
-
-import pandas as pd
-from sqlalchemy.engine import Connection as SAConnection
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
-
 from apsimNGpy.core.df_grp import group_and_concat_by_schema
-from apsimNGpy.starter.starter import configuration
 from apsimNGpy.core_utils.database_utils import read_db_table, get_db_table_names
 from apsimNGpy.core_utils.database_utils import write_schema_grouped_tables
-from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.core_utils.utils import timer, is_scalar
+from apsimNGpy.exceptions import ApsimRuntimeError
 from apsimNGpy.logger import logger
 from apsimNGpy.logger import logger as logging
+from apsimNGpy.starter.starter import configuration
 
 AUTO = object()
 SchemaKey = Tuple[Tuple[Hashable, str], ...]  # ((column_name, dtype_str), ...)
-
-
-def is_connection(obj):
-    """Return True if obj looks like a DB connection."""
-    return isinstance(obj, (sqlite3.Connection, SAConnection, Engine, Session))
-
 
 apsim_bin_path = Path(configuration.bin_path)
 # Determine executable based on OS
@@ -57,8 +45,6 @@ def get_apsim_executable(bin_path) -> str:
 
 
 AUTO = object()
-
-from pandas import Series
 
 
 def run_apsim_by_path(
@@ -118,7 +104,8 @@ def run_apsim_by_path(
         bin_path = configuration.bin_path
 
     apsim_exec = str(_ensure_exec(get_apsim_executable(bin_path)))
-
+    if isinstance(model, Path):
+        model = str(model.resolve())
     if not is_scalar(model):
         # Multiple APSIM files
         model_paths = {str(_ensure_model(m)) for m in model}
@@ -397,7 +384,7 @@ def collect_csv_by_model_path(model_path) -> dict[Any, Any]:
     return report_paths
 
 
-def collect_csv_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
+def collect_csv_from_dir(dir_path, pattern, recursive=False) -> 'pd.DataFrame':
     """Collects the csf=v files in a directory using a pattern, usually the pattern resembling the one of the simulations used to generate those csv files
     ``dir_path``: (str) path where to look for csv files
     ``recursive``: (bool) whether to recursively search through the directory defaults to false:
@@ -414,6 +401,7 @@ def collect_csv_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
 
 
     """
+    import pandas as pd # import it from here
     global_path = Path(dir_path)
     if recursive:
         matching_apsimx_patterns = global_path.rglob(pattern)
@@ -436,7 +424,7 @@ def collect_csv_from_dir(dir_path, pattern, recursive=False) -> (pd.DataFrame):
                         logger.warning(f"{base_name} is not a csv file or itis empty")
 
 
-def collect_db_from_dir(dir_path, pattern, recursive=False, tables=None, con=None) -> (pd.DataFrame):
+def collect_db_from_dir(dir_path, pattern, recursive=False, tables=None, con=None) -> 'pd.DataFrame':
     """Collects the data in a directory using a pattern, usually the pattern resembling the one of the simulations
       used to generate those csv files
     Parameters
@@ -463,6 +451,7 @@ def collect_db_from_dir(dir_path, pattern, recursive=False, tables=None, con=Non
 
     """
     schemas = []
+    from pandas import concat
     global_path = Path(dir_path)
     if recursive:
         matching_apsimx_patterns = global_path.rglob(pattern)
@@ -487,7 +476,7 @@ def collect_db_from_dir(dir_path, pattern, recursive=False, tables=None, con=Non
                     df = tuple(
                         read_db_table(db, report).assign(source_file=base_name).assign(CollectionID=collectionID) for
                         report in tabs if report in reports)
-                    df = pd.concat(df, ignore_index=True)
+                    df = concat(df, ignore_index=True)
                     yield df
                 else:
                     logging.warning(f"Skipping {file_path} it is empty")
@@ -521,7 +510,7 @@ def _run_from_dir(dir_path, pattern, verbose=False,
                   add_keys=False,
                   keys_prefix: str = "g",
                   connection: Engine = None
-                  ) -> [pd.DataFrame]:
+                  ):
     """
        This function acts as a wrapper around the ``APSIM`` command line recursive tool, automating
        the execution of APSIM simulations on all files matching a given pattern in a specified
@@ -825,7 +814,7 @@ def dir_simulations_to_csv(
         verbose: bool = False,
         recursive: bool = False,
         cpu_count: int = -1,
-) -> Iterable[pd.DataFrame]:
+) -> Iterable['pd.DataFrame']:
     """
     Run APSIM for all files matching a pattern in a directory and load
     outputs from CSV files into memory.
@@ -898,7 +887,7 @@ def dir_simulations_to_dfs(
         order_sensitive: bool = False,
         add_keys: bool = False,
         keys_prefix: str = "g",
-) -> Dict[SchemaKey, pd.DataFrame]:
+) -> Dict[SchemaKey, 'pd.DataFrame']:
     """
     Run APSIM for all files matching a pattern in a directory, collect results
     from APSIM databases, and return grouped DataFrames based on schema.
@@ -963,8 +952,8 @@ def dir_simulations_to_dfs(
     # 2) Collect DB results and group by schema
     logger.info("Loading database results into memory.")
     raw = collect_db_from_dir(dir_path, pattern, recursive=recursive, tables=tables)
-
-    groups: Dict[SchemaKey, pd.DataFrame] = group_and_concat_by_schema(
+    from pandas import DataFrame
+    groups: Dict[SchemaKey, DataFrame] = group_and_concat_by_schema(
         raw,
         axis=axis,
         order_sensitive=order_sensitive,
@@ -1078,7 +1067,7 @@ if __name__ == '__main__':
     maize = load_crop_from_disk('Maize', out='maizee.apsimx')
     try:
         a1 = time.perf_counter()
-        run_apsim_by_path(maize, n_cores=1)
+        run_apsim_by_path(str(maize), n_cores=1)
         b = time.perf_counter()
         print(b - a1, 'seconds in dir mode')
     finally:

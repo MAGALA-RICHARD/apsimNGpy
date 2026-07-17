@@ -15,7 +15,7 @@ import logging
 # from rich.logging import RichHandler
 # import logging
 
-console = Console(force_terminal=True, stderr=True, tab_size=10)
+console = Console(force_terminal=True, stderr=True, tab_size=10,)
 
 logger = logging.getLogger("apsimNGpy")
 logger.setLevel(logging.INFO)

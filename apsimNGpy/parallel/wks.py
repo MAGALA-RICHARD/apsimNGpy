@@ -1,23 +1,18 @@
 import dataclasses
 import os
-import shutil
-import sys
-from concurrent.futures.process import ProcessPoolExecutor
-from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor
-import pandas as pd
-from pathlib import Path
-from apsimNGpy.core.apsim import ApsimModel
-from itertools import batched
-from collections.abc import Iterable
-from typing import Any
-from apsimNGpy.core_utils.utils import timer, get_array_like
-from apsimNGpy.parallel.process import custom_parallel
-from enum import StrEnum
 import uuid
-from apsimNGpy.core_utils.database_utils import write_df_to_sql, read_db_table, get_db_table_names, drop_table
-from apsimNGpy.core.runner import run_apsim_by_path
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures.process import ProcessPoolExecutor
+from enum import StrEnum
+from pathlib import Path
+
+import pandas as pd
 import psutil
+
+from apsimNGpy.core.apsim import ApsimModel
+from apsimNGpy.core.runner import run_apsim_by_path
+from apsimNGpy.core_utils.database_utils import write_df_to_sql, read_db_table, get_db_table_names
+from apsimNGpy.core_utils.utils import get_array_like
 
 MODEL_KEY = 'model'
 IDENTIFICATION = 'ID'
@@ -147,3 +142,9 @@ def runner(batch: dict, tables, db_or_con, prefix='Batch', base_dir=None, inner_
     tables = Path(fn).stem
     write_df_to_sql(out=res, db_or_con=db_or_con, table_name=tables, if_exists='replace', index=False,
                     chunk_size=None)
+
+
+if __name__ == '__main__':
+    pp = Path(r'G:/')
+    for i in pp.rglob('*apsim_watershed_optimization_2026*.docx'):
+        print(i)

@@ -253,18 +253,22 @@ def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None)
       tables.
     """
     assert any([report_name, sql_query]), "Please provide at least a table name or a SQL query."
+    query = sql_query or f"SELECT * FROM {report_name}"
     # table = kwargs.get("table")
+    ENGINE =None
     if detect_connection(db):
         ENGINE = db
+
+
     else:
         db = str(Path(db).with_suffix('.db'))
         DB = f'sqlite:///{db}'
         ENGINE = create_engine(DB)
-    query = sql_query or f"SELECT * FROM {report_name}"
+        with ENGINE.begin() as connect:
+            return rsq(query, connect)
+
     try:
-
         df = rsq(query, ENGINE)
-
         return df
     except sqlite3.OperationalError as e:
         if "no such table" in str(e):
@@ -276,14 +280,15 @@ def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None)
     except Exception as e:
         logger.error(f"Unexpected error while reading table '{report_name}': {e}")
     finally:
-        if hasattr(ENGINE, 'dispose'):  # sqlalchemy
+        if ENGINE is not None:
+            if hasattr(ENGINE, 'dispose'):  # sqlalchemy
 
-            ENGINE.dispose(close=True)
+                ENGINE.dispose(close=True)
 
-        elif hasattr(ENGINE, 'close'):
-            # raw sql
-            ENGINE.close()
-        gc.collect()
+            elif hasattr(ENGINE, 'close'):
+                # raw sql
+                ENGINE.close()
+
 
 
 def read_with_pandas(table: str, db_or_con):

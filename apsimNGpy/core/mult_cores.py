@@ -950,8 +950,10 @@ class MultiCoreManager(PlotManager):
             from apsimNGpy.parallel.process import custom_parallel_chunks, parallelize_chunks, batch
             batches = batch(jobs, k=batch_size)
             for _ in parallelize_chunks(func=worker, iterable=batches, ncores=n_cores, use_threads=threads,
-                                        progress_message=f'APSIM running', unit='chunk', void=False, n_chunks=n_chunks,
-                                        progressbar=progressbar):
+                                        progress_message=f'APSIM running', unit='chunk',
+                                        void=True, n_chunks=n_chunks,
+                                        progressbar=progressbar,
+                                       ):
                 pass
 
         finally:

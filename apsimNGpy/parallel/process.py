@@ -236,6 +236,7 @@ def parallelize_chunks(func, iterable: Iterable, *args, **kwargs):
 
                 if not void:
                     yield result
+            del itd_chunks
 
     if void:
         return None

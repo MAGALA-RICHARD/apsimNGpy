@@ -198,7 +198,6 @@ class CoreModel(PlotManager):
         sim = self.get_sim_by_name_or_index(sim)
         return sim.MemberwiseClone()
 
-
     def __getitem__(self, name_or_index: Union[int, str]):
         """
         Fetch an APSIM simulation by index or by simulation name.
@@ -2192,7 +2191,7 @@ class CoreModel(PlotManager):
                 )
 
             partial__editor = partial(derive_cultivar, self, template=model_name,
-                                      rename=rename, plant=plant_name,simulations=simulations,
+                                      rename=rename, plant=plant_name, simulations=simulations,
                                       managers=manager_map)
 
             match commands:
@@ -2565,7 +2564,7 @@ class CoreModel(PlotManager):
 
         return self
 
-    def remove_model(self, model_type: Models, model_name):
+    def remove_model(self, model_type: Models, model_name, verbose=False):
         """
        Removes a model from the APSIM Models.Simulations namespace.
 
@@ -2597,13 +2596,30 @@ class CoreModel(PlotManager):
         model_class = validate_model_obj(model_type)
         if not model_name:
             model_name = model_class().Name
+        if model_name not in self.inspect_model(model_type, fullpath=False):
+            logger.warning(
+                "%s of type %s was not found in the model and cannot be deleted.",
+                model_name,
+                model_type,
+            )
+            return self
         to_remove = ModelTools.find_child(self.Simulations, child_class=model_class, child_name=model_name)
+        fpath = to_remove.FullPath.split('.')[:-1]  # removes the current node
+        parent_parent = '.'.join(fpath)
+        # what is left is the parent path
+        parent = get_node_by_path(self.Simulations, node_path=parent_parent, cast_as='auto')
+
         if to_remove:
             try:
-                ModelTools.DELETE(to_remove)
+                for child in parent.Children:
+                    if child.FullPath == to_remove.FullPath:
+                        parent.Children.Remove(to_remove)
+                        if verbose:
+                            logger.info('Removed child {}'.format(child.FullPath))
+                        self.save()
+                        break
             except AttributeError:
                 pass
-        self.save()
 
     def move_model(self, model_type: Models, new_parent_type: Models, model_name: str = None,
                    new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None):

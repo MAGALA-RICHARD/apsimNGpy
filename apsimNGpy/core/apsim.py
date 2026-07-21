@@ -809,6 +809,7 @@ class ApsimModel(CoreModel):
                     parent_node.Children.Remove(i_node)
                     break
             else:
+
                 raise RuntimeError(f'Something really went wrong with the deleting {node}')
         else:
             parent_node.Children.Remove(node)

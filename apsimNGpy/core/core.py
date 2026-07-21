@@ -2586,6 +2586,8 @@ class CoreModel(PlotManager):
         missing_ok : bool, optional
             If ``True``, suppress ``NodeNotFoundError`` when no matching model is
             found. If ``False``, propagate the exception.
+        Warning:
+             For nested simulations, use remove_model_by_path instead. It provides more precise control over the specific model node to be removed.
         Example::
                from apsimNGpy.core.apsim import ApsimModel
                model = ApsiModel('Maize')
@@ -2705,11 +2707,10 @@ class CoreModel(PlotManager):
             if verbose and missing_ok:
                 # this is not a warning because the user is aware if missing_ok
                 logger.info(
-                    "Model node %r was not found; no node was removed.",
-                    path,
+                    f"Model node {path} was not found; no node was removed.",
                 )
             if not missing_ok:
-                logger.exception('Node not found')
+                #logger.exception('Node not found')
                 raise
 
     def move_model(self, model_type: Models, new_parent_type: Models, model_name: str = None,

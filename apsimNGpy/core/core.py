@@ -2564,62 +2564,153 @@ class CoreModel(PlotManager):
 
         return self
 
-    def remove_model(self, model_type: Models, model_name, verbose=False):
+    def remove_model(self, model_type: Models, model_name, verbose=False, missing_ok=True):
         """
-       Removes a model from the APSIM Models.Simulations namespace.
+        Remove one or more models from the APSIM ``Models.Simulations`` namespace.
 
         Parameters
         ----------
-        model_type: Models
-            The type of the model to remove (e.g., `Models.Clock`). This parameter is required.
+        model_type : str
+            Fully qualified APSIM model type to remove, such as
+            ``"Models.Clock"``.
 
-        model_name: str, optional
-            The name of the specific model instance to remove (e.g., `"Clock"`). If not provided, all models of the
-            specified type may be removed.
+        model_name : str, optional
+            Name of a specific model instance to remove. If omitted, all matching
+            models of the specified type may be removed.
 
-        Returns:
+        verbose : bool, optional
+            If ``True``, log the outcome of the operation. Successful removals are
+            reported. Missing-node information is reported only when both
+            ``verbose`` and ``missing_ok`` are ``True``.
 
-           None
-
+        missing_ok : bool, optional
+            If ``True``, suppress ``NodeNotFoundError`` when no matching model is
+            found. If ``False``, propagate the exception.
         Example::
-
-               from apsimNGpy import core
-               from apsimNGpy.core.core import Models
-               model = core.base_data.load_default_simulations(crop = 'Maize')
-               model.remove_model(Models.Clock) #deletes the clock node
-               model.remove_model(Models.Climate.Weather) #deletes the weather node
+               from apsimNGpy.core.apsim import ApsimModel
+               model = ApsiModel('Maize')
+               model.remove_model('Models.Clock', 'Clock') #deletes the clock node
+               model.remove_model('Models.Climate.Weather', 'Weather', missing_ok=False) #deletes the weather node
 
         .. seealso::
 
-            Related APIs: :meth:`clone_model` and :meth:`add_model`.
+            Related APIs: :meth:`clone_model` `meth:remove_model_by_path` and :meth:`add_model`.
         """
         model_class = validate_model_obj(model_type)
         if not model_name:
             model_name = model_class().Name
         if model_name not in self.inspect_model(model_type, fullpath=False):
-            logger.warning(
-                "%s of type %s was not found in the model and cannot be deleted.",
-                model_name,
-                model_type,
-            )
+            if verbose and missing_ok:
+                logger.info(
+                    "%s of type %s was not found in the model and cannot be deleted.",
+                    model_name,
+                    model_type,
+                )
+            if not missing_ok:
+                raise NodeNotFoundError(
+                    "%s of type %s was not found in the model and cannot be deleted.",
+                    model_name,
+                    model_type,
+                )
+                
             return self
         to_remove = ModelTools.find_child(self.Simulations, child_class=model_class, child_name=model_name)
-        fpath = to_remove.FullPath.split('.')[:-1]  # removes the current node
-        parent_parent = '.'.join(fpath)
-        # what is left is the parent path
-        parent = get_node_by_path(self.Simulations, node_path=parent_parent, cast_as='auto')
+        parent = to_remove.get_Parent()
+        try:
+            parent.Children.Remove(to_remove)
+            if verbose:
+                logger.info('Removed child {}'.format(to_remove.FullPath))
+            self.save()
 
-        if to_remove:
-            try:
-                for child in parent.Children:
-                    if child.FullPath == to_remove.FullPath:
-                        parent.Children.Remove(to_remove)
-                        if verbose:
-                            logger.info('Removed child {}'.format(child.FullPath))
-                        self.save()
-                        break
-            except AttributeError:
-                pass
+        except AttributeError:
+            logger.exception(f'Older APSIM versions might not be supported by this methods')
+
+    def get_parent(self, node):
+        data = {}
+        if isinstance(node, str):
+            if len(node.split('.')) < 3:
+                raise ValueError('This operation can not be performed on the root')
+            _node = get_node_by_path(self.Simulations, node_path=node, cast_as='auto')
+            data['parent'] = _node.get_Parent()
+            data['node'] = _node
+        elif hasattr(node, 'get_Parent'):
+            data['node'] = node
+            data['parent'] = node.get_Parent()
+        else:
+            raise ValueError(f'type {type(node)} is not supported. Please try a valid str path or Models object')
+        return data
+
+    def remove_model_by_path(self, path, *, verbose=False, missing_ok=True):
+        """
+        Remove a model node from the APSIM simulation tree.
+
+        Parameters
+        ----------
+        path : str
+            Full path of the model node to remove.
+        verbose : bool, optional
+            If ``True``, log a confirmation message after the node is
+            successfully removed. Default is ``False``.
+        missing_ok : bool, optional
+            If ``True``, do not raise an exception when the requested node does
+            not exist. Instead, return ``False``. If ``False``, propagate the
+            original :class:`apsimNGpy.exceptions.NodeNotFoundError`.
+            Default is ``True``.
+        Returns
+        -------
+        bool
+            ``True`` if the node was removed successfully. ``False`` if the node
+            was not found and ``missing_ok`` is ``True``.
+
+        Raises
+        ------
+        NodeNotFoundError
+            If the requested node does not exist and ``missing_ok`` is ``False``.
+        RuntimeError
+            May be raised by the underlying APSIM model if the node cannot be
+            removed or the model cannot be saved.
+
+        Notes
+        -----
+        The simulation file is saved only after the node has been removed
+        successfully.
+
+        Examples
+        --------
+        Remove a node and ignore it if it does not exist:
+
+        >>> model.remove_model_by_path(
+        ...     ".Simulations.Simulation.Field.Sow using a variable rule",
+        ...     missing_ok=True,
+        ... )
+        True
+
+        Raise an exception when the node does not exist:
+
+        >>> model.remove_model_by_path(
+        ...      ".Simulations.Simulation.Field.Sow using a variable rule",
+        ...     missing_ok=False,
+        ... )
+
+        """
+        try:
+            node = self.get_parent(path)
+            parent_node = node['parent']
+            parent_node.Children.Remove(node['node'])
+            if verbose:
+                logger.info(f'Removed {path} from the Simulations tree')
+            self.save()
+            return True
+        except NodeNotFoundError:
+            if verbose and missing_ok:
+                # this is not a warning because the user is aware if missing_ok
+                logger.info(
+                    "Model node %r was not found; no node was removed.",
+                    path,
+                )
+            if not missing_ok:
+                logger.exception('Node not found')
+                raise
 
     def move_model(self, model_type: Models, new_parent_type: Models, model_name: str = None,
                    new_parent_name: str = None, verbose: bool = False, simulations: Union[str, list] = None):

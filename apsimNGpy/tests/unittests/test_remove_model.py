@@ -14,6 +14,10 @@ class TestRemoveModel(unittest.TestCase):
         mns = model.inspect_model(model_type=model_type, fullpath=fullpath)
         self.assertNotIn(member, mns)
 
+    def model_in(self, model, member, model_type, fullpath):
+        mns = model.inspect_model(model_type=model_type, fullpath=fullpath)
+        self.assertIn(member, mns)
+
     def test_remove_model(self):
         with ApsimModel('Maize') as model:
             model.remove_model(model_type='Models.Manager', model_name='Sow using a variable rule')
@@ -29,11 +33,22 @@ class TestRemoveModel(unittest.TestCase):
                                    missing_ok=False)
 
     def test_remove_model_missing_verbose(self):
-            with ApsimModel('Maize') as model:
-                model.remove_model(model_type='Models.Manager', model_name='ModelNOTFOUnd.',
-                                   missing_ok=True, verbose=True)
-    def test_remove_model_nested_models(self):
+        with ApsimModel('Maize') as model:
+            model.remove_model(model_type='Models.Manager', model_name='ModelNOTFOUnd.',
+                               missing_ok=True, verbose=True)
 
+    def test_remove_model_by_path_nested_models(self):
+        # for nested models, we use remove_model_by_path to be precise
+        node2 = '.Simulations.sim2.Field.Sow using a variable rule'
+        with ApsimModel('Maize') as model:
+            model.clone_simulation('sim2')
+            print(model.inspect_model('Models.Core.Simulation'))
+            model.remove_model_by_path(path='.Simulations.Simulation.Field.Sow using a variable rule')
+            self.model_not_in(model, '.Simulations.Simulation.Field.Sow using a variable rule',
+                              model_type='Models.Manager', fullpath=True)
+            # test if a similar model of the same name in another simulation is not deleted
+            self.model_in(model, node2,
+                          model_type='Models.Manager', fullpath=True)
 
     def test_remove_model_by_path(self):
         with ApsimModel('Maize') as model:

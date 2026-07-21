@@ -2586,8 +2586,11 @@ class CoreModel(PlotManager):
         missing_ok : bool, optional
             If ``True``, suppress ``NodeNotFoundError`` when no matching model is
             found. If ``False``, propagate the exception.
+
         Warning:
-             For nested simulations, use remove_model_by_path instead. It provides more precise control over the specific model node to be removed.
+        ---------
+             For nested simulations, use remove_model_by_path instead.
+             It provides more precise control over the specific model node to be removed.
         Example::
                from apsimNGpy.core.apsim import ApsimModel
                model = ApsiModel('Maize')
@@ -2644,7 +2647,7 @@ class CoreModel(PlotManager):
 
     def remove_model_by_path(self, path, *, verbose=False, missing_ok=True):
         """
-        Remove a model node from the APSIM simulation tree.
+        Remove a model node from the APSIM simulation tree. Recomended is the simulation tree is nested with several simulations, which may have similar model names
 
         Parameters
         ----------

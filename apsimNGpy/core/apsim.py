@@ -1263,7 +1263,7 @@ class ApsimModel(CoreModel):
 
         # Retrieve last added simulation (the clone)
         if rename:
-            sim.Name = rename
+            self[-1].Name = rename
 
         self.save()
         return True

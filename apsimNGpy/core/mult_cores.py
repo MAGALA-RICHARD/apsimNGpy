@@ -35,7 +35,7 @@ PYTHON_ENGINE = 'python'
 CSHARP_ENGINE = 'csharp'
 SOURCE_TABLE = 'source_table'
 AGGREGATE_TABLE = 'aggregate_table'
-CSHARP_ENGINE_MAX_CHUNK_SIZE = 400
+CSHARP_ENGINE_MAX_CHUNK_SIZE = 1000
 DIR_PREFIX = 'mcp'
 
 
@@ -737,7 +737,7 @@ class MultiCoreManager(PlotManager):
         """
         n_cores = core_count(n_cores, threads=threads)
         ch_size = chunk_size
-        if ch_size > CSHARP_ENGINE_MAX_CHUNK_SIZE:
+        if ch_size > CSHARP_ENGINE_MAX_CHUNK_SIZE and engine=='csharp':
             raise ValueError(f'Chunk size must be less than {CSHARP_ENGINE_MAX_CHUNK_SIZE}')
 
         if engine.lower() == CSHARP_ENGINE:

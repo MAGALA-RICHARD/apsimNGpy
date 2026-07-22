@@ -123,7 +123,7 @@ class ApsimModel(CoreModel):
         ret = run_apsim_by_path(file_to_run, verbose=verbose, n_cores=cpu_counts, to_csv=to_csv, timeout=timeout)
         if ret.returncode == 0:
             self.ran_ok = True
-
+    @timer
     def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str = None,
                           payload: Union[dict, tuple, list] = None, fp=False) -> None:
         """
@@ -175,7 +175,7 @@ class ApsimModel(CoreModel):
         """
 
         if rename:
-            existing_names = {s.Name for s in self}
+            existing_names = self.inspect_model('Models.Core.Simulation', fullpath=False)
             rename = rename.strip()
             if rename in existing_names:
                 raise ValueError(
@@ -184,7 +184,7 @@ class ApsimModel(CoreModel):
                 )
 
         # Add simulation
-        self.Simulations.Children.Add(simulation)
+        self.Simulations.AddChild(simulation)
         if rename:
             simulation.Name = rename
         # Persist changes

@@ -2,8 +2,40 @@ import sys
 import unittest
 from pathlib import Path
 
+import numpy as np
+
 from apsimNGpy import ApsimModel, timer
 from apsimNGpy.exceptions import NodeNotFoundError
+import asyncio
+
+TOTAL = 100
+
+
+@timer
+def test_using_threads(run=False):
+    with ApsimModel("Maize") as ap:
+        ap.append_in_threads(TOTAL)
+        print(len(ap))
+
+        if run:
+            ap.run()
+            return ap.results.groupby('SimulationID')['Yield'].mean()
+
+
+@timer
+def test_append_no_threads():
+    with ApsimModel("Maize") as ap:
+        source = ap[0]
+        tasks = [
+            ap.append_simulation(
+                source,
+                rename=f"Simulation_{index}",
+            )
+            for index in range(TOTAL)
+        ]
+        ap.run()
+        return ap.results.groupby('SimulationID')['Yield'].mean()
+
 
 
 class TestCoreApsimAppendSimulation(unittest.TestCase):
@@ -21,8 +53,21 @@ class TestCoreApsimAppendSimulation(unittest.TestCase):
         container = model.inspect_model("Models.Core.Simulation")
         chg = len(container) > reference_count
         self.assertTrue(chg)
+
     @timer
-    def test_core_apsim_append_simulation(self):
+    def _test_append_in_loop(self):
+        import time
+        tim = 0
+        with ApsimModel('Maize') as ap:
+            for count in np.arange(0, 10, 1):
+                start = time.perf_counter()
+                ap.append_simulation(ap[0], )
+                end = time.perf_counter()
+                tim += end - start
+            print(tim)
+
+    @timer
+    def _test_core_apsim_append_simulation(self):
         with ApsimModel('Maize') as model:
             model.append_simulation(model[0], )
             self.assert_model_in(model, 'Simulation1', model_type='Models.Core.Simulation', fullpath=False)
@@ -52,4 +97,5 @@ class TestCoreApsimAppendSimulation(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(exit=True)
+    test_using_threads()
+    #test_append_no_threads()

@@ -3,7 +3,7 @@ Interface to APSIM simulation models using Python.NET
 author: Richard Magala
 email: magalarich20@gmail.com
 """
-
+import asyncio
 import os
 from contextlib import suppress
 from dataclasses import dataclass
@@ -35,7 +35,6 @@ from apsimNGpy.core.water import (swim_data, layer_struct,
                                   ci, sub_surface_tile_drainage,
                                   geometric_layers, )
 from apsimNGpy.core.runner import run_apsim_by_path
-
 
 # expose some models
 # ===================================
@@ -223,6 +222,25 @@ class ApsimModel(CoreModel):
                     self.set_params(**pld)
 
                 _ = [edit_with_fp(p) for p in payload]
+
+    def append_in_threads(self, number=10, max_workers=20):
+        from itertools import repeat
+        from apsimNGpy.parallel.process import custom_parallel
+        iterables = repeat(self[0].MemberwiseClone(), times=number-1)
+
+        self.save()
+        for _ in custom_parallel(self.append_one, iterables, use_thread=True, ncores=max_workers):
+            pass
+
+        self.save()
+
+    def append_one(self, simulation, rename=None):
+        self.Simulations.AddChild(simulation)
+        if rename:
+            simulation.Name = rename
+        # Persist changes
+
+        ...
 
     def evaluate_simulated_output(
             self,

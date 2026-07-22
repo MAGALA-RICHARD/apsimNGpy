@@ -1,5 +1,7 @@
 import sys
 import unittest
+from pathlib import Path
+
 from apsimNGpy import ApsimModel
 from apsimNGpy.exceptions import NodeNotFoundError
 
@@ -66,6 +68,7 @@ class TestRemoveModel(unittest.TestCase):
             self.assert_model_not_in(model, 'Simulation', model_type='Models.Core.Simulation', fullpath=False)
 
     def test_remove_model_by_path(self):
+        """Test removing a model from the simulations tree using a model path"""
         with ApsimModel('Maize') as model:
             model.remove_model_by_path(self.model_to_remove_by_path)
             self.assert_model_not_in(model, self.model_to_remove_by_path, model_type='Models.Manager', fullpath=True)
@@ -85,4 +88,3 @@ class TestRemoveModel(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

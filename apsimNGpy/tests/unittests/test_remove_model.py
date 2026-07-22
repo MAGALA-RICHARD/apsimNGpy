@@ -27,17 +27,20 @@ class TestRemoveModel(unittest.TestCase):
                                verbose=True)
 
     def test_remove_model_missing_ok_false(self):
+        "supposed to fail if node not found and missing_ok=False "
         with self.assertRaises(NodeNotFoundError):
             with ApsimModel('Maize') as model:
                 model.remove_model(model_type='Models.Manager', model_name='ModelNOTFOUnd.',
                                    missing_ok=False)
 
     def test_remove_model_missing_verbose(self):
+        "test verbose is running normally"
         with ApsimModel('Maize') as model:
             model.remove_model(model_type='Models.Manager', model_name='ModelNOTFOUnd.',
                                missing_ok=True, verbose=True)
 
     def test_remove_model_by_path_nested_models(self):
+        "test if we can delete from nested simulations"
         # for nested models, we use remove_model_by_path to be precise
         node2 = '.Simulations.sim2.Field.Sow using a variable rule'
         with ApsimModel('Maize') as model:
@@ -53,6 +56,7 @@ class TestRemoveModel(unittest.TestCase):
                                  model_type='Models.Manager', fullpath=True)
 
     def test_removing_a_simulation(self):
+        'Test removing a simulation from the simulations tree'
         with ApsimModel('Maize') as model:
             # mock nested simulation
             model.clone_simulation('sim2')
@@ -81,3 +85,4 @@ class TestRemoveModel(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

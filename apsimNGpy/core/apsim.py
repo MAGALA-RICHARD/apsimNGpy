@@ -123,7 +123,7 @@ class ApsimModel(CoreModel):
         ret = run_apsim_by_path(file_to_run, verbose=verbose, n_cores=cpu_counts, to_csv=to_csv, timeout=timeout)
         if ret.returncode == 0:
             self.ran_ok = True
-    @timer
+
     def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str = None,
                           payload: Union[dict, tuple, list] = None, fp=False) -> None:
         """

@@ -13,14 +13,17 @@ class TestRemoveModel(unittest.TestCase):
         self.path_not_found = "NotFound.Path.Sow using a variable rule"
 
     def assert_model_not_in(self, model, member, model_type, fullpath):
+        """helper for finding whether model was deleted"""
         mns = model.inspect_model(model_type=model_type, fullpath=fullpath)
         self.assertNotIn(member, mns)
 
     def assert_model_in(self, model, member, model_type, fullpath):
+        """helper for finding whether model was not deleted"""
         mns = model.inspect_model(model_type=model_type, fullpath=fullpath)
         self.assertIn(member, mns)
 
     def test_remove_model(self):
+        """test remove model basic"""
         with ApsimModel('Maize') as model:
             model.remove_model(model_type='Models.Manager', model_name='Sow using a variable rule')
             self.assert_model_not_in(model, self.model_to_remove, model_type='Models.Manager', fullpath=False)
@@ -36,7 +39,7 @@ class TestRemoveModel(unittest.TestCase):
                                    missing_ok=False)
 
     def test_remove_model_missing_verbose(self):
-        "test verbose is running normally"
+        """test verbose is running normally"""
         with ApsimModel('Maize') as model:
             model.remove_model(model_type='Models.Manager', model_name='ModelNOTFOUnd.',
                                missing_ok=True, verbose=True)
@@ -67,6 +70,17 @@ class TestRemoveModel(unittest.TestCase):
             model.remove_model_by_path(path='.Simulations.Simulation')
             self.assert_model_not_in(model, 'Simulation', model_type='Models.Core.Simulation', fullpath=False)
 
+    def test_removing_a_experiment(self):
+        'Test removing a simulation from a factorial tree'
+        with ApsimModel('factorial') as model:
+            model.remove_model_by_path(path='.Simulations.PropertyReplacement.Base0')
+            self.assert_model_not_in(model, 'Base0', model_type='Models.Core.Simulation', fullpath=False)
+        # remove the experiment node itself
+        with ApsimModel('factorial') as model:
+            # delete range experiment
+            model.remove_model_by_path(path='.Simulations.RangeExperiment')
+            self.assert_model_not_in(model, 'RangeExperiment', model_type='Models.Factorial.Experiment', fullpath=False)
+
     def test_remove_model_by_path(self):
         """Test removing a model from the simulations tree using a model path"""
         with ApsimModel('Maize') as model:
@@ -74,12 +88,13 @@ class TestRemoveModel(unittest.TestCase):
             self.assert_model_not_in(model, self.model_to_remove_by_path, model_type='Models.Manager', fullpath=True)
 
     def test_remove_model_by_path_verbose(self):
-        print("testing remove_model by path", file=sys.stderr)
+        """Test removing a model from the simulations tree verbose=True"""
         with ApsimModel('Maize') as model:
             model.remove_model_by_path(self.model_to_remove_by_path, verbose=True)
             self.assert_model_not_in(model, self.model_to_remove_by_path, model_type='Models.Manager', fullpath=True)
 
     def test_remove_model_by_path_missing(self):
+        "test-missing ok =False and verbose =True in remove_model_by_path"
         with ApsimModel('Maize') as model:
             with self.assertRaises(NodeNotFoundError):
                 model.remove_model_by_path(self.path_not_found, verbose=True,
@@ -87,4 +102,4 @@ class TestRemoveModel(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2, exit=False)

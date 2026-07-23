@@ -57,34 +57,36 @@ def append_one(simulation, parent):
     pa.Children.Add(simulation)
 
 
-def edit_simulations(loads, max_worker=20):
+def edit_simulations(loads, max_worker=20, show_progress=True):
     from apsimNGpy.parallel.process import custom_parallel
-    return custom_parallel(edit, loads, ncores=max_worker, use_thread=True, progress_message='Editing simulations')
+    return custom_parallel(edit, loads, ncores=max_worker, use_thread=True, progressbar=show_progress,
+                           progress_message='Editing simulations')
 
 
-def append_simulations_with_threads(simulations, max_workers=20, run=True, reports=None):
+def assemble_simulations(simulations, max_workers=20, show_progress=True):
     from apsimNGpy.parallel.process import custom_parallel
     iterables = simulations
-    root = serialize_root_from_memory()
-    model = ApsimModel(root)
+    root_sim_file = serialize_root_from_memory()
+    model = ApsimModel(root_sim_file)
     try:
         for _ in custom_parallel(append_one, iterables, model, use_thread=True, ncores=max_workers,
-                                 progress_message=f'Appending simulations'):
+                                 progress_message=f'Assembling simulations', progressbar=show_progress):
             pass
         model.save()
-        if run:
-            model.run(cpu_count=10, report_name=reports)
-            return model.results
+        return model
     finally:
-        if run:
-            with model:
-                pass
-        print(Path(model.datastore).exists())
+        rtp = Path(root_sim_file)
+        try:
+            rtp.unlink(missing_ok=True)
+            rtp.with_suffix('.db').unlink(missing_ok=True)
+        except PermissionError:
+            pass
 
-        rtp = Path(root)
-        Path(root).unlink(missing_ok=True)
-        print(rtp.exists())
-    return {'path': model.path, 'results': None, 'reports': None}
+
+def run_batch_simulations(simulations, max_worker=20, reports=None, show_progress=True,):
+    model = assemble_simulations(simulations, max_workers=max_worker, show_progress=show_progress)
+    model.run(report_name=reports, cpu_count=max_worker)
+    return model.results
 
 
 def create_simulations(load):
@@ -122,11 +124,11 @@ if __name__ == '__main__':
 
 
     ploads = [
-        {"model": "Maize", "ID": i, 'payload': [dict(lod(i))]}
-        for i in list(range(1, 201, 1))
+        {"model": "Maize", "ID": i, 'payload': [lod(i)]}
+        for i in list(range(1, 81, 1))
     ]
     sims = edit_simulations(ploads)
-    op = append_simulations_with_threads(sims, )
+    op = run_batch_simulations(sims, )
     print(op.columns)
     op_mean = (
         op.groupby("SimName")["Yield"]

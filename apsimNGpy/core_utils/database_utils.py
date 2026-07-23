@@ -253,7 +253,8 @@ def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None)
       tables.
     """
     assert any([report_name, sql_query]), "Please provide at least a table name or a SQL query."
-    query = sql_query or f"SELECT * FROM {report_name}"
+    safe_table = report_name.replace('"', '""')
+    query = sql_query or f"SELECT * FROM {safe_table}"
     # table = kwargs.get("table")
     ENGINE =None
     if detect_connection(db):

@@ -6,6 +6,8 @@ import os
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
+from apsimNGpy.config import configuration
+from apsimNGpy.logger import logger
 
 _AutoBin = object()
 
@@ -22,8 +24,6 @@ _AutoBin = object()
 # -----------------------------------------------------------------------------
 
 _LAZY_IMPORTS = {
-    # logging util
-    "logger": ("apsimNGpy.logger", 'logger'),
     # APSIM engine
     "ApsimModel": ("apsimNGpy.core.apsim", "ApsimModel"),
 
@@ -389,6 +389,7 @@ __all__ = [
     'Apsim',
     'start_pythonnet',
     'DLL_DIR',
+    'logger', 'configuration',
     *_LAZY_IMPORTS.keys()
 ]
 

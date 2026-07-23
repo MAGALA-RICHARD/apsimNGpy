@@ -258,14 +258,14 @@ def read_db_table(db: Union[str, Path], report_name: str = None, sql_query=None)
     ENGINE =None
     if detect_connection(db):
         ENGINE = db
-
-
     else:
         db = str(Path(db).with_suffix('.db'))
         DB = f'sqlite:///{db}'
         ENGINE = create_engine(DB)
         with ENGINE.begin() as connect:
-            return rsq(query, connect)
+            df= rsq(query, connect)
+            ENGINE.dispose()
+            return df
 
     try:
         df = rsq(query, ENGINE)

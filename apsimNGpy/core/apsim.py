@@ -223,13 +223,18 @@ class ApsimModel(CoreModel):
 
                 _ = [edit_with_fp(p) for p in payload]
 
-    def append_in_threads(self, number=10, max_workers=20):
+    def edit_simulations(self, load):
+        from apsimNGpy.parallel.process import custom_parallel
+        simulation_id = load.get('ID')
+
+    def append_simulations_with_threads(self, simulations, max_workers=20):
         from itertools import repeat
         from apsimNGpy.parallel.process import custom_parallel
-        iterables = repeat(self[0].MemberwiseClone(), times=number-1)
+        iterables = simulations
 
         self.save()
-        for _ in custom_parallel(self.append_one, iterables, use_thread=True, ncores=max_workers):
+        for _ in custom_parallel(self.append_one, iterables, use_thread=True, ncores=max_workers,
+                                 progress_message=f'Appending simulations'):
             pass
 
         self.save()
@@ -1176,6 +1181,7 @@ class ApsimModel(CoreModel):
         for candidate in clean_candidates:
             with suppress(PermissionError):
                 candidate.unlink(missing_ok=True)
+
 
     def clone_simulation(self, rename: str, base_simulation: Union[int, str] = 0) -> bool:
         """

@@ -1,12 +1,12 @@
 import sys
 import unittest
+from itertools import repeat
 from pathlib import Path
 
 import numpy as np
 
 from apsimNGpy import ApsimModel, timer
-from apsimNGpy.exceptions import NodeNotFoundError
-import asyncio
+
 
 TOTAL = 100
 
@@ -14,9 +14,9 @@ TOTAL = 100
 @timer
 def test_using_threads(run=False):
     with ApsimModel("Maize") as ap:
-        ap.append_in_threads(TOTAL)
-        print(len(ap))
-
+        simulations = repeat(ap[0], TOTAL-1)
+        ap.append_simulations_with_threads(simulations)
+        assert len(ap) == TOTAL
         if run:
             ap.run()
             return ap.results.groupby('SimulationID')['Yield'].mean()

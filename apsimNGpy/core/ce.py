@@ -1,7 +1,7 @@
 """
 The role of this module is to provide explicit support for editing cultivars
 """
-
+import sys
 from typing import Iterable
 
 from apsimNGpy.core_utils.utils import is_scalar
@@ -131,7 +131,7 @@ def attach_cultivar(model, name: str, manager: str, param_name: str, simulations
         model.edit_model(
             model_type='Models.Manager',
             model_name=manager,
-            simulations =simulations,
+            simulations=simulations,
             **{param_name: name}
         )
 
@@ -169,19 +169,29 @@ def _format_cmds(old_commands, new_commands: dict | list, clear_old=False):
     return fmt_cmds
 
 
-def derive_cultivar(model, *, commands, plant, template=None, rename=None, managers=None, simulations=None):
+def derive_cultivar(model, *, commands, plant, template=None,
+                    rename=None, managers=None, simulations=None,
+                    ):
     # template can be None
     command_inspection = model.inspect_model_parameters("Models.PMF.Cultivar", model_name=template)[
         'Command'] if template else {}
 
     cmds = _format_cmds(command_inspection, commands, clear_old=False)
     model.add_crop_replacements()
+
     plant_path = f"{model.Simulations.FullPath}.{REPLACEMENTS}.{plant.capitalize()}"
+
     # check if a plant path is valid
-    if not plant_path in model.inspect_model("Models.PMF.Plant"):
+
+    plant_paths = model.inspect_model("Models.PMF.Plant", fullpath=True)
+    if not plant_path in plant_paths:
+        print(f"{plant_path}")
+        print(plant_paths)
         raise ValueError(f"{plant} not found in the simulation root")
     default = f"modified_{template}_{plant}_cultivar" if template else f"modified_{plant}_cultivar"
     rename = rename or default
+    if simulations:
+        rename = f"{'_'.join(simulations)}_{rename}" if not is_scalar(simulations) else f"{simulations}_{rename}"
     model.add_new_model(parent_identifier=plant_path, parent_type='Models.PMF.Plant',
                         replace=True,
                         source={
@@ -228,21 +238,48 @@ if __name__ == "__main__":
                                            parameters='Parameters')
         if 'modified_maize_cultivar' in set(mod.inspect_model('Models.PMF.Cultivar', fullpath=False)):
             # check if edits were successful
-             p = mod.inspect_model_parameters('Models.PMF.Cultivar', 'modified_maize_cultivar')
-             juv = p.get('Command', p)['[Phenology].Juvenile.Target.FixedValue']
-             assert juv =='490'
+            p = mod.inspect_model_parameters('Models.PMF.Cultivar', 'modified_maize_cultivar')
+            juv = p.get('Command', p)['[Phenology].Juvenile.Target.FixedValue']
+            assert juv == '490'
         else:
             raise ValueError('edits were not successful')
 
-        assert out.get('Parameters', out)['CultivarName']=='modified_maize_cultivar'
-        #mod.open_in_gui(watch=True)
+        assert out.get('Parameters', out)['CultivarName'] == 'modified_maize_cultivar'
+        # mod.open_in_gui(watch=True)
         derive_cultivar(mod, template=None, commands=cms_tup, rename='th', plant='maize',
                         managers={'Sow using a variable rule': "CultivarName"})
         if 'th' in set(mod.inspect_model('Models.PMF.Cultivar', fullpath=False)):
             # check if edits were successful
-             p = mod.inspect_model_parameters('Models.PMF.Cultivar', 'modified_maize_cultivar')
-             juv = p.get('Command', p)['[Phenology].Juvenile.Target.FixedValue']
-             assert juv =='490'
+            p = mod.inspect_model_parameters('Models.PMF.Cultivar', 'modified_maize_cultivar')
+            juv = p.get('Command', p)['[Phenology].Juvenile.Target.FixedValue']
+            assert juv == '490'
         else:
             raise ValueError('edits were not successful')
-        mod.open_in_gui()
+        #mod.open_in_gui()
+
+
+    def test_placement_at_simulation():
+        """Here we will place directly at the simulation, where the plant node is located"""
+        with ApsimModel('Maize') as mod:
+            print('running model to get results before edits', file=sys.stderr)
+            mod.run()
+            ydb = mod.results.Yield.mean()
+            cms = [f'[Leaf].Photosynthesis.RUE.FixedValue=1.30']
+
+            derive_cultivar(mod, template='B_110', commands=cms, plant='Maize',
+                             rename='at_simulation',simulations='Simulation',
+                            managers={'Sow using a variable rule': "CultivarName"})
+            cultivars_in = set(model.inspect_model('Models.PMF.Cultivar', fullpath=False))
+
+
+            print('running model to get results after edits', file=sys.stderr)
+            mod.run()
+            yda = mod.results.Yield.mean()
+            if yda == ydb:
+                print(f'Yield before: {ydb}')
+                print(f'Yield after: {yda}')
+                raise AssertionError('Edits might have been not successfully')
+    test_placement_at_simulation()
+
+
+

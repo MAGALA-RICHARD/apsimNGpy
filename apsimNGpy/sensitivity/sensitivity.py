@@ -188,7 +188,8 @@ class ConfigProblem:
             yield {
                 "model": self.base_model,
                 self.index_id: idx,
-                "inputs": inputs,
+                'full_path': True,
+                "payload": inputs,
             }
 
     # ---------------- Evaluation ----------------
@@ -952,7 +953,7 @@ if __name__ == "__main__":
     def run_sens():
         run_sensitivity(
             runner,
-            n_cores=8,
+            n_cores=20,
             total_chunks=8,
             chunk_size=100,
             engine='python',

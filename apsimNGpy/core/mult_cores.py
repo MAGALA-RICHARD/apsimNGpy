@@ -19,6 +19,8 @@ from typing import Union, Literal
 import pandas as pd
 import sqlalchemy
 from tqdm import tqdm
+
+from apsimNGpy import logger
 from apsimNGpy.core.plotmanager import PlotManager
 from apsimNGpy.core._multi_core import edit_to_folder, IDENTIFICATION, single_runner, harmonise_groups
 from apsimNGpy.core.runner import _run_from_dir
@@ -778,7 +780,7 @@ class MultiCoreManager(PlotManager):
                                call_back=callback)
         else:
             raise ValueError(f"Unsupported engine expected str as (python or csharp) got {engine}")
-
+    @timer
     def _run_all_jobs(self, jobs, *, n_cores=-2, threads=False, clear_db=True, retry_rate=1, progressbar: bool = True,
                       subset=None, index=None, table_name=None,
                       ignore_runtime_errors=True, batch_size=100, n_chunks=10, **kwargs):
@@ -943,18 +945,31 @@ class MultiCoreManager(PlotManager):
         if self.cleared_db:
             self.clear_db()  # each simulation is fresh,
 
-        worker = partial(single_runner, agg_func=self.agg_func, index=index, call_back=kwargs.get('call_back'),
-                         ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate, table_name=table_name,
-                         db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
+        # worker = partial(single_runner, agg_func=self.agg_func, index=index, call_back=kwargs.get('call_back'),
+        #                  ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate, table_name=table_name,
+        #                  db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
         try:
             from apsimNGpy.parallel.process import custom_parallel_chunks, parallelize_chunks, batch
-            batches = batch(jobs, k=batch_size)
-            for _ in parallelize_chunks(func=worker, iterable=batches, ncores=n_cores, use_threads=threads,
-                                        progress_message=f'APSIM running', unit='chunk',
-                                        void=True, n_chunks=n_chunks,
-                                        progressbar=progressbar,
-                                       ):
-                pass
+            from apsimNGpy.core.tiny_core import save_batch_simulations
+            from itertools import batched
+            batches = batched(jobs, batch_size)
+            counter =1
+            while True:
+                logger.info('Working on batch {0}'.format(counter))
+                b = next(batches, None)
+                if b is None:
+                    break
+                wks = 20 if n_cores < 16 else n_cores
+                one_batch = b
+                save_batch_simulations(simulation_descriptions=one_batch,db_path=str(self.db_path),table_prefix=self.table_prefix,
+                                       max_worker=wks, show_progress=progressbar, reports=table_name)
+                counter += 1
+            # for _ in parallelize_chunks(func=worker, iterable=batches, ncores=n_cores, use_threads=threads,
+            #                             progress_message=f'APSIM running', unit='chunk',
+            #                             void=True, n_chunks=n_chunks,
+            #                             progressbar=progressbar,
+            #                            ):
+            #     pass
 
         finally:
             gc.collect()
@@ -988,7 +1003,7 @@ class MultiCoreManager(PlotManager):
 
         .. Note::
 
-            Sending many jobs more than 100 at a go will lead to stack overflow issues or memory issues.
+            Sending many jobs maybe more than 100 at a go will lead to stack overflow issues or memory issues.
             It is an architectural design issue of APSIM rather than apsimNGpy.
 
         """
@@ -1040,15 +1055,19 @@ MultiCoreManager.save_to_csv.__doc__ = """  Persist simulation results to a SQLi
 
 if __name__ == '__main__':
     # quick tests. comprehensive tests are in the tests
-
-    with tempfile.TemporaryDirectory() as td:
-        create_jobs = [{'model': "Maize", 'ID': i,  'inputs': [{
-                           'path': '.Simulations.Simulation.Field.Fertilise at sowing',
+    from apsimNGpy.core.tiny_core import SimulationDescription
+    from apsimNGpy.core_utils.database_utils import dispose
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
+        create_jobs = ({'model': "Maize", 'ID': f"sim_{i}",  'payload': [{
+                           'model_name':'Fertilise at sowing',
+                           'model_type':'Models.Manager',
                            'Amount': i * 10
                        }]
-                        } for i in range(20)]
+                        } for i in range(1, 10))
+        create_jobs = [SimulationDescription(**m) for m in create_jobs]
         db_path = Path(td) / f"{uuid.uuid4().hex}.db"
         test_agg_db = Path(td) / f"_{uuid.uuid4().hex}.db"
+        dispose(db_path)
 
         Parallel = MultiCoreManager(db_path=test_agg_db, agg_func=None)
         Parallel.run_all_jobs(create_jobs, n_cores=5, threads=True, clear_db=False, chunk_size=5, retry_rate=3,
@@ -1097,21 +1116,28 @@ if __name__ == '__main__':
             data = []
             with tq as pbar:
                 for mod in create_jobs:
+                    if hasattr(mod, 'model_dump'):
+                        mod = mod.model_dump()
                     m = mod.get('model')
                     Id = mod.get('ID')
-                    inputs = mod.get('inputs', [])
+                    inputs = mod.get('payload', [])
                     with ApsimModel(m) as model:
                         if inputs:
-                            _ = [model.set_params(**pt) for pt in inputs]
+                            _ = [model.edit_model(**pt) for pt in inputs]
+                        model.edit_model(model_type='Models.Report', model_name='Report', variable_spec= ['[Simulation].Name as ID'])
+                        model[0].Name = Id
                         model.run()
                         df = model.results
-                        df['ID'] = Id
+
                         data.append(df)
                         pbar.update(1)
             return pd.concat(data, ignore_index=True)
         sgf = run_single()
+        sgf =sgf[sgf['ID']!='Simulation']
         mean_of_s = sgf.groupby("ID")["Yield"].mean().sort_index()
+        df['ID']  =df['SimName']
         mean_of_m = df.groupby("ID")["Yield"].mean().sort_index()
+
 
         pd.testing.assert_series_equal(
             mean_of_s,

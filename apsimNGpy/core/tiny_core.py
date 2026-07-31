@@ -1,120 +1,174 @@
-import os
-import sys
-from pathlib import Path
-from apsimNGpy.starter.starter import CLR
-from apsimNGpy import ApsimModel
-from multiprocessing import Lock
-from uuid import uuid4
+from sqlalchemy import create_engine
 
-lock = Lock()
+from apsimNGpy.core.apsim import ApsimModel
+from typing import List, Iterable, Any
+
+from apsimNGpy.core._tiny_core import _assemble_simulations, _run_batch_simulations, _SimulationDescription
 
 
-def _assign_edit(model, load):
-    simulation_id = load.get('ID')
-    payload = load.get('payload')
-    # print(f"`simulation_id={simulation_id}Amount={p}`", file=sys.stderr)
-    if payload is not None:
-        _ = [model.edit_model(**dict(pay)) for pay in payload]
-    reports = model.inspect_model('Models.Report', fullpath=False)
+class SimulationDescription(_SimulationDescription):
+    """
+        Description of an APSIM simulation and its optional model edits (payload).
 
-    simulation = model[0]
-    simulation.Name = f"{simulation_id}"
-    _ = [model.edit_model(model_type='Models.Report', model_name=rep,
-                          variable_spec=['[Simulation].Name as SimName']) for rep in reports]
-    model.save()
-    return simulation_id
+        Parameters
+        ----------
+        model : str
+            Name or path of the base APSIM model used to create the simulation.
 
+        ID : int
+            Unique identifier assigned to the simulation description.
 
-def edit(load):
-    with lock:
-        base = load.get('model')
-        with ApsimModel(base) as model:
-            _assign_edit(model, load)
-            return model[0]
+        payload : list[dict[str, Any]], default=[]
+            A collection of parameter-edit dictionaries applied to the simulation.
 
+            Each payload dictionary may contain strings, numbers, lists, nested
+            dictionaries, or other values required by the APSIM editing methods.
+            When no edits are required, this field defaults to an empty list.
 
-def creat_root_in_memory(root_name=None):
-    node = CLR.Node.Create(CLR.Models.Core.Simulations())
-    if root_name is not None:
-        node.Name = root_name
-    node.AddChild(CLR.Models.Storage.DataStore())
-    return node
+        Examples:
+        ------------
+        Create a simulation description containing one model edits:
+            .. code-block:: python
 
+            description = SimulationDescription(
+                model="Maize",
+                ID=1,
+                payload=[
+                    {
+                        "model_name": "Fertilise at sowing",
+                        "model_type": "Models.Manager",
+                        "Amount": 100,
+                    }
+                ],
+            )
 
-def serialize_root_from_memory(root_dir='.', file_name=None):
-    root_dir = Path(root_dir).resolve()
-    file_name = file_name or f'tmp_{uuid4()}.apsimx'
-    out_path = root_dir / file_name
-    from apsimNGpy.core.model_loader import save_model_to_file
-    node = creat_root_in_memory()
-    save_model_to_file(node, out=out_path)
-    return out_path
+        Nested dictionaries are also accepted:
 
+        .. code-block:: python
 
-def append_one(simulation, parent):
-    pa = getattr(parent, 'Simulations', parent)
-    pa = getattr(pa, 'Model', pa)
-    pa.Children.Add(simulation)
+            description = SimulationDescription(
+                model="Maize",
+                ID=2,
+                payload=[
+                    {
+                        "model_name": "Sowing",
+                        "model_type": "Models.Manager",
+                        "parameters": {
+                            "population": 8.5,
+                            "depth": 50,
+                            "cultivar": "Pioneer",
+                        },
+                    }
+                ],
+            )
 
+        A description may also be created without a payload:
 
-def edit_simulations(loads, max_worker=20, show_progress=True):
-    from apsimNGpy.parallel.process import custom_parallel
-    return custom_parallel(edit, loads, ncores=max_worker, use_thread=True, progressbar=show_progress,
-                           progress_message='Editing simulations')
+        .. code-block:: python
 
+            description = SimulationDescription(
+                model="Maize",
+                ID=3,
+            )
 
-def assemble_simulations(simulations, max_workers=20, show_progress=True):
-    from apsimNGpy.parallel.process import custom_parallel
-    iterables = simulations
-    root_sim_file = serialize_root_from_memory()
-    model = ApsimModel(root_sim_file)
-    try:
-        for _ in custom_parallel(append_one, iterables, model, use_thread=True, ncores=max_workers,
-                                 progress_message=f'Assembling simulations', progressbar=show_progress):
-            pass
-        model.save()
-        return model
-    finally:
-        rtp = Path(root_sim_file)
-        try:
-            rtp.unlink(missing_ok=True)
-            rtp.with_suffix('.db').unlink(missing_ok=True)
-        except PermissionError:
-            pass
+            print(description.payload)
+            # []
+
+        """
 
 
-def run_batch_simulations(simulations, max_worker=20, reports=None, show_progress=True,):
-    model = assemble_simulations(simulations, max_workers=max_worker, show_progress=show_progress)
-    model.run(report_name=reports, cpu_count=max_worker)
-    return model.results
+def assemble_simulations(
+        simulations: List[ApsimModel],
+        max_workers: int = 20,
+        show_progress: bool = True,
+) -> ApsimModel:
+    """
+    Assemble multiple APSIM simulations into one model.
+
+    Parameters
+    ----------
+    simulations : iterable
+        APSIM Simulation objects to add to the combined model.
+    max_workers : int, default=20
+        Maximum number of worker threads used during assembly.
+    show_progress : bool, default=True
+        Whether to display assembly progress.
+
+    Returns
+    -------
+    ApsimModel
+        The assembled APSIM model. Simulations are not executed.
+    """
+    return _assemble_simulations(simulations, max_workers, show_progress)
 
 
-def create_simulations(load):
-    base = load.get('model')
-    with ApsimModel(base) as model:
-        dis = _assign_edit(model, load)
-        model.run(cpu_count=20)
-        df = model.results
-        df['SimulationID'] = dis
-        return df
+def run_batch_simulations(
+        simulation_descriptions: Iterable[
+            SimulationDescription | dict[str, Any]
+            ],
+        max_worker: int = 20,
+        reports: Iterable = None,
+        show_progress: bool = True,
+):
+    """
+    Run a batch of APSIM simulations aggregated in a single .apsimx file and return their results.
+
+    Parameters
+    ----------
+    simulation_descriptions : iterable of dict
+        Definitions used to create and configure the simulations.
+    max_worker : int, default=20
+        Maximum number of workers used during assembly and execution.
+    reports : str or sequence of str, optional
+        APSIM report table name or names to retrieve.
+    show_progress : bool, default=True
+        Whether to display simulation-assembly progress.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Results from the completed batch.
+
+    # Examples
+    ----------------
+    .. code-block:: python
+
+         from apsimNGpy.core.tiny_core import run_batch_simulations, SimulationDescription
+
+    Create a simulation description
+
+     .. code-block:: python
+
+        def plod(i):
+            return {'model_name': "Fertilise at sowing", "model_type": "Models.Manager",
+                    'Amount': i}
+        p_loads = [
+            SimulationDescription(**{"model": "Maize", "ID": i, 'payload': [plod(i)]})
+            for i in list(range(1, 81, 1))]
+        df = run_batch_simulations(simulation_descriptions=p_loads, )
+        df_mean = (df.groupby("SimName")["Yield"]
+            .mean()
+            .sort_index(ascending=True))
+
+    The SimulationDescription class is used only to validate inputs. Users may still pass a list of dictionaries,
+    and the program will validate and convert each dictionary internally.
+
+    """
+    return _run_batch_simulations(simulation_descriptions, max_worker, reports, show_progress)
 
 
-def run_single(loads):
-    import pandas as pd
-    data = []
-    for load in loads:
-        df = create_simulations(load)
-        data.append(df)
-    return pd.concat(data, ignore_index=True)
-
-
-def run_single_append_method(loads):
-    sims = [edit(ld) for ld in loads]
-    root = serialize_root_from_memory()
-    with ApsimModel(root) as model:
-        _ = [model.append_simulation(simulation=sim) for sim in sims]
-        model.run()
-        return model.results
+def save_batch_simulations(simulation_descriptions: Iterable[ SimulationDescription | dict[str, Any]],  db_path: str,
+                           max_worker: int = 20,
+                           reports: Iterable = None,
+                           show_progress: bool = True, table_prefix='batch' ):
+    df = run_batch_simulations(simulation_descriptions,
+                               max_worker,
+                               reports,
+                               show_progress)
+    engine = create_engine(f"sqlite:///{str(db_path)}")
+    shape = int(df.shape[0]/3)
+    with engine.begin():
+        df.to_sql(f"{table_prefix}Batch", engine, if_exists="append", chunksize=shape, method="multi", index=False)
 
 
 if __name__ == '__main__':
@@ -124,54 +178,13 @@ if __name__ == '__main__':
 
 
     ploads = [
-        {"model": "Maize", "ID": i, 'payload': [lod(i)]}
+        SimulationDescription(**{"model": "Maize", "ID": i, 'payload': [lod(i)]})
         for i in list(range(1, 81, 1))
     ]
-    sims = edit_simulations(ploads)
-    op = run_batch_simulations(sims, )
-    print(op.columns)
+
+    op = run_batch_simulations(simulation_descriptions=ploads, )
     op_mean = (
         op.groupby("SimName")["Yield"]
         .mean()
         .sort_index(ascending=True)
     )
-
-    root = serialize_root_from_memory()
-    sdf = run_single(ploads).sort_values(by='SimulationID')
-    # sims = edit_simulations(ploads)
-    # sdf = append_simulations_with_threads(sims, )
-
-    import numpy as np
-    import pandas as pd
-
-    sdf_mean = (
-        sdf.groupby("SimName")["Yield"]
-        .mean()
-        .sort_index(ascending=True)
-    )
-
-    # Ensure both results contain the same SimulationIDs
-    if not op_mean.index.equals(sdf_mean.index):
-        missing_in_op = sdf_mean.index.difference(op_mean.index)
-        missing_in_sdf = op_mean.index.difference(sdf_mean.index)
-
-        raise ValueError(
-            f"SimulationID mismatch. "
-            f"Missing in op: {missing_in_op.tolist()}; "
-            f"missing in sdf: {missing_in_sdf.tolist()}"
-        )
-
-    # Floating-point-safe comparison
-    are_equal = np.allclose(
-        op_mean.to_numpy(),
-        sdf_mean.to_numpy(),
-        rtol=1e-7,
-        atol=1e-9,
-        equal_nan=True,
-    )
-
-    print(f"Means are equal: {are_equal}")
-    import pandas as pd
-
-    pp = [{'SimulationID': pl['ID'], **pl['payload'][0]} for pl in ploads]
-    amount = pd.DataFrame(pp)

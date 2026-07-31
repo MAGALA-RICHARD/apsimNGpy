@@ -89,6 +89,7 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
     progress_message = kwargs.get('progress_message', f"Processing..!")
     void = kwargs.get('void', False)
     unit = kwargs.get('unit', 'iteration')
+    bar_color= kwargs.get('bar_color', 'green')
     progressbar = kwargs.get('progressbar', True)
     selection = select_type(use_thread=use_thread,
                             n_cores=cpu_cores)
@@ -101,6 +102,10 @@ def custom_parallel(func, iterable: Iterable, *args, **kwargs):
                     total=total,
                     desc=progress_message,
                     unit=unit,
+                    colour=bar_color,
+                    smoothing=0.0,
+                    mininterval=0.05,
+                    ascii=SMOOTH_BLOCKS,
                     bar_format=("{desc} {bar} {percentage:3.0f}% "
                                 "({n_fmt}/{total}) >> completed (elapsed=>{elapsed}, eta=>{remaining}) {postfix}"),
                     dynamic_ncols=True,

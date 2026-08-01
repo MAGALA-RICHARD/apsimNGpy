@@ -44,11 +44,11 @@ def _get_root(base, simulation_name):
             )
 
 
-def create_experiment_node(model, factor_file_name, name_column, sheet=None, base_simulation=0, name=NAME):
+def _create_experiment_from_file(model, factor_file_name, name_column, sheet=None, base_simulation=0, experiment_name=NAME):
     obj = _get_root(model, simulation_name=base_simulation)
     root, base_sim = obj["root"], obj["simulation"]
     exp = Models.Factorial.Experiment()
-    exp.Name = name
+    exp.Name = experiment_name
     factor_holder_node = Models.Factorial.Factors()
     exp.Children.Add(factor_holder_node)
     exp.Children.Add(base_sim)
@@ -74,19 +74,19 @@ def create_experiment_node(model, factor_file_name, name_column, sheet=None, bas
     return root
 
 
-class ExperimentFromFile(ApsimModel):
+class _ExperimentFromFile(ApsimModel):
     def __init__(
             self,
             model, *,
             factor_file_name,
             name_column,
-            name="ExperimentFromFile",
+            experiment_name="ExperimentFromFile",
             base_simulation=0,
             **kwargs, ):
         super().__init__(model, **kwargs)
 
         self.factor_file_name = Path(factor_file_name).resolve()
-        self.experiment_name = name
+        self.experiment_name = experiment_name
         self.name_column = name_column
         self.base_simulation = base_simulation
 
@@ -94,8 +94,8 @@ class ExperimentFromFile(ApsimModel):
             raise FileNotFoundError(
                 f"Factor file does not exist: {self.factor_file_name}"
             )
-        create_experiment_node(self, factor_file_name=factor_file_name, name_column=name_column,
-                               base_simulation=self.base_simulation, name=self.experiment_name)
+        _create_experiment_from_file(self, factor_file_name=factor_file_name, name_column=name_column,
+                                     base_simulation=self.base_simulation, experiment_name=self.experiment_name)
 
 
 def csv_generator(**kwargs, ):
@@ -117,10 +117,10 @@ def test_factor_from_file(*, rue, population):
     X = csv_generator(**vaRs, name_column="ID")
 
     X.to_csv('data.csv')
-    experiment = ExperimentFromFile('Maize', factor_file_name='data.csv', name_column='FactorFromFile')
+    experiment = _create_experiment_from_file('Maize', factor_file_name='data.csv', name_column='FactorFromFile')
     experiment.run()
     res = experiment.results
-    final = res.merge(df, how='inner', on='FactorFromFile')
+    final = res.merge(X, how='inner', on='FactorFromFile')
     mn = final.groupby('FactorFromFile')['Yield'].mean()
     assert len(mn) == len(X['FactorFromFile'].unique())
 
@@ -131,12 +131,12 @@ def test_factor_from_file(*, rue, population):
 
 
 if __name__ == '__main__':
-    csv = r"C:\Users\rmagala\Downloads\ExperimentFromCSV-FactorialTrials.csv"
-    vaRs = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": [2, 2], '[Sow on a fixed date].Script.Population': [8, 8]}
-    df = csv_generator(**vaRs, name_column="ID")
-    df.to_csv('data.csv')
-    m = ApsimModel('Maize')
-    out = create_experiment_node(m, factor_file_name='data.csv', name_column='Scenario', base_simulation=0)
+    # csv = r"C:\Users\rmagala\Downloads\ExperimentFromCSV-FactorialTrials.csv"
+    # vaRs = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": [2, 2], '[Sow on a fixed date].Script.Population': [8, 8]}
+    # df = csv_generator(**vaRs, name_column="ID")
+    # df.to_csv('data.csv')
+    # m = ApsimModel('Maize')
+    # out = create_experiment_from_file(m, factor_file_name='data.csv', name_column='Scenario', base_simulation=0)
 
     test_factor_from_file(rue=(1, 2), population=(5, 5))
 

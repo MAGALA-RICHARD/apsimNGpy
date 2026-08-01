@@ -2,8 +2,10 @@ import shutil
 
 import numpy as np
 
+from apsimNGpy import logger
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.starter.starter import CLR
+from apsimNGpy.core.experiment import create_experiment_from_file
 
 Models = CLR.Models
 from apsimNGpy.core.sim_tools import get_base_simulation
@@ -17,85 +19,6 @@ def _filter_out_simulation(model: ApsimModel):
         typ = Child.GetType()
         if typ not in (CLR.Models.Storage.DataStore().GetType(), CLR.Models.Core.Folder().GetType()):
             model.Simulations.RemoveChild(Child)
-
-
-from pathlib import Path
-
-
-def _get_root(base, simulation_name):
-    match base:
-        case str() | Path():
-            model = ApsimModel(base)
-            sim = get_base_simulation(model, simulation_name)
-            _filter_out_simulation(model)
-            model.save()
-            return dict(root=model, simulation=sim)
-
-        case ApsimModel():
-            sim = get_base_simulation(base, simulation_name)
-            _filter_out_simulation(base)
-            base.save()
-            return dict(root=base, simulation=sim)
-
-        case _:
-            raise TypeError(
-                f"Expected a str, Path, or ApsimModel, "
-                f"got {type(base).__name__}"
-            )
-
-
-def create_experiment_node(model, factor_file_name, name_column, sheet=None, base_simulation=0, name=NAME):
-    obj = _get_root(model, simulation_name=base_simulation)
-    root, base_sim = obj["root"], obj["simulation"]
-    exp = Models.Factorial.Experiment()
-    exp.Name = name
-    factor_holder_node = Models.Factorial.Factors()
-    exp.Children.Add(factor_holder_node)
-    exp.Children.Add(base_sim)
-    root.Simulations.Children.Add(exp)
-    try:
-        FactorialFactorFromFile = Models.Factorial.FactorFromFile()
-    except AttributeError as error:
-        raise RuntimeError(
-            "This APSIM Next Generation version does not support "
-            "'Models.Factorial.FactorFromFile'. Upgrade to APSIM 2026.7 "
-            "or a newer version."
-        ) from error
-    FactorialFactorFromFile.set_NameColumn(name_column)
-    if Path(factor_file_name).suffix != '.csv':
-        if sheet is None:
-            raise ValueError(f"Expected sheet name to be specified got {sheet} instead")
-        FactorialFactorFromFile.Sheet = sheet
-    dst = Path('factor.csv').resolve()
-    shutil.copy(factor_file_name, dst=dst)
-    FactorialFactorFromFile.FileName = str(dst)
-    factor_holder_node.Children.Add(FactorialFactorFromFile)
-
-    return root
-
-
-class ExperimentFromFile(ApsimModel):
-    def __init__(
-            self,
-            model, *,
-            factor_file_name,
-            name_column,
-            name="ExperimentFromFile",
-            base_simulation=0,
-            **kwargs, ):
-        super().__init__(model, **kwargs)
-
-        self.factor_file_name = Path(factor_file_name).resolve()
-        self.experiment_name = name
-        self.name_column = name_column
-        self.base_simulation = base_simulation
-
-        if not self.factor_file_name.exists():
-            raise FileNotFoundError(
-                f"Factor file does not exist: {self.factor_file_name}"
-            )
-        create_experiment_node(self, factor_file_name=factor_file_name, name_column=name_column,
-                               base_simulation=self.base_simulation, name=self.experiment_name)
 
 
 def csv_generator(**kwargs, ):
@@ -117,7 +40,7 @@ def test_factor_from_file(*, rue, population):
     X = csv_generator(**vaRs, name_column="ID")
 
     X.to_csv('data.csv')
-    experiment = ExperimentFromFile('Maize', factor_file_name='data.csv', name_column='FactorFromFile')
+    experiment = create_experiment_from_file('Maize', factor_file_name='data.csv', name_column='FactorFromFile')
     experiment.run()
     res = experiment.results
     final = res.merge(df, how='inner', on='FactorFromFile')
@@ -125,6 +48,7 @@ def test_factor_from_file(*, rue, population):
     assert len(mn) == len(X['FactorFromFile'].unique())
 
     assert not np.equal(*mn), f"Values {mn}  match"
+    logger.info(f"Arguments: RUE; {rue} and population; {population} ok")
 
     with experiment:
         pass
@@ -136,7 +60,7 @@ if __name__ == '__main__':
     df = csv_generator(**vaRs, name_column="ID")
     df.to_csv('data.csv')
     m = ApsimModel('Maize')
-    out = create_experiment_node(m, factor_file_name='data.csv', name_column='Scenario', base_simulation=0)
+    out = create_experiment_from_file(m, factor_file_name='data.csv', name_column='Scenario', base_simulation=0)
 
     test_factor_from_file(rue=(1, 2), population=(5, 5))
 

@@ -3,7 +3,7 @@ import re
 from collections import OrderedDict
 from pathlib import Path
 from typing import Union, Iterable
-
+from apsimNGpy.core._experiment_from_file import _create_experiment_from_file, _ExperimentFromFile, NAME
 from apsimNGpy import NodeNotFoundError
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_loader import get_node_by_path, AUTO_PATH
@@ -17,6 +17,104 @@ CastHelper = CLR.CastHelper
 NodeUtils = CLR.APsimCore
 System = CLR.System
 apsim_version = CLR.apsim_compiled_version
+
+
+def create_experiment_from_file(
+        model,
+        factor_file_name,
+        name_column,
+        sheet=None,
+        base_simulation=0,
+        experiment_name=NAME,
+):
+    """
+    Create an APSIM factorial experiment from a CSV or Excel factor file (Functional style).
+
+    This function is the public interface for creating an APSIM
+    ``FactorFromFile`` experiment. It delegates the implementation to
+    :func:`_create_experiment_from_file`.
+
+    Each row in the factor file represents one factorial treatment. Column
+    names should correspond to valid APSIM property paths, while
+    ``name_column`` identifies the column used to name each generated
+    simulation.
+
+    Parameters
+    ----------
+    model : str, pathlib.Path, or ApsimModel
+        APSIM model file or an existing ``ApsimModel`` instance.
+
+    factor_file_name : str or pathlib.Path
+        Path to the CSV or Excel file containing the factorial treatments.
+
+    name_column : str
+        Name of the column used to identify and name each generated
+        simulation.
+
+    sheet : str, optional
+        Excel worksheet name. This is required when ``factor_file_name`` is
+        not a CSV file and ignored for CSV files.
+
+    base_simulation : int or str, default=0
+        Index or name of the simulation to use as the experiment template.
+
+    experiment_name : str, default=NAME
+        Name assigned to the generated APSIM experiment.
+
+    Returns
+    -------
+    ApsimModel
+        The APSIM model root containing the newly created factorial
+        experiment. Note this instance has all the methods and attributes on ApsimModel class
+
+    Raises
+    ------
+    FileNotFoundError
+        If the factor file does not exist.
+
+    ValueError
+        If an Excel factor file is supplied without a worksheet name.
+
+    RuntimeError
+        If the installed APSIM version does not support
+        ``Models.Factorial.FactorFromFile``.
+
+    Examples
+    --------
+    Create an experiment from a CSV file:
+
+    >>> model = create_experiment_from_file(
+    ...     model="Maize.apsimx",
+    ...     factor_file_name="factors.csv",
+    ...     name_column="FactorFromFile",
+    ...     base_simulation=0,
+    ...     experiment_name="SensitivityExperiment",
+    ... )
+
+    Create an experiment from an Excel worksheet:
+
+    >>> model = create_experiment_from_file(
+    ...     model="Maize.apsimx",
+    ...     factor_file_name="factors.xlsx",
+    ...     name_column="Treatment",
+    ...     sheet="SobolSamples",
+    ... )
+    """
+    factor_file_name = Path(factor_file_name)
+
+    if not factor_file_name.is_file():
+        raise FileNotFoundError(
+            f"Factor file was not found: {factor_file_name}"
+        )
+
+    return _create_experiment_from_file(
+        model=model,
+        factor_file_name=factor_file_name,
+        name_column=name_column,
+        sheet=sheet,
+        base_simulation=base_simulation,
+        experiment_name=experiment_name,
+    )
 
 
 class ExperimentManager(ApsimModel):
@@ -382,7 +480,7 @@ class ExperimentManager(ApsimModel):
             values: Union[str, Iterable[Union[str, int, float]]] = None,
             step: Union[int, float] = None,
             bounds: tuple = None,
-            rename = ""
+            rename=""
     ):
         """
         Define a factor specification for APSIM sensitivity or factorial experiments, Then uses `add_factor` under the hood.
@@ -521,7 +619,7 @@ class ExperimentManager(ApsimModel):
             fp = _knit_param_path(node_id=_name,
                                   _param=param, _values=values, _step=step)
         # add factor
-        name = rename or param_identifier.replace(".",'')
+        name = rename or param_identifier.replace(".", '')
         self.add_factor(specification=fp, factor_name=name)
         print(fp)
         print(node_info)
@@ -817,9 +915,7 @@ class ExperimentManager(ApsimModel):
         invoke_csharp_gc()
 
 
-import gc
-
-gc.collect()
+__all__ = ['Experiment', '_ExperimentFromFile', "_create_experiment_from_file"]
 if __name__ == '__main__':
     with ExperimentManager("Maize", out_path='dtb.apsimx') as exp:
         exp.init_experiment(permutation=True)
@@ -846,7 +942,7 @@ if __name__ == '__main__':
             param_node_location="Maize",
             node_type="Plant",
             param_identifier="Leaf.Photosynthesis.RUE.FixedValue",  #
-            values=[0.9, 2,3], rename=''
+            values=[0.9, 2, 3], rename=''
         )
         exp.factor(param_node_location='Sow using a variable rule', node_type='Manager',
                    **{'param_identifier': 'Script.Population', 'values': [10, 12, 4], 'step': None})

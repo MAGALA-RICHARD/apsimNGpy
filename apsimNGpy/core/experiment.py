@@ -12,6 +12,7 @@ from apsimNGpy.core.runner import invoke_csharp_gc, run_model_externally
 from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.starter.starter import CLR
 from apsimNGpy.logger import logger
+from apsimNGpy.core.sim_tools import create_factor_table
 
 CastHelper = CLR.CastHelper
 NodeUtils = CLR.APsimCore
@@ -21,7 +22,7 @@ apsim_version = CLR.apsim_compiled_version
 
 def create_experiment_from_file(
         model,
-        factor_file_name,
+        experiment_from_file,
         name_column,
         sheet=None,
         base_simulation=0,
@@ -44,7 +45,7 @@ def create_experiment_from_file(
     model : str, pathlib.Path, or ApsimModel
         APSIM model file or an existing ``ApsimModel`` instance.
 
-    factor_file_name : str or pathlib.Path
+    experiment_from_file : str or pathlib.Path
         Path to the CSV or Excel file containing the factorial treatments.
 
     name_column : str
@@ -85,7 +86,7 @@ def create_experiment_from_file(
 
     >>> model = create_experiment_from_file(
     ...     model="Maize.apsimx",
-    ...     factor_file_name="factors.csv",
+    ...     experiment_from_file="factors.csv",
     ...     name_column="FactorFromFile",
     ...     base_simulation=0,
     ...     experiment_name="SensitivityExperiment",
@@ -95,21 +96,21 @@ def create_experiment_from_file(
 
     >>> model = create_experiment_from_file(
     ...     model="Maize.apsimx",
-    ...     factor_file_name="factors.xlsx",
+    ...     experiment_from_file="factors.xlsx",
     ...     name_column="Treatment",
     ...     sheet="SobolSamples",
     ... )
     """
-    factor_file_name = Path(factor_file_name)
+    experiment_from_file = Path(experiment_from_file)
 
-    if not factor_file_name.is_file():
+    if not experiment_from_file.is_file():
         raise FileNotFoundError(
-            f"Factor file was not found: {factor_file_name}"
+            f"Factor file was not found: {experiment_from_file}"
         )
 
     return _create_experiment_from_file(
         model=model,
-        factor_file_name=factor_file_name,
+        experiment_from_file=experiment_from_file,
         name_column=name_column,
         sheet=sheet,
         base_simulation=base_simulation,
@@ -915,7 +916,7 @@ class ExperimentManager(ApsimModel):
         invoke_csharp_gc()
 
 
-__all__ = ['Experiment', '_ExperimentFromFile', "_create_experiment_from_file"]
+__all__ = ['ExperimentManager', '_ExperimentFromFile', "_create_experiment_from_file", 'create_factor_table']
 if __name__ == '__main__':
     with ExperimentManager("Maize", out_path='dtb.apsimx') as exp:
         exp.init_experiment(permutation=True)

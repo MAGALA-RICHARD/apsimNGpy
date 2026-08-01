@@ -1,51 +1,51 @@
 import shutil
-
+from pathlib import Path
 import numpy as np
-
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.starter.starter import CLR
-
 Models = CLR.Models
-from apsimNGpy.core.sim_tools import get_base_simulation
+from apsimNGpy.core.sim_tools import  get_root_model, create_factor_table
 
 NAME = "ExperimentFromFile"
 
 
-def _filter_out_simulation(model: ApsimModel):
-    children = list(model.Simulations.GetChildren())
-    for Child in children:
-        typ = Child.GetType()
-        if typ not in (CLR.Models.Storage.DataStore().GetType(), CLR.Models.Core.Folder().GetType()):
-            model.Simulations.RemoveChild(Child)
+def _create_experiment_from_file(model, experiment_from_file, name_column, sheet=None, base_simulation=0, experiment_name=NAME):
+    """
+    Create an APSIM experiment from an existing factor spreadsheet.
 
+    This is a private helper used internally by
+    `create_experiment_from_file`. Refer to the public function for
+    complete documentation and usage examples.
 
-from pathlib import Path
+    Parameters
+    ----------
+    model : str, pathlib.Path, or ApsimModel
+        APSIM model path or an existing ``ApsimModel`` instance.
 
+    experiment_from_file : str or pathlib.Path
+        Path to the CSV or Excel file containing the factorial treatments.
 
-def _get_root(base, simulation_name):
-    match base:
-        case str() | Path():
-            model = ApsimModel(base)
-            sim = get_base_simulation(model, simulation_name)
-            _filter_out_simulation(model)
-            model.save()
-            return dict(root=model, simulation=sim)
+    name_column : str
+        Name of the column used to identify each generated simulation.
 
-        case ApsimModel():
-            sim = get_base_simulation(base, simulation_name)
-            _filter_out_simulation(base)
-            base.save()
-            return dict(root=base, simulation=sim)
+    sheet : str, optional
+        Name of the Excel worksheet. Ignored when the factor file is a CSV.
 
-        case _:
-            raise TypeError(
-                f"Expected a str, Path, or ApsimModel, "
-                f"got {type(base).__name__}"
-            )
+    base_simulation : int or str, default=0
+        Name or index of the simulation used as the template for the
+        factorial experiment.
 
+    experiment_name : str
+        Name assigned to the generated APSIM experiment.
 
-def _create_experiment_from_file(model, factor_file_name, name_column, sheet=None, base_simulation=0, experiment_name=NAME):
-    obj = _get_root(model, simulation_name=base_simulation)
+    Returns
+    -------
+    ApsimModel
+        The root APSIM simulations object containing the newly created
+        experiment
+    ==========================================================
+    """
+    obj = get_root_model(model, simulation_name=base_simulation)
     root, base_sim = obj["root"], obj["simulation"]
     exp = Models.Factorial.Experiment()
     exp.Name = experiment_name
@@ -62,13 +62,11 @@ def _create_experiment_from_file(model, factor_file_name, name_column, sheet=Non
             "or a newer version."
         ) from error
     FactorialFactorFromFile.set_NameColumn(name_column)
-    if Path(factor_file_name).suffix != '.csv':
+    if Path(experiment_from_file).suffix != '.csv':
         if sheet is None:
             raise ValueError(f"Expected sheet name to be specified got {sheet} instead")
         FactorialFactorFromFile.Sheet = sheet
-    dst = Path('factor.csv').resolve()
-    shutil.copy(factor_file_name, dst=dst)
-    FactorialFactorFromFile.FileName = str(dst)
+    FactorialFactorFromFile.FileName = str(Path(experiment_from_file).resolve())
     factor_holder_node.Children.Add(FactorialFactorFromFile)
 
     return root
@@ -94,7 +92,7 @@ class _ExperimentFromFile(ApsimModel):
             raise FileNotFoundError(
                 f"Factor file does not exist: {self.factor_file_name}"
             )
-        _create_experiment_from_file(self, factor_file_name=factor_file_name, name_column=name_column,
+        _create_experiment_from_file(self, experiment_from_file=factor_file_name, name_column=name_column,
                                      base_simulation=self.base_simulation, experiment_name=self.experiment_name)
 
 
@@ -109,7 +107,7 @@ def csv_generator(**kwargs, ):
 def test_factor_from_file(*, rue, population):
     case1, case2 = tuple(rue), tuple(population)
     """
-       Vary all population and keep radiation use efficiency
+       Vary any factor and keep other constant to test
        @return:
        """
     vaRs = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": [*case1],
@@ -117,7 +115,7 @@ def test_factor_from_file(*, rue, population):
     X = csv_generator(**vaRs, name_column="ID")
 
     X.to_csv('data.csv')
-    experiment = _create_experiment_from_file('Maize', factor_file_name='data.csv', name_column='FactorFromFile')
+    experiment = _create_experiment_from_file('Maize', experiment_from_file='data.csv', name_column='FactorFromFile')
     experiment.run()
     res = experiment.results
     final = res.merge(X, how='inner', on='FactorFromFile')

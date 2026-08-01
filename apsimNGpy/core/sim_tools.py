@@ -59,3 +59,42 @@ def serialize_root(root_dir='.', file_name=None, base_file=None):
         node = creat_root_in_memory()
         save_model_to_file(node, out=out_path)
         return out_path
+
+
+def _filter_out_simulation(model: ApsimModel):
+    children = list(model.Simulations.GetChildren())
+    for Child in children:
+        typ = Child.GetType()
+        if typ not in (CLR.Models.Storage.DataStore().GetType(), CLR.Models.Core.Folder().GetType()):
+            model.Simulations.RemoveChild(Child)
+
+
+def get_root_model(base, simulation_name):
+    'returns only models at the at root of Models.Core.Simulation like replacement folder, datastore '
+    match base:
+        case str() | Path():
+            model = ApsimModel(base)
+            sim = get_base_simulation(model, simulation_name)
+            _filter_out_simulation(model)
+            model.save()
+            return dict(root=model, simulation=sim)
+
+        case ApsimModel():
+            sim = get_base_simulation(base, simulation_name)
+            _filter_out_simulation(base)
+            base.save()
+            return dict(root=base, simulation=sim)
+
+        case _:
+            raise TypeError(
+                f"Expected a str, Path, or ApsimModel, "
+                f"got {type(base).__name__}"
+            )
+
+
+def create_factor_table( name_column='FactorFromFile', **parameters,):
+    """parameter_path: and values"""
+    from pandas import DataFrame
+    df = DataFrame(parameters)
+    df[name_column] = [str(i) for i in range(1, df.shape[0] + 1)]
+    return df

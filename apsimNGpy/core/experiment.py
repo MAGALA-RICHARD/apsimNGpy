@@ -916,7 +916,7 @@ class ExperimentManager(ApsimModel):
         invoke_csharp_gc()
 
 
-__all__ = ['ExperimentManager', '_ExperimentFromFile', "_create_experiment_from_file", 'create_factor_table']
+__all__ = ['ExperimentManager',  "create_experiment_from_file", 'create_factor_table']
 if __name__ == '__main__':
     with ExperimentManager("Maize", out_path='dtb.apsimx') as exp:
         exp.init_experiment(permutation=True)

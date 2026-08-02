@@ -37,11 +37,14 @@ _LAZY_IMPORTS = {
 
     # sensitivity analysis
     "run_sensitivity": ("apsimNGpy.sensitivity.sensitivity", "run_sensitivity"),
+    "evaluate_model_sensitivity": ("apsimNGpy.sensitivity.sens_file", "evaluate_model_sensitivity"),
     "ConfigProblem": ("apsimNGpy.sensitivity.sensitivity", "ConfigProblem"),
     "SensitivityManager": ("apsimNGpy.core.sensitivity_manager", "SensitivityManager"),
 
     # experiments
     "ExperimentManager": ("apsimNGpy.core.experiment", "ExperimentManager"),
+    "create_experiment_from_file": ("apsimNGpy.core.experiment", "create_experiment_from_file"),
+    "create_factor_table": ("apsimNGpy.core.experiment", "create_factor_table"),
 
     # CLR runtime
     "CLR": ("apsimNGpy.starter.starter", "CLR"),
@@ -146,7 +149,7 @@ if TYPE_CHECKING:
     from apsimNGpy.core.apsim import ApsimModel  # noqa: F401
     from apsimNGpy.core.mult_cores import MultiCoreManager  # noqa: F401
     from apsimNGpy.core.runner import run_apsim_by_path  # noqa: F401
-    from apsimNGpy.sensitivity.sensitivity import run_sensitivity, ConfigProblem  # noqa: F401
+    from apsimNGpy.sensitivity.sens_file import evaluate_model_sensitivity, ConfigProblem  # noqa: F401
     from apsimNGpy.core.experiment import ExperimentManager  # noqa: F401
     from apsimNGpy.core.sensitivity_manager import SensitivityManager  # noqa: F401
     from apsimNGpy.starter.starter import CLR  # noqa: F401

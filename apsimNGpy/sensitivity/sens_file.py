@@ -50,7 +50,7 @@ from core_utils.database_utils import dispose
 from apsimNGpy.config import apsim_version
 import json
 
-__all__ = ["ConfigProblem", "run_sensitivity"]
+__all__ = ["ConfigProblem", "evaluate_model_sensitivity"]
 
 _RESULT_TABLE = "__sensitivity_results__"
 _FACTOR_FILE_STEM = "__sensitivity_factors__"
@@ -602,7 +602,7 @@ class ConfigProblem:
             yield agg_func, XX, Y
 
 
-def run_sensitivity(
+def evaluate_model_sensitivity(
         configured_prob: ConfigProblem,
         *,
         method: str = "morris",
@@ -809,14 +809,14 @@ def run_sensitivity(
 
         )
 
-        >>> results = run_sensitivity(
+        >>> results = evaluate_model_sensitivity(
         ...     configured_prob,
         ...     method="morris",
         ... )
 
         Process the sample matrix in batches of 500 rows:
 
-        >>> results = run_sensitivity(
+        >>> results = evaluate_model_sensitivity(
         ...     configured_prob,
         ...     method="fast",
         ...     N=1000,
@@ -825,7 +825,7 @@ def run_sensitivity(
 
         Calculate annual Sobol indices without second-order interactions:
 
-        >>> results = run_sensitivity(
+        >>> results = evaluate_model_sensitivity(
         ...     configured_prob,
         ...     method="sobol",
         ...     N=256,
@@ -836,7 +836,7 @@ def run_sensitivity(
 
         Disable JSON metadata export:
 
-        >>> results = run_sensitivity(
+        >>> results = evaluate_model_sensitivity(
         ...     configured_prob,
         ...     json_filename=None,
         ... )
@@ -959,7 +959,7 @@ if __name__ == "__main__":
 
     )
 
-    se = run_sensitivity(
+    se = evaluate_model_sensitivity(
         problem,
         method="fast",
         N=1000,

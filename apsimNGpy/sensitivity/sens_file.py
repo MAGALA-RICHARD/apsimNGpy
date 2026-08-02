@@ -48,6 +48,7 @@ from apsimNGpy.sensitivity.salib_sample import generate_samples
 from apsimNGpy.settings import logger
 from core_utils.database_utils import dispose
 from apsimNGpy.config import apsim_version
+import json
 
 __all__ = ["ConfigProblem", "run_sensitivity"]
 
@@ -137,6 +138,73 @@ class Results:
         if self.simulation_count == 0:
             return 0.0
         return self.successful_simulations / self.simulation_count
+
+    def save_json(
+            self,
+            file_path: str | Path = 'sens_file.json',
+            *,
+            include_sample_matrix: bool = True,
+            indent: int = 4, ) -> Path:
+        """Save sensitivity-analysis metadata to a JSON file.
+
+        The ``original_data`` and ``sensitivity`` pandas DataFrames are not
+        included because they are better stored using tabular formats such as
+        CSV, Parquet, or Feather.
+
+        Parameters
+        ----------
+        file_path : str or pathlib.Path
+            Destination path for the JSON file.
+
+        include_sample_matrix : bool, default=True
+            Whether to include the NumPy sample matrix. Disable this option
+            when the matrix is too large for convenient JSON storage.
+
+        indent : int, default=4
+            Number of spaces used to indent the JSON output.
+
+        Returns
+        -------
+        pathlib.Path
+            Path to the created JSON file.
+        """
+        path = Path(file_path)
+
+        if path.suffix.lower() != ".json":
+            path = path.with_suffix(".json")
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        data = {
+            "method": self.method,
+            "parameter_names": list(self.parameter_names),
+            "output_names": list(self.output_names),
+            "simulation_count": int(self.simulation_count),
+            "successful_simulations": int(self.successful_simulations),
+            "failed_simulations": int(self.failed_simulations),
+            "success_rate": float(self.success_rate),
+            "chunk_size": self.chunk_size,
+            "elapsed_seconds": self.elapsed_seconds,
+            "apsim_version": self.apsim_version,
+            "model_path": str(self.model_path),
+            "created_at": self.created_at.isoformat(),
+            "sample_matrix_shape": list(self.sample_matrix.shape),
+            "sample_matrix_dtype": str(self.sample_matrix.dtype),
+        }
+
+        if include_sample_matrix:
+            data["sample_matrix"] = self.sample_matrix.tolist()
+
+        with path.open("w", encoding="utf-8") as file:
+            json.dump(
+                data,
+                file,
+                indent=indent,
+                ensure_ascii=False,
+                allow_nan=False,
+            )
+
+        return path
 
 
 def _as_list(value):
@@ -316,7 +384,7 @@ class ConfigProblem:
             sample_ids: np.ndarray,
             *,
             database_engine,
-            base_simulation: int| str= 0,
+            base_simulation: int | str = 0,
     ) -> pd.DataFrame:
         """Run one APSIM factor-file batch and append its results to SQLite."""
         factor_path = self.write_factor_file(
@@ -495,7 +563,7 @@ class ConfigProblem:
             chunk_size: int | None = None,
             grouping: str | Sequence[str] | None = None,
             tables: Sequence[str] | None = None,
-            base_simulation: str | int =0 ) -> Iterator[tuple[object, np.ndarray, np.ndarray]]:
+            base_simulation: str | int = 0) -> Iterator[tuple[object, np.ndarray, np.ndarray]]:
         """Evaluate a supplied SALib sample matrix with APSIM.
 
         ``n_cores``, ``threads``, ``engine``, and ``total_chunks`` are retained
@@ -544,8 +612,8 @@ def run_sensitivity(
         chunk_size: int | None = None,
         grouping: str | Sequence[str] | None = None,
         tables: Sequence[str] | None = None,
-        base_simulation: str| int =0
-         ) -> Results:
+        base_simulation: str | int = 0
+) -> Results:
     """Run APSIM and calculate Morris, FAST, or Sobol sensitivity indices."""
     start_time = perf_counter()
     method = method.lower()
@@ -639,9 +707,9 @@ def run_sensitivity(
                       model_path=problem.base_model, simulation_count=len(X),
                       output_names=tuple(problem.outputs),
                       parameter_names=tuple(problem.param_keys),
-                      apsim_version=apsim_version()
-
-                      )
+                      apsim_version=apsim_version())
+        with suppress(PermissionError):
+            res.save_json()
         return res
 
     finally:
@@ -681,5 +749,3 @@ if __name__ == "__main__":
             "print_to_console": False,
         },
     )
-
-

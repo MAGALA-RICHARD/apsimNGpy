@@ -929,11 +929,11 @@ def evaluate_model_sensitivity(
         end_time = perf_counter()
         sens = pd.concat(analyzed, ignore_index=True)
 
-        res = Results(original_data=problem.raw_results, method=method, sensitivity=sens,
-                      failed_simulations=len(problem.incomplete_jobs),
+        res = Results(original_data=configured_prob.raw_results, method=method, sensitivity=sens,
+                      failed_simulations=len(configured_prob.incomplete_jobs),
                       elapsed_seconds=end_time - start_time, chunk_size=chunk_size, sample_matrix=X,
-                      model_path=problem.base_model, simulation_count=len(X),
-                      output_names=tuple(problem.outputs),
+                      model_path=configured_prob.base_model, simulation_count=len(X),
+                      output_names=tuple(configured_prob.outputs),
                       parameter_names= tuple(configured_prob.names or configured_prob.param_keys),
                       apsim_version=apsim_version())
         if json_filename is not None:

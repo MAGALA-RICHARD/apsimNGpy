@@ -12,6 +12,21 @@ from apsimNGpy.core_utils.database_utils import drop_table, get_db_table_names
 from apsimNGpy.settings import logger
 
 
+def check_manager_script_path(base_model,
+                              param):
+    import re
+    from apsimNGpy import ApsimModel
+    self = ApsimModel(base_model)
+    with self:
+        if 'Script' in param:
+            matches = re.findall(r"\[(.*?)\]", param)
+            if matches:
+                _managers = set(self.inspect_model('Models.Manager', fullpath=False))
+                ITC = set(matches).intersection(_managers)
+                if not ITC:
+                    raise ValueError(f'{matches} is not found in {base_model}')
+
+
 def split_apsim_path_by_sep(p: str) -> tuple[str, str]:
     """
     Split APSIM path using the first valid selector separator.
@@ -225,9 +240,9 @@ def clear_db(
 
 
 def generate_default_db_path(tag=""):
-    base = Path.cwd()/'.scratch'
+    base = Path.cwd() / '.scratch'
     base.mkdir(parents=True, exist_ok=True)
-    ans = base/f"{tag}{uuid.uuid1()}_.db"
+    ans = base / f"{tag}{uuid.uuid1()}_.db"
     return str(ans)
 
 

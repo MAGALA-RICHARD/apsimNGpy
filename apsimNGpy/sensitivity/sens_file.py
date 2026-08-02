@@ -1,3 +1,28 @@
+"""
+Sensitivity analysis utilities for APSIM Next Generation.
+
+This module provides functionality for constructing and running sensitivity
+analysis experiments using APSIM `ExperimentFromFile` model.
+
+The user specifies the parameter path and their bounds as dicts
+
+Under the hood, the sensitivity-analysis workflow generates the required
+experiment definition by calling `create_experiment_file` from the
+`experiment` module. The generated experiment file is then attached to the
+APSIM model through `ExperimentFromFile` before the simulations are executed.
+
+## Compatibility
+
+This implementation relies on APIs introduced in recent versions of APSIM Next
+Generation. Older APSIM releases that do not support `ExperimentFromFile` or
+the associated experiment-file workflow are not supported.
+
+Users should therefore ensure that they are running a recent APSIM Next
+Generation release before using the functionality provided by this module.
+
+It is highly efficient in both speed and memory usage because the sample matrix can be processed in smaller batches until all samples have been modeled.
+"""
+
 from __future__ import annotations
 
 import gc
@@ -34,11 +59,11 @@ def _as_list(value):
 
 
 def _build_problem(
-    parameters: dict[str, Sequence[float]],
-    *,
-    names: Iterable[str] | None = None,
-    groups: Sequence[str | int] | None = None,
-    distributions: Sequence[str] | None = None,
+        parameters: dict[str, Sequence[float]],
+        *,
+        names: Iterable[str] | None = None,
+        groups: Sequence[str | int] | None = None,
+        distributions: Sequence[str] | None = None,
 ) -> ProblemSpec:
     """Create and validate a SALib ``ProblemSpec``."""
     if not parameters:
@@ -67,17 +92,16 @@ def _build_problem(
 
 
 def _iter_batches(
-    matrix: np.ndarray,
-    sample_ids: np.ndarray,
-    batch_size: int | None,
+        matrix: np.ndarray,
+        sample_ids: np.ndarray,
+        batch_size: int | None = 1000,
 ) -> Iterator[tuple[np.ndarray, np.ndarray]]:
     """Yield sample batches while preserving their original sample IDs."""
+    if batch_size and batch_size < 40:
+        raise ValueError("batch_size must be at least 60.")
     if batch_size is None or batch_size >= len(matrix):
         yield matrix, sample_ids
         return
-
-    if batch_size < 1:
-        raise ValueError("batch_size must be at least 1.")
 
     for start in range(0, len(matrix), batch_size):
         stop = start + batch_size
@@ -91,13 +115,13 @@ class ConfigProblem:
     ----------
     base_model
         APSIM model path, model identifier, or another value accepted by
-        :func:`create_experiment_from_file`.
+        :func:`create_experiment_from_file` e.g., ApsimModel class instance
     params
         Mapping of APSIM ``FactorFromFile`` property paths to SALib bounds.
         Each bound is normally a two-item sequence ``(lower, upper)``.
     outputs
         APSIM output columns to analyze.
-    names
+    names: list, optional
         Optional SALib parameter names. When omitted, the APSIM property paths
         are used as the names.
     dist
@@ -106,18 +130,32 @@ class ConfigProblem:
         Optional SALib parameter groups.
     index_id
         Name of the factor-file column that uniquely identifies every sample.
+    Example
+    -----------------
+    ..code-block:: python
+
+         problem = ConfigProblem(
+        base_model="Maize",
+        params={
+            "[Fertilise at sowing].Script.Amount": (0.0, 300),
+            '[Maize].Leaf.Photosynthesis.RUE.FixedValue': (1, 3)
+
+        },
+        outputs=["Yield", 'Maize.AboveGround.Wt'],
+
+    )
     """
 
     def __init__(
-        self,
-        base_model: str | Path,
-        params: dict[str, Sequence[float]],
-        outputs: str | Sequence[str],
-        *,
-        names: Iterable[str] | None = None,
-        dist: Sequence[str] | None = None,
-        groups: Sequence[str | int] | None = None,
-        index_id: str = "FactorFromFile",
+            self,
+            base_model: str | Path,
+            params: dict[str, Sequence[float]],
+            outputs: str | Sequence[str],
+            *,
+            names: Iterable[str] | None = None,
+            dist: Sequence[str] | None = None,
+            groups: Sequence[str | int] | None = None,
+            index_id: str = "FactorFromFile",
     ) -> None:
         self.base_model = base_model
         self.params = dict(params)
@@ -125,6 +163,7 @@ class ConfigProblem:
         self.outputs = _as_list(outputs)
         self.index_id = index_id
         self.num_vars = len(self.param_keys)
+        self.names = names
 
         if not self.outputs:
             raise ValueError("At least one APSIM output must be specified.")
@@ -143,10 +182,10 @@ class ConfigProblem:
         self.incomplete_jobs: list[int] = []
 
     def create_factor_table(
-        self,
-        X: np.ndarray,
-        *,
-        sample_ids: Sequence[int] | None = None,
+            self,
+            X: np.ndarray,
+            *,
+            sample_ids: Sequence[int] | None = None,
     ) -> pd.DataFrame:
         """Create an APSIM ``FactorFromFile`` table from a sample matrix."""
         matrix = np.asarray(X, dtype=float)
@@ -171,11 +210,11 @@ class ConfigProblem:
         return factor_table
 
     def write_factor_file(
-        self,
-        X: np.ndarray,
-        file_name: str | Path,
-        *,
-        sample_ids: Sequence[int] | None = None,
+            self,
+            X: np.ndarray,
+            file_name: str | Path,
+            *,
+            sample_ids: Sequence[int] | None = None,
     ) -> Path:
         """Write a sample matrix as an APSIM-compatible CSV factor file."""
         path = Path(file_name).with_suffix(".csv").resolve()
@@ -184,11 +223,11 @@ class ConfigProblem:
         return path
 
     def _run_factor_batch(
-        self,
-        X: np.ndarray,
-        sample_ids: np.ndarray,
-        *,
-        database_engine,
+            self,
+            X: np.ndarray,
+            sample_ids: np.ndarray,
+            *,
+            database_engine,
     ) -> pd.DataFrame:
         """Run one APSIM factor-file batch and append its results to SQLite."""
         factor_path = self.write_factor_file(
@@ -226,12 +265,12 @@ class ConfigProblem:
                 factor_path.unlink()
 
     def _collect_results(
-        self,
-        X: np.ndarray,
-        *,
-        batch_size: int | None,
-        retry_rate: int,
-        tables: Sequence[str] | None,
+            self,
+            X: np.ndarray,
+            *,
+            batch_size: int | None,
+            retry_rate: int,
+            tables: Sequence[str] | None,
     ) -> pd.DataFrame:
         """Run all samples, retry missing samples, and return merged results."""
         db_path = Path(generate_default_db_path("__sens__")).resolve()
@@ -297,9 +336,9 @@ class ConfigProblem:
                 db_path.unlink()
 
     def _missing_ids(
-        self,
-        results: pd.DataFrame,
-        expected_ids: Sequence[int],
+            self,
+            results: pd.DataFrame,
+            expected_ids: Sequence[int],
     ) -> list[int]:
         """Return expected sample IDs absent from APSIM results."""
         if results.empty or self.index_id not in results.columns:
@@ -313,11 +352,11 @@ class ConfigProblem:
         ]
 
     def _prepare_group(
-        self,
-        data: pd.DataFrame,
-        *,
-        X: np.ndarray,
-        aggregation: str | None,
+            self,
+            data: pd.DataFrame,
+            *,
+            X: np.ndarray,
+            aggregation: str | None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Aggregate, order, and align one result group with the SALib matrix."""
         required = [self.index_id, *self.outputs]
@@ -356,18 +395,17 @@ class ConfigProblem:
         return X.copy(), summarized[self.outputs].to_numpy(dtype=float)
 
     def evaluate(
-        self,
-        X: np.ndarray,
-        *,
-        agg_func: str | None = "sum",
-        retry_rate: int = 2,
-        chunk_size: int | None = None,
-        grouping: str | Sequence[str] | None = None,
-        tables: Sequence[str] | None = None,
-        n_cores: int = -2,
-        threads: bool = False,
-        engine: str = "python",
-        total_chunks: int = 10,
+            self,
+            X: np.ndarray,
+            *,
+            agg_func: str | None = "sum",
+            retry_rate: int = 2,
+            chunk_size: int | None = None,
+            grouping: str | Sequence[str] | None = None,
+            tables: Sequence[str] | None = None,
+            n_cores: int = -2,
+
+
     ) -> Iterator[tuple[object, np.ndarray, np.ndarray]]:
         """Evaluate a supplied SALib sample matrix with APSIM.
 
@@ -375,7 +413,6 @@ class ConfigProblem:
         for API compatibility. The FactorFromFile implementation runs each
         generated experiment through ``ApsimModel.run``.
         """
-        del n_cores, threads, engine, total_chunks
 
         matrix = np.asarray(X, dtype=float)
         self.X = matrix
@@ -405,22 +442,19 @@ class ConfigProblem:
 
 
 def run_sensitivity(
-    configured_prob: ConfigProblem,
-    *,
-    method: str = "morris",
-    N: int | None = None,
-    seed: int | None = 48,
-    agg_func: str | None = "sum",
-    n_cores: int = -2,
-    retry_rate: int = 3,
-    threads: bool = False,
-    sample_options: dict | None = None,
-    analyze_options: dict | None = None,
-    engine: str = "python",
-    chunk_size: int | None = None,
-    grouping: str | Sequence[str] | None = None,
-    tables: Sequence[str] | None = None,
-    total_chunks: int = 10,
+        configured_prob: ConfigProblem,
+        *,
+        method: str = "morris",
+        N: int | None = None,
+        seed: int | None = 48,
+        agg_func: str | None = "sum",
+        n_cores: int = -2,
+        retry_rate: int = 3,
+        sample_options: dict | None = None,
+        analyze_options: dict | None = None,
+        chunk_size: int | None = None,
+        grouping: str | Sequence[str] | None = None,
+        tables: Sequence[str] | None = None,
 ) -> pd.DataFrame:
     """Run APSIM and calculate Morris, FAST, or Sobol sensitivity indices."""
     method = method.lower()
@@ -470,9 +504,7 @@ def run_sensitivity(
         grouping=grouping,
         tables=tables,
         n_cores=n_cores,
-        threads=threads,
-        engine=engine,
-        total_chunks=total_chunks,
+
     )
 
     analyzed: list[pd.DataFrame] = []
@@ -492,7 +524,7 @@ def run_sensitivity(
                     **local_options,
                 )
                 result = format_salib_results(indices, method, output_name)
-                result['X'] = configured_prob.param_keys
+                result['X'] = configured_prob.names or configured_prob.param_keys
 
                 if grouping_columns:
                     keys = (
@@ -519,20 +551,21 @@ if __name__ == "__main__":
     problem = ConfigProblem(
         base_model="Maize",
         params={
-            "[Sow using a fixed date].Script.Population": (2, 12),
-            "[Fertilise at sowing].Script.Amount": (0.0, 180.0),
-            '[Maize].Leaf.Photosynthesis.RUE.FixedValue': (1,3)
+            "[Fertilise at sowing].Script.Amount": (0.0, 300),
+            '[Maize].Leaf.Photosynthesis.RUE.FixedValue': (1, 2.5)
 
         },
         outputs=["Yield", 'Maize.AboveGround.Wt'],
+        names=['Nitrogen', 'RUE',]
+
     )
 
     sensitivity = run_sensitivity(
         problem,
-        method="sobol",
+        method="fast",
         N=120,
         agg_func="mean",
-        chunk_size=100,
+        chunk_size=None,
         retry_rate=2,
         tables=["Report"],
         sample_options={
@@ -546,3 +579,6 @@ if __name__ == "__main__":
     )
 
     print(sensitivity)
+
+
+

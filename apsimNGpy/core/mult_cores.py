@@ -945,31 +945,31 @@ class MultiCoreManager(PlotManager):
         if self.cleared_db:
             self.clear_db()  # each simulation is fresh,
 
-        # worker = partial(single_runner, agg_func=self.agg_func, index=index, call_back=kwargs.get('call_back'),
-        #                  ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate, table_name=table_name,
-        #                  db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
+        worker = partial(single_runner, agg_func=self.agg_func, index=index, call_back=kwargs.get('call_back'),
+                         ignore_runtime_errors=ignore_runtime_errors, retry_rate=retry_rate, table_name=table_name,
+                         db_conn=self.db_path, table_prefix=self.table_prefix, subset=subset)
         try:
             from apsimNGpy.parallel.process import custom_parallel_chunks, parallelize_chunks, batch
             from apsimNGpy.core.tiny_core import save_batch_simulations
             from itertools import batched
             batches = batched(jobs, batch_size)
-            counter =1
-            while True:
-                logger.info('Working on batch {0}'.format(counter))
-                b = next(batches, None)
-                if b is None:
-                    break
-                wks = 20 if n_cores < 16 else n_cores
-                one_batch = b
-                save_batch_simulations(simulation_descriptions=one_batch,db_path=str(self.db_path),table_prefix=self.table_prefix,
-                                       max_worker=wks, show_progress=progressbar, reports=table_name)
-                counter += 1
-            # for _ in parallelize_chunks(func=worker, iterable=batches, ncores=n_cores, use_threads=threads,
-            #                             progress_message=f'APSIM running', unit='chunk',
-            #                             void=True, n_chunks=n_chunks,
-            #                             progressbar=progressbar,
-            #                            ):
-            #     pass
+            # counter =1
+            # while True:
+            #     logger.info('Working on batch {0}'.format(counter))
+            #     b = next(batches, None)
+            #     if b is None:
+            #         break
+            #     wks = 20 if n_cores < 16 else n_cores
+            #     one_batch = b
+            #     save_batch_simulations(simulation_descriptions=one_batch,db_path=str(self.db_path),table_prefix=self.table_prefix,
+            #                            max_worker=wks, show_progress=progressbar, reports=table_name)
+            #     counter += 1
+            for _ in parallelize_chunks(func=worker, iterable=batches, ncores=n_cores, use_threads=threads,
+                                        progress_message=f'APSIM running', unit='chunk',
+                                        void=True, n_chunks=n_chunks,
+                                        progressbar=progressbar,
+                                       ):
+                pass
 
         finally:
             gc.collect()

@@ -127,6 +127,9 @@ class Results:
 
         created_at : datetime
             Date and time when this result object was created.
+        Methods
+        ------------------
+        save_json. stores the sensitivity information in a json file, requires file path defaults to sens_file.json
     """
 
     @property
@@ -612,9 +615,216 @@ def run_sensitivity(
         chunk_size: int | None = None,
         grouping: str | Sequence[str] | None = None,
         tables: Sequence[str] | None = None,
-        base_simulation: str | int = 0
+        base_simulation: str | int = 0,
+        json_filename: str | None = 'sens_file_metadata.json'
 ) -> Results:
-    """Run APSIM and calculate Morris, FAST, or Sobol sensitivity indices."""
+    """Run APSIM simulations and calculate global sensitivity indices.
+
+        This function generates a parameter sample matrix, evaluates the samples
+        with APSIM, and calculates sensitivity indices for each configured model
+        output. Morris, FAST, and Sobol sensitivity-analysis methods are
+        supported.
+
+        The sample matrix may be evaluated in smaller chunks to reduce memory
+        consumption and avoid constructing one large APSIM experiment containing
+        every sample. Each chunk is processed sequentially until the complete
+        sample matrix has been evaluated.
+
+        Sensitivity indices may also be calculated separately for groups in the
+        APSIM output, such as simulation year, soil, treatment, or management
+        system.
+
+        Parameters
+        ----------
+        configured_prob : ConfigProblem
+            Configured sensitivity-analysis problem containing the APSIM model,
+            parameter definitions, parameter bounds, output variables, and model
+            evaluation settings.
+
+        method : {"morris", "fast", "sobol"}, default="morris"
+            Global sensitivity-analysis method to use. The value is converted to
+            lowercase before validation.
+
+            Supported methods are:
+
+            - ``"morris"``: Morris elementary-effects method.
+            - ``"fast"``: Fourier amplitude sensitivity test.
+            - ``"sobol"``: Sobol variance-based sensitivity analysis.
+
+        N : int or None, default=None
+            Base sample size supplied to the selected SALib sampler. The total
+            number of generated samples may be larger than ``N`` and depends on
+            the selected method, number of parameters, and sampling options.
+
+            When ``None``, a method-specific sample size is obtained from
+            ``default_n``. If a default cannot be determined, ``N=100`` is used.
+
+        seed : int or None, default=48
+            Random seed used when generating the parameter sample matrix. This
+            value is added to ``sample_options`` only when ``sample_options`` does
+            not already define ``"seed"``.
+
+            Set to ``None`` to allow non-deterministic sampling, provided that the
+            selected SALib sampler supports it.
+
+        agg_func : str or None, default="sum"
+            Aggregation operation applied to APSIM output values before
+            sensitivity analysis. The value is passed to
+            ``configured_prob.evaluate``.
+
+            Common examples include ``"sum"``, ``"mean"``, ``"min"``, and
+            ``"max"``. Set to ``None`` when aggregation should be handled by the
+            evaluation workflow without a named aggregation function.
+
+        retry_rate : int, default=2
+            Maximum number of retry attempts for incomplete or failed APSIM
+            simulation jobs during model evaluation.
+
+        sample_options : dict or None, default=None
+            Additional keyword arguments passed to ``generate_samples`` and,
+            consequently, to the selected SALib sampling method.
+
+            For Sobol analysis, this dictionary may contain
+            ``"calc_second_order"``. Its value must match the corresponding value
+            in ``analyze_options``.
+
+            Examples include sampling-specific settings such as:
+
+            - ``num_levels`` for Morris sampling;
+            - ``optimal_trajectories`` for Morris sampling; and
+            - ``calc_second_order`` for Sobol sampling.
+
+        analyze_options : dict or None, default=None
+            Additional keyword arguments passed to ``evaluate_sensitivity`` and
+            the selected SALib analysis method.
+
+            Unless already provided, the following defaults are added:
+
+            - ``conf_level=0.95``;
+            - ``num_resamples=1000``; and
+            - ``print_to_console=True``.
+
+            For Sobol analysis, ``calc_second_order`` must agree with the value
+            used during sampling.
+
+        chunk_size : int or None, default=None
+            Maximum number of sample-matrix rows evaluated in one APSIM batch.
+            Smaller chunks reduce peak memory consumption and the size of each
+            generated experiment file.
+
+            When ``None``, chunking behavior is determined by
+            ``configured_prob.evaluate``.
+
+        grouping : str, sequence of str, or None, default=None
+            One or more APSIM result columns used to divide model outputs into
+            independent sensitivity-analysis groups.
+
+            For example, ``grouping="Year"`` calculates separate sensitivity
+            indices for each year. A sequence such as ``("Year", "Soil")``
+            calculates indices for each unique year-and-soil combination.
+
+            Grouping columns are appended to the resulting sensitivity table.
+
+        tables : sequence of str or None, default=None
+            Names of APSIM output tables to retrieve during model evaluation.
+            When ``None``, the tables configured by ``configured_prob`` are used.
+
+        base_simulation : str or int, default=0
+            Name or zero-based index of the APSIM simulation used as the template
+            when generating experiment simulations from the sample matrix.
+
+        json_filename : str or None, default="sens_file_metadata.json"
+            Destination file for the sensitivity-analysis metadata.
+
+            The JSON file contains serializable metadata such as the method,
+            sample-matrix information, parameter names, output names, simulation
+            counts, execution time, APSIM version, and model path. Pandas
+            DataFrames are excluded.
+
+            Set to ``None`` to disable JSON metadata export.
+
+        Returns
+        -------
+        Results
+            Sensitivity-analysis result containing:
+
+            - the raw APSIM output;
+            - the calculated sensitivity indices;
+            - the generated sample matrix;
+            - parameter and output names;
+            - execution statistics;
+            - APSIM and model metadata; and
+            - the selected sensitivity-analysis method.
+
+        Raises
+        ------
+        NotImplementedError
+            If ``method`` is not ``"morris"``, ``"fast"``, or ``"sobol"``.
+
+        ValueError
+            If Sobol sampling and analysis use different values for
+            ``calc_second_order``.
+
+        RuntimeError
+            If APSIM evaluation produces no datasets that can be analyzed.
+
+        Notes
+        -----
+        The workflow consists of the following steps:
+
+        1. Validate the requested sensitivity-analysis method.
+        2. configure sampling and analysis options.
+        3. Generate the parameter sample matrix.
+        4. Evaluate the sample matrix with APSIM, optionally in chunks.
+        5. Calculate sensitivity indices for each output and grouping level.
+        6. Combine the method-specific indices into one DataFrame.
+        7. Package the outputs and metadata in a ``Results`` object.
+        8. Optionally save the serializable metadata to JSON.
+
+        For Sobol analysis, the same ``calc_second_order`` setting must be used
+        during both sampling and analysis. Using inconsistent settings changes
+        the expected sample structure and produces invalid sensitivity results.
+
+        Memory is explicitly reclaimed after the analysis through a ``finally``
+        block, regardless of whether the workflow succeeds or raises an
+        exception.
+
+        Examples
+        --------
+        Run a Morris analysis using the automatically selected sample size:
+
+        >>> results = run_sensitivity(
+        ...     configured_prob,
+        ...     method="morris",
+        ... )
+
+        Process the sample matrix in batches of 500 rows:
+
+        >>> results = run_sensitivity(
+        ...     configured_prob,
+        ...     method="fast",
+        ...     N=1000,
+        ...     chunk_size=500,
+        ... )
+
+        Calculate annual Sobol indices without second-order interactions:
+
+        >>> results = run_sensitivity(
+        ...     configured_prob,
+        ...     method="sobol",
+        ...     N=256,
+        ...     grouping="Year",
+        ...     sample_options={"calc_second_order": False},
+        ...     analyze_options={"calc_second_order": False},
+        ... )
+
+        Disable JSON metadata export:
+
+        >>> results = run_sensitivity(
+        ...     configured_prob,
+        ...     json_filename=None,
+        ... )
+        """
     start_time = perf_counter()
     method = method.lower()
     if method not in {"morris", "fast", "sobol"}:
@@ -706,10 +916,12 @@ def run_sensitivity(
                       elapsed_seconds=end_time - start_time, chunk_size=chunk_size, sample_matrix=X,
                       model_path=problem.base_model, simulation_count=len(X),
                       output_names=tuple(problem.outputs),
-                      parameter_names=tuple(problem.param_keys),
+                      parameter_names= tuple(configured_prob.names or configured_prob.param_keys),
                       apsim_version=apsim_version())
-        with suppress(PermissionError):
-            res.save_json()
+        if json_filename is not None:
+            with suppress(PermissionError):
+                jp = str(Path(json_filename).with_suffix('.json').resolve())
+                res.save_json(file_path=jp)
         return res
 
     finally:
@@ -734,7 +946,7 @@ if __name__ == "__main__":
     se = run_sensitivity(
         problem,
         method="fast",
-        N=500,
+        N=1000,
         agg_func="sum",
         chunk_size=None,
         retry_rate=2,

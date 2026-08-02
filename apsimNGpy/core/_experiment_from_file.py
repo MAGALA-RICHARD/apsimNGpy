@@ -3,13 +3,15 @@ from pathlib import Path
 import numpy as np
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.starter.starter import CLR
+
 Models = CLR.Models
-from apsimNGpy.core.sim_tools import  get_root_model, create_factor_table
+from apsimNGpy.core.sim_tools import get_root_model, create_factor_table
 
 NAME = "ExperimentFromFile"
 
 
-def _create_experiment_from_file(model, experiment_from_file, name_column, sheet=None, base_simulation=0, experiment_name=NAME):
+def _create_experiment_from_file(model, experiment_from_file, name_column, sheet=None, base_simulation=0,
+                                 experiment_name=NAME):
     """
     Create an APSIM experiment from an existing factor spreadsheet.
 
@@ -139,3 +141,14 @@ if __name__ == '__main__':
     test_factor_from_file(rue=(1, 2), population=(5, 5))
 
     test_factor_from_file(rue=(2, 2), population=(3, 6))
+
+
+    def clean(suffix):
+        from pathlib import Path
+        from contextlib import suppress
+        p = Path(r'D:\package\apsimNGpy2\apsimNGpy')
+        for i in p.rglob(f'*{suffix}'):
+            if i.suffix == suffix:
+                print('removing {}'.format(i))
+                with suppress(PermissionError):
+                    i.unlink(missing_ok=True)

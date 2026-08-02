@@ -46,7 +46,7 @@ from apsimNGpy.sensitivity.fstr import format_salib_results
 from apsimNGpy.sensitivity.helpers import default_n, generate_default_db_path
 from apsimNGpy.sensitivity.salib_sample import generate_samples
 from apsimNGpy.settings import logger
-from core_utils.database_utils import dispose
+from apsimNGpy.core_utils.database_utils import dispose
 from apsimNGpy.config import apsim_version
 import json
 

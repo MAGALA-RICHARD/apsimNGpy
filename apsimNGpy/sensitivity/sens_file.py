@@ -648,7 +648,7 @@ def run_sensitivity(
             Supported methods are:
 
             - ``"morris"``: Morris elementary-effects method.
-            - ``"fast"``: Fourier amplitude sensitivity test.
+            - ``"fast"``: Extended Fourier amplitude sensitivity test.
             - ``"sobol"``: Sobol variance-based sensitivity analysis.
 
         N : int or None, default=None

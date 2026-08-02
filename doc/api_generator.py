@@ -309,7 +309,7 @@ def main(apsim_bin_path):
         from apsimNGpy.core_utils.deco import add_outline
 
         import shutil, os
-        from apsimNGpy.core import  apsim, mult_cores, experiment, runner
+        from apsimNGpy.core import apsim, mult_cores, experiment, runner
         from apsimNGpy import config
         from starter import starter
         # from apsimNGpy.optimizer import moo, single
@@ -321,15 +321,19 @@ def main(apsim_bin_path):
         from apsimNGpy.optimizer.problems import smp, back_end
         from apsimNGpy.core import sensitivity_manager
         from apsimNGpy.sensitivity import sensitivity
+        from apsimNGpy.sensitivity import sens_file
         import apsimNGpy
-
 
         # ________________________________________________________________________________
         # add outline!!
         # ----------------------------------------------------------------------------------
         add_outline(sensitivity.ConfigProblem, include_inherited=True,
                     base_path='apsimNGpy.sensitivity.sensitivity.ConfigProblem')
-        add_outline(senstivitymanager.SensitivityManager, include_inherited=True,
+        add_outline(sens_file.ConfigProblem, include_inherited=True,
+                    base_path='apsimNGpy.sensitivity.sens_file.ConfigProblem')
+        add_outline(sens_file.Results, include_inherited=True,
+                    base_path='apsimNGpy.sensitivity.sens_file.Results')
+        add_outline(sensitivity_manager.SensitivityManager, include_inherited=True,
                     base_path='apsimNGpy.core.senstivitymanager.SensitivityManager')
         add_outline(single_mixed.MixedVariableOptimizer, include_inherited=True,
                     base_path='apsimNGpy.optimizer.minimize.single_mixed.MixedVariableOptimizer')
@@ -344,14 +348,15 @@ def main(apsim_bin_path):
         #             base_path='apsimNGpy.optimizer.single.MixedVariableProblem')
         add_outline(mult_cores.MultiCoreManager, include_inherited=True,
                     )
-        modules = tuple({sensitivity, process, apsim, mult_cores, experiment, smp, single_mixed, senstivitymanager, evaluator,
-                   exceptions, database_utils, config, runner, back_end, apsimNGpy})
+        modules = tuple(
+            {sensitivity, process, apsim, mult_cores, experiment, smp, single_mixed, sensitivity_manager, evaluator, sens_file,
+             exceptions, database_utils, config, runner, back_end, apsimNGpy})
 
         OUT = Path("api.rst").resolve()
         doc_folder = Path(__file__).parent.parent / 'doc'
         OUT.parent.mkdir(parents=True, exist_ok=True)
         docs(modules, output_file=OUT, skip_undocumented=True, main_package="apsimNGpy")
-        #shutil.copy2(OUT, doc_folder / 'api.rst')
+        # shutil.copy2(OUT, doc_folder / 'api.rst')
         rsts = list(Path.cwd().rglob("*pi.rst"))
         if SENDTO2.exists():
             for rst in rsts:

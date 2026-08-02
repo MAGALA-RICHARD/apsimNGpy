@@ -72,7 +72,9 @@ class Results:
     elapsed_seconds: float | None = None
     apsim_version: str | None = None
     model_path: str | None = None
-    created_at: datetime = field(default_factory=datetime.now)
+    created_at: str = field(
+        default_factory=lambda: datetime.now().isoformat(timespec="seconds")
+    )
     """Store the inputs, outputs, and metadata from a sensitivity analysis.
 
         Attributes
@@ -190,7 +192,7 @@ class Results:
             "elapsed_seconds": self.elapsed_seconds,
             "apsim_version": self.apsim_version,
             "model_path": str(self.model_path),
-            "created_at": self.created_at.isoformat(),
+            "created_at": self.created_at.isoformat() if hasattr(self.created_at, "isoformat") else self.created_at,
             "sample_matrix_shape": list(self.sample_matrix.shape),
             "sample_matrix_dtype": str(self.sample_matrix.dtype),
         }
@@ -945,7 +947,7 @@ def evaluate_model_sensitivity(
 
 
 if __name__ == "__main__":
-    # Example: assess management sensitivity rather than the maize RUE example
+    # Example: assess management sensitivity and a cultivar coefficient parameter like RUE example
     # used in the package documentation.
     problem = ConfigProblem(
         base_model="Maize",
@@ -962,7 +964,7 @@ if __name__ == "__main__":
     se = evaluate_model_sensitivity(
         problem,
         method="fast",
-        N=1000,
+        N=200,
         agg_func="sum",
         chunk_size=None,
         retry_rate=2,

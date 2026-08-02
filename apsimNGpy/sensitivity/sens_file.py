@@ -21,20 +21,23 @@ Users should therefore ensure that they are running a recent APSIM Next
 Generation release before using the functionality provided by this module.
 
 It is highly efficient in both speed and memory usage because the sample matrix can be processed in smaller batches until all samples have been modeled.
+
+We finally got the answer to the computation problem, users areencouraged to use this class
 """
 
 from __future__ import annotations
 
 import gc
 from contextlib import suppress
+from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Iterable, Iterator, Sequence
-
 import numpy as np
 import pandas as pd
 from SALib.util.problem import ProblemSpec
 from sqlalchemy import create_engine
-
 from apsimNGpy import is_scalar
 from apsimNGpy.core.experiment import create_experiment_from_file
 from apsimNGpy.core_utils.database_utils import read_db_table
@@ -44,11 +47,96 @@ from apsimNGpy.sensitivity.helpers import default_n, generate_default_db_path
 from apsimNGpy.sensitivity.salib_sample import generate_samples
 from apsimNGpy.settings import logger
 from core_utils.database_utils import dispose
+from apsimNGpy.config import apsim_version
 
 __all__ = ["ConfigProblem", "run_sensitivity"]
 
 _RESULT_TABLE = "__sensitivity_results__"
 _FACTOR_FILE_STEM = "__sensitivity_factors__"
+
+
+@dataclass(slots=True)
+class Results:
+    """Container for sensitivity-analysis inputs, outputs, and metadata."""
+
+    original_data: pd.DataFrame
+    sensitivity: pd.DataFrame
+    method: str
+    sample_matrix: np.array
+    parameter_names: tuple[str, ...] = ()
+    output_names: tuple[str, ...] = ()
+    simulation_count: int = 0
+    failed_simulations: int = 0
+    chunk_size: int | None = None
+    elapsed_seconds: float | None = None
+    apsim_version: str | None = None
+    model_path: str | None = None
+    created_at: datetime = field(default_factory=datetime.now)
+    """Store the inputs, outputs, and metadata from a sensitivity analysis.
+
+        Attributes
+        ----------
+        original_data : pandas.DataFrame
+            Raw APSIM simulation results generated from the sample matrix before
+            calculating the sensitivity indices.
+
+        sensitivity : pandas.DataFrame
+            Calculated sensitivity indices for the selected method. Depending on
+            the method, this may contain first-order, total-order, interaction,
+            confidence-interval, or other method-specific sensitivity metrics.
+
+        method : str
+            Name of the sensitivity-analysis method used, such as ``"Morris"``,
+            ``"Sobol"``, ``"FAST"``, or ``"Morris"``.
+
+        sample_matrix : numpy.ndarray
+            Parameter sample matrix used to generate the APSIM experiments. Rows
+            represent model evaluations, while columns represent model parameters.
+
+        parameter_names : tuple[str, ...]
+            Names of the parameters represented by the columns of
+            ``sample_matrix``. Their order must match the sample-matrix columns.
+
+        output_names : tuple[str, ...]
+            Names of the APSIM response variables for which sensitivity indices
+            were calculated, such as grain yield, biomass, or nitrogen loss.
+
+        simulation_count : int
+            Total number of APSIM simulations attempted during the analysis.
+
+        failed_simulations : int
+            Number of simulations that failed, returned invalid results, or could
+            not be included in the sensitivity analysis.
+
+        chunk_size : int or None
+            Number of sample-matrix rows processed in each batch. ``None`` means
+            that chunking information was not recorded or that all samples were
+            processed together.
+
+        elapsed_seconds : float or None
+            Total execution time, in seconds, required to run the simulations and
+            calculate the sensitivity indices. ``None`` means that execution time
+            was not recorded.
+
+        apsim_version : str or None
+            Version of APSIM Next Generation used to run the experiments.
+
+        model_path : str or None
+            Path to the APSIM model file used in the sensitivity analysis.
+
+        created_at : datetime
+            Date and time when this result object was created.
+    """
+
+    @property
+    def successful_simulations(self) -> int:
+        return self.simulation_count - self.failed_simulations
+
+    @property
+    def success_rate(self) -> float:
+        if self.simulation_count == 0:
+            return 0.0
+        return self.successful_simulations / self.simulation_count
 
 
 def _as_list(value):
@@ -403,8 +491,6 @@ class ConfigProblem:
             chunk_size: int | None = None,
             grouping: str | Sequence[str] | None = None,
             tables: Sequence[str] | None = None,
-            n_cores: int = -2,
-
 
     ) -> Iterator[tuple[object, np.ndarray, np.ndarray]]:
         """Evaluate a supplied SALib sample matrix with APSIM.
@@ -455,8 +541,9 @@ def run_sensitivity(
         chunk_size: int | None = None,
         grouping: str | Sequence[str] | None = None,
         tables: Sequence[str] | None = None,
-) -> pd.DataFrame:
+) -> Results:
     """Run APSIM and calculate Morris, FAST, or Sobol sensitivity indices."""
+    start_time = perf_counter()
     method = method.lower()
     if method not in {"morris", "fast", "sobol"}:
         raise NotImplementedError(
@@ -503,7 +590,6 @@ def run_sensitivity(
         chunk_size=chunk_size,
         grouping=grouping,
         tables=tables,
-        n_cores=n_cores,
 
     )
 
@@ -539,8 +625,20 @@ def run_sensitivity(
 
         if not analyzed:
             raise RuntimeError("Sensitivity analysis produced no results.")
+        end_time = perf_counter()
+        sens = pd.concat(analyzed, ignore_index=True)
 
-        return pd.concat(analyzed, ignore_index=True)
+        res = Results(original_data=problem.raw_results, method=method, sensitivity=sens,
+                      failed_simulations=len(problem.incomplete_jobs),
+                      elapsed_seconds=end_time - start_time, chunk_size=chunk_size, sample_matrix=X,
+                      model_path=problem.base_model, simulation_count=len(X),
+                      output_names=tuple(problem.outputs),
+                      parameter_names=tuple(problem.param_keys),
+                      apsim_version=apsim_version()
+
+                      )
+        return res
+
     finally:
         gc.collect()
 
@@ -556,18 +654,19 @@ if __name__ == "__main__":
 
         },
         outputs=["Yield", 'Maize.AboveGround.Wt'],
-        names=['Nitrogen', 'RUE',]
+        names=['Nitrogen', 'RUE', ]
 
     )
 
-    sensitivity = run_sensitivity(
+    se = run_sensitivity(
         problem,
         method="fast",
-        N=120,
-        agg_func="mean",
+        N=500,
+        agg_func="sum",
         chunk_size=None,
         retry_rate=2,
         tables=["Report"],
+        grouping=['Clock.Today'],
         sample_options={
             "num_levels": 6,
             "optimal_trajectories": 10,
@@ -577,8 +676,5 @@ if __name__ == "__main__":
             "print_to_console": False,
         },
     )
-
-    print(sensitivity)
-
 
 

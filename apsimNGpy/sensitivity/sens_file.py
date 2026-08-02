@@ -316,6 +316,7 @@ class ConfigProblem:
             sample_ids: np.ndarray,
             *,
             database_engine,
+            base_simulation: int| str= 0,
     ) -> pd.DataFrame:
         """Run one APSIM factor-file batch and append its results to SQLite."""
         factor_path = self.write_factor_file(
@@ -329,6 +330,7 @@ class ConfigProblem:
                 model=self.base_model,
                 experiment_from_file=factor_path,
                 name_column=self.index_id,
+                base_simulation=base_simulation,
             )
 
             with model:
@@ -359,6 +361,7 @@ class ConfigProblem:
             batch_size: int | None,
             retry_rate: int,
             tables: Sequence[str] | None,
+            base_simulation: str | None = 0
     ) -> pd.DataFrame:
         """Run all samples, retry missing samples, and return merged results."""
         db_path = Path(generate_default_db_path("__sens__")).resolve()
@@ -373,6 +376,7 @@ class ConfigProblem:
                     batch,
                     batch_ids,
                     database_engine=database_engine,
+                    base_simulation=base_simulation
                 )
 
             results = read_db_table(db_path, _RESULT_TABLE)
@@ -491,8 +495,7 @@ class ConfigProblem:
             chunk_size: int | None = None,
             grouping: str | Sequence[str] | None = None,
             tables: Sequence[str] | None = None,
-
-    ) -> Iterator[tuple[object, np.ndarray, np.ndarray]]:
+            base_simulation: str | int =0 ) -> Iterator[tuple[object, np.ndarray, np.ndarray]]:
         """Evaluate a supplied SALib sample matrix with APSIM.
 
         ``n_cores``, ``threads``, ``engine``, and ``total_chunks`` are retained
@@ -507,6 +510,7 @@ class ConfigProblem:
             batch_size=chunk_size,
             retry_rate=retry_rate,
             tables=tables,
+            base_simulation=base_simulation
         )
 
         grouping_columns = _as_list(grouping)
@@ -534,14 +538,14 @@ def run_sensitivity(
         N: int | None = None,
         seed: int | None = 48,
         agg_func: str | None = "sum",
-        n_cores: int = -2,
-        retry_rate: int = 3,
+        retry_rate: int = 2,
         sample_options: dict | None = None,
         analyze_options: dict | None = None,
         chunk_size: int | None = None,
         grouping: str | Sequence[str] | None = None,
         tables: Sequence[str] | None = None,
-) -> Results:
+        base_simulation: str| int =0
+         ) -> Results:
     """Run APSIM and calculate Morris, FAST, or Sobol sensitivity indices."""
     start_time = perf_counter()
     method = method.lower()
@@ -590,6 +594,7 @@ def run_sensitivity(
         chunk_size=chunk_size,
         grouping=grouping,
         tables=tables,
+        base_simulation=base_simulation,
 
     )
 

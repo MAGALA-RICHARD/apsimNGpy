@@ -793,6 +793,22 @@ def run_sensitivity(
         --------
         Run a Morris analysis using the automatically selected sample size:
 
+        First configure the sensitivity analysis problem
+
+        .. code-block:: python
+
+            from apsimNGpy import ConfigProblem
+            configured_prob = ConfigProblem(
+            base_model="Maize",
+            params={
+                "[Fertilise at sowing].Script.Amount": (0.0, 300),
+                '[Maize].Leaf.Photosynthesis.RUE.FixedValue': (1, 3)
+
+            },
+            outputs=["Yield", 'Maize.AboveGround.Wt'],
+
+        )
+
         >>> results = run_sensitivity(
         ...     configured_prob,
         ...     method="morris",

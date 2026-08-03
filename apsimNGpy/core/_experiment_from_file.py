@@ -74,38 +74,6 @@ def _create_experiment_from_file(model, experiment_from_file, name_column, sheet
     return root
 
 
-class _ExperimentFromFile(ApsimModel):
-    def __init__(
-            self,
-            model, *,
-            factor_file_name,
-            name_column,
-            experiment_name="ExperimentFromFile",
-            base_simulation=0,
-            **kwargs, ):
-        super().__init__(model, **kwargs)
-
-        self.factor_file_name = Path(factor_file_name).resolve()
-        self.experiment_name = experiment_name
-        self.name_column = name_column
-        self.base_simulation = base_simulation
-
-        if not self.factor_file_name.exists():
-            raise FileNotFoundError(
-                f"Factor file does not exist: {self.factor_file_name}"
-            )
-        _create_experiment_from_file(self, experiment_from_file=factor_file_name, name_column=name_column,
-                                     base_simulation=self.base_simulation, experiment_name=self.experiment_name)
-
-
-def csv_generator(**kwargs, ):
-    """parameter_path: and values"""
-    from pandas import DataFrame
-    df = DataFrame(kwargs)
-    df['FactorFromFile'] = [str(i) for i in range(1, df.shape[0] + 1)]
-    return df
-
-
 def test_factor_from_file(*, rue, population):
     case1, case2 = tuple(rue), tuple(population)
     """
@@ -114,7 +82,7 @@ def test_factor_from_file(*, rue, population):
        """
     vaRs = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": [*case1],
             '[Sow using a variable rule].Script.Population': [*case2]}
-    X = csv_generator(**vaRs, name_column="ID")
+    X = create_factor_table(**vaRs, name_column="ID")
 
     X.to_csv('data.csv')
     experiment = _create_experiment_from_file('Maize', experiment_from_file='data.csv', name_column='FactorFromFile')
@@ -131,12 +99,6 @@ def test_factor_from_file(*, rue, population):
 
 
 if __name__ == '__main__':
-    # csv = r"C:\Users\rmagala\Downloads\ExperimentFromCSV-FactorialTrials.csv"
-    # vaRs = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": [2, 2], '[Sow on a fixed date].Script.Population': [8, 8]}
-    # df = csv_generator(**vaRs, name_column="ID")
-    # df.to_csv('data.csv')
-    # m = ApsimModel('Maize')
-    # out = create_experiment_from_file(m, factor_file_name='data.csv', name_column='Scenario', base_simulation=0)
 
     test_factor_from_file(rue=(1, 2), population=(5, 5))
 

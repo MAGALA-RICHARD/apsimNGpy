@@ -99,5 +99,6 @@ class TestWeatherDownload(BaseTester):
         self.assertGreater(os.path.getsize(file_after), 0, "Downloaded met file should not be empty")
 
 
+
 if __name__ == '__main__':
     unittest.main()

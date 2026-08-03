@@ -464,7 +464,7 @@ class ConfigProblem:
             while missing and attempts < retry_rate:
                 attempts += 1
                 logger.warning(
-                    "Rerunning %s incomplete APSIM samples (attempt %s/%s).",
+                    "Re-running %s incomplete APSIM samples (attempt %s/%s).",
                     len(missing),
                     attempts,
                     retry_rate,

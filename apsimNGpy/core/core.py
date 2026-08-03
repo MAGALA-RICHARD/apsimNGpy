@@ -1005,10 +1005,6 @@ class CoreModel(PlotManager):
                 self.ran_ok = True
                 self.report_names = report_name
                 self.run_method = run_model_externally
-
-            # # If the model failed and verbose was off, rerun to diagnose
-            # if not self.ran_ok and not verbose:
-            #     logger.info('run time errors occurred')
             # report tables would be accessed in result attribute function
             self.report_names = report_name
 

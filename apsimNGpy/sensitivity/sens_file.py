@@ -22,7 +22,7 @@ Generation release before using the functionality provided by this module.
 
 It is highly efficient in both speed and memory usage because the sample matrix can be processed in smaller batches until all samples have been modeled.
 
-We finally got the answer to the computation problem, users areencouraged to use this class
+We finally got the answer to the computation problem, users are encouraged to use this class
 """
 
 from __future__ import annotations

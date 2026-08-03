@@ -948,7 +948,7 @@ def evaluate_model_sensitivity(
 if __name__ == "__main__":
     # Example: assess management sensitivity and a cultivar coefficient parameter like RUE example
     # used in the package documentation.
-    problem = ConfigProblem(
+    my_problem = ConfigProblem(
         base_model="Maize",
         params={
             "[Fertilise at sowing].Script.Amount": (0.0, 300),
@@ -962,9 +962,9 @@ if __name__ == "__main__":
     )
 
     se = evaluate_model_sensitivity(
-        problem,
+        my_problem,
         method="fast",
-        N=200,
+        N=100,
         agg_func="sum",
         chunk_size=None,
         retry_rate=2,

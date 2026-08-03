@@ -3,7 +3,7 @@ import re
 from collections import OrderedDict
 from pathlib import Path
 from typing import Union, Iterable
-from apsimNGpy.core._experiment_from_file import _create_experiment_from_file, _ExperimentFromFile, NAME
+from apsimNGpy.core._experiment_from_file import _create_experiment_from_file, NAME
 from apsimNGpy import NodeNotFoundError
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_loader import get_node_by_path, AUTO_PATH

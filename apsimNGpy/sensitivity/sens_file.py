@@ -317,6 +317,7 @@ class ConfigProblem:
             dist: Sequence[str] | None = None,
             groups: Sequence[str | int] | None = None,
             index_id: str = "FactorFromFile",
+            apsim_result_tables =None
     ) -> None:
         self.base_model = base_model
         self.params = dict(params)
@@ -325,6 +326,7 @@ class ConfigProblem:
         self.index_id = index_id
         self.num_vars = len(self.param_keys)
         self.names = names
+        self.apsim_result_tables = apsim_result_tables
 
         if not self.outputs:
             raise ValueError("At least one APSIM output must be specified.")
@@ -407,7 +409,7 @@ class ConfigProblem:
             )
 
             with model:
-                model.run()
+                model.run(report_name=self.apsim_result_tables)
                 results = model.results.copy()
 
             if self.index_id not in results.columns:
@@ -415,7 +417,6 @@ class ConfigProblem:
                     f"APSIM results do not contain the sample ID column "
                     f"{self.index_id!r}."
                 )
-
             results.to_sql(
                 name=_RESULT_TABLE,
                 con=database_engine,
@@ -582,7 +583,7 @@ class ConfigProblem:
             matrix,
             batch_size=chunk_size,
             retry_rate=retry_rate,
-            tables=tables,
+            tables=self.apsim_result_tables,
             base_simulation=base_simulation
         )
 
@@ -616,7 +617,6 @@ def evaluate_model_sensitivity(
         analyze_options: dict | None = None,
         chunk_size: int | None = None,
         grouping: str | Sequence[str] | None = None,
-        tables: Sequence[str] | None = None,
         base_simulation: str | int = 0,
         json_filename: str | None = 'sens_file_metadata.json'
 ) -> Results:
@@ -889,7 +889,6 @@ def evaluate_model_sensitivity(
         retry_rate=retry_rate,
         chunk_size=chunk_size,
         grouping=grouping,
-        tables=tables,
         base_simulation=base_simulation,
 
     )
@@ -957,7 +956,8 @@ if __name__ == "__main__":
 
         },
         outputs=["Yield", 'Maize.AboveGround.Wt'],
-        names=['Nitrogen', 'RUE', ]
+        names=['Nitrogen', 'RUE', ],
+        apsim_result_tables=["Report"],
 
     )
 
@@ -968,7 +968,6 @@ if __name__ == "__main__":
         agg_func="sum",
         chunk_size=None,
         retry_rate=2,
-        tables=["Report"],
         grouping=['Clock.Today'],
         sample_options={
             "num_levels": 6,

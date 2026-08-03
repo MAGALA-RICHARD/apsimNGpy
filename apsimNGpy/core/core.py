@@ -992,7 +992,6 @@ class CoreModel(PlotManager):
                     pass
 
             # Run APSIM externally replaced run_model_externally with run_apsim_by_path
-
             res = run_apsim_by_path(
                 # we run using the copied file
                 self.path,
@@ -1007,9 +1006,11 @@ class CoreModel(PlotManager):
                 self.report_names = report_name
                 self.run_method = run_model_externally
 
-            # If the model failed and verbose was off, rerun to diagnose
-            if not self.ran_ok and not verbose:
-                logger.info('run time errors occurred')
+            # # If the model failed and verbose was off, rerun to diagnose
+            # if not self.ran_ok and not verbose:
+            #     logger.info('run time errors occurred')
+            # report tables would be accessed in result attribute function
+            self.report_names = report_name
 
             return self
 

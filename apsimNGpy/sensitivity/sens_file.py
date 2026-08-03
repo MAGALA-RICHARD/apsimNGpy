@@ -131,7 +131,7 @@ class Results:
             Date and time when this result object was created.
         Methods
         ------------------
-        save_json. stores the sensitivity information in a json file, requires file path defaults to sens_file.json
+        save_json. stores the sensitivity information in a json file, requires file path defaults to __sens_file__.json
     """
 
     @property
@@ -146,7 +146,7 @@ class Results:
 
     def save_json(
             self,
-            file_path: str | Path = 'sens_file.json',
+            file_path: str | Path = '__sens_file__.json',
             *,
             include_sample_matrix: bool = True,
             indent: int = 4, ) -> Path:
@@ -291,6 +291,11 @@ class ConfigProblem:
         Optional SALib parameter groups.
     index_id
         Name of the factor-file column that uniquely identifies every sample.
+
+    apsim_result_tables : sequence of str or None, default=None
+            Names of APSIM output tables to retrieve during model evaluation.
+            When ``None``, the tables configured by ``configured_prob`` are used. if there is only one table in the apsimx base file, no need to
+            specify this parameter
     Example
     -----------------
     ..code-block:: python
@@ -303,6 +308,7 @@ class ConfigProblem:
 
         },
         outputs=["Yield", 'Maize.AboveGround.Wt'],
+        apsim_result_tables = ['Report']
 
     )
     """
@@ -317,7 +323,7 @@ class ConfigProblem:
             dist: Sequence[str] | None = None,
             groups: Sequence[str | int] | None = None,
             index_id: str = "FactorFromFile",
-            apsim_result_tables =None
+            apsim_result_tables=None
     ) -> None:
         self.base_model = base_model
         self.params = dict(params)
@@ -425,8 +431,8 @@ class ConfigProblem:
             )
             return results
         finally:
-            with suppress(PermissionError, FileNotFoundError):
-                factor_path.unlink()
+            with suppress(PermissionError):
+                factor_path.unlink(missing_ok=True)
 
     def _collect_results(
             self,
@@ -727,10 +733,6 @@ def evaluate_model_sensitivity(
 
             Grouping columns are appended to the resulting sensitivity table.
 
-        tables : sequence of str or None, default=None
-            Names of APSIM output tables to retrieve during model evaluation.
-            When ``None``, the tables configured by ``configured_prob`` are used.
-
         base_simulation : str or int, default=0
             Name or zero-based index of the APSIM simulation used as the template
             when generating experiment simulations from the sample matrix.
@@ -933,7 +935,7 @@ def evaluate_model_sensitivity(
                       elapsed_seconds=end_time - start_time, chunk_size=chunk_size, sample_matrix=X,
                       model_path=configured_prob.base_model, simulation_count=len(X),
                       output_names=tuple(configured_prob.outputs),
-                      parameter_names= tuple(configured_prob.names or configured_prob.param_keys),
+                      parameter_names=tuple(configured_prob.names or configured_prob.param_keys),
                       apsim_version=apsim_version())
         if json_filename is not None:
             with suppress(PermissionError):
@@ -966,7 +968,7 @@ if __name__ == "__main__":
         method="fast",
         N=100,
         agg_func="sum",
-        chunk_size=None,
+        chunk_size=50,
         retry_rate=2,
         grouping=['Clock.Today'],
         sample_options={

@@ -49,7 +49,7 @@ from apsimNGpy.core_utils.database_utils import read_db_table
 # prepare for the C# import
 from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, is_scalar, timer
 from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
-from apsimNGpy.manager.weathermanager import get_weather
+from apsimNGpy.manager.weather_loader import get_weather
 from apsimNGpy.settings import workspace, MissingOption
 from apsimNGpy.logger import logger
 from apsimNGpy.core.doc_strings import EDIT_MODEL_DOC

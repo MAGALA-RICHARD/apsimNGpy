@@ -916,6 +916,7 @@ def impute_missing_leaps(dmet, fill=0):
 
 gc.collect()
 if __name__ == '__main__':
+    import time
     from pathlib import Path
 
     p = Path.cwd().glob("*.met")

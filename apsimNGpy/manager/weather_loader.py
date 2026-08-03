@@ -17,6 +17,7 @@ import os
 import secrets
 import string
 import tempfile
+import time
 from io import BytesIO
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
@@ -283,6 +284,34 @@ def calculate_tav_amp(df: pd.DataFrame) -> tuple[float, float]:
     return round(tav, 3), round(amp, 3)
 
 
+def _replace_with_retry(
+    source: str | Path,
+    destination: str | Path,
+    *,
+    attempts: int = 5,
+    initial_delay: float = 0.05,
+) -> None:
+    """Atomically replace a file, tolerating short-lived Windows locks.
+
+    Only :class:`PermissionError` is retried. Persistent permission failures,
+    read-only destinations, and genuine authorization problems remain visible
+    to the caller rather than being silently ignored.
+    """
+
+    if attempts < 1:
+        raise ValueError("attempts must be at least one")
+    delay = initial_delay
+    for attempt in range(attempts):
+        try:
+            os.replace(source, destination)
+            return
+        except PermissionError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(delay)
+            delay *= 2
+
+
 def _atomic_write_text(path: Path, text: str) -> Path:
     path = path.expanduser().resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -292,7 +321,7 @@ def _atomic_write_text(path: Path, text: str) -> Path:
             stream.write(text)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        _replace_with_retry(temporary, path)
     except BaseException:
         try:
             os.unlink(temporary)
@@ -471,14 +500,14 @@ def get_nasa_data(
         "format": "JSON",
         "time-standard": "LST",
     }
-    response = _get(
+    with _get(
         NASA_POWER_URL, params=params, timeout=timeout, retries=retries, session=session
-    )
-    try:
-        parameter = response.json()["properties"]["parameter"]
-        raw = pd.DataFrame(parameter)
-    except (ValueError, KeyError, TypeError) as exc:
-        raise WeatherDownloadError("NASA POWER returned an unexpected payload") from exc
+    ) as response:
+        try:
+            parameter = response.json()["properties"]["parameter"]
+            raw = pd.DataFrame(parameter)
+        except (ValueError, KeyError, TypeError) as exc:
+            raise WeatherDownloadError("NASA POWER returned an unexpected payload") from exc
 
     required = set(NASA_PARAMETERS)
     missing = required.difference(raw.columns)
@@ -532,11 +561,12 @@ def _download_daymet(
         "years": ",".join(map(str, range(start, end + 1))),
         "measuredParams": "dayl,prcp,srad,tmax,tmin,vp,swe",
     }
-    response = _get(DAYMET_URL, params=params, timeout=timeout, retries=retries)
-    try:
-        raw = pd.read_csv(BytesIO(response.content), skiprows=6)
-    except (pd.errors.ParserError, UnicodeDecodeError) as exc:
-        raise WeatherDownloadError("Daymet returned data that could not be parsed") from exc
+    with _get(DAYMET_URL, params=params, timeout=timeout, retries=retries) as response:
+        try:
+            raw = pd.read_csv(BytesIO(response.content), skiprows=6)
+        except (pd.errors.ParserError, UnicodeDecodeError) as exc:
+            raise WeatherDownloadError("Daymet returned data that could not be parsed") from exc
+        disposition = response.headers.get("Content-Disposition", "")
     required = {"year", "yday", "dayl (s)", "srad (W/m^2)", "tmax (deg c)", "tmin (deg c)", "prcp (mm/day)"}
     missing = required.difference(raw.columns)
     if missing:
@@ -551,7 +581,6 @@ def _download_daymet(
         "mint": raw["tmin (deg c)"],
         "rain": raw["prcp (mm/day)"],
     })
-    disposition = response.headers.get("Content-Disposition", "")
     site = disposition.partition("filename=")[2].strip('"').split("_")[0] or None
     return frame, site
 
@@ -728,11 +757,11 @@ def nearest_iem_station(
     """Return the nearest IEM station using great-circle distance."""
 
     target = _validate_lonlat(lonlat)
-    response = _get(IEM_NETWORK_URL.format(network=network), timeout=timeout)
-    try:
-        features = response.json()["features"]
-    except (ValueError, KeyError, TypeError) as exc:
-        raise WeatherDownloadError("IEM returned an unexpected station payload") from exc
+    with _get(IEM_NETWORK_URL.format(network=network), timeout=timeout) as response:
+        try:
+            features = response.json()["features"]
+        except (ValueError, KeyError, TypeError) as exc:
+            raise WeatherDownloadError("IEM returned an unexpected station payload") from exc
     candidates: list[tuple[float, str]] = []
     for feature in features:
         try:
@@ -781,18 +810,19 @@ def get_iem_by_station(
         ("delim", "comma"),
         ("gis", "no"),
     ]
-    response = _get(IEM_COOP_URL, params=params, timeout=timeout)
-    if not response.content.strip():
+    with _get(IEM_COOP_URL, params=params, timeout=timeout) as response:
+        content = response.content
+    if not content.strip():
         raise WeatherDownloadError(f"IEM returned an empty file for station {station}")
     output = Path(path).expanduser().resolve() / f"{station}{met_tag}.met"
     output.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=f".{output.name}.", dir=output.parent)
     try:
         with os.fdopen(fd, "wb") as stream:
-            stream.write(response.content)
+            stream.write(content)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, output)
+        _replace_with_retry(temporary, output)
     except BaseException:
         try:
             os.unlink(temporary)
@@ -978,34 +1008,3 @@ __all__ = [
     "write_apsim_met",
     "write_edited_met",
 ]
-
-if __name__ == '__main__':
-    import time
-    from pathlib import Path
-
-    p = Path.cwd().glob("*.met")
-    [os.remove(i) for i in p]
-    os.chdir(Path.home())
-    import cProfile
-
-    profiler = cProfile.Profile()
-    profiler.enable()
-    Name = Path("dumu2.met").resolve()
-    if os.path.exists(Name):
-        os.remove(Name)
-    profiler.disable()
-    # profiler.print_stats(sort='time')
-    a = time.perf_counter()
-    Name.unlink(missing_ok=True)
-    xp = get_met_from_day_met(lonlat=(-93.50456, 42.601247), start=1989, end=2001, filename=Name, retry_number=3, )
-
-    b = time.perf_counter()
-    print(b - a)
-    from apsimNGpy.core.base_data import load_default_simulations
-
-    model = load_default_simulations(crop='maize')
-    # model.path = 'clone.apsimx'
-
-    model.get_weather_from_file(weather_file=xp)
-    model.run()
-

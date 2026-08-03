@@ -3,7 +3,7 @@ import unittest
 
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
-from apsimNGpy.manager import weathermanager
+from apsimNGpy.manager import weather_loader as weathermanager
 
 LONLAT = 35.582520, 0.347596  # location is kampala
 AMES_LONLAT = -93.0, 42.03534
@@ -52,4 +52,8 @@ class TestWeatherManager(BaseTester):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    from pathlib import Path
+    unittest.main(exit=False)
+    pp = Path(r'.').rglob('*.met')
+    for i in pp:
+        i.unlink()

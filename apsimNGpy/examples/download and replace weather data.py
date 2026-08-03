@@ -1,6 +1,6 @@
 import os
 
-from apsimNGpy.manager import weathermanager
+from apsimNGpy.manager import weather_loader as weathermanager
 
 from apsimNGpy.core.base_data import load_default_simulations
 from apsimNGpy.core.apsim import ApsimModel as SoilModel
@@ -22,7 +22,7 @@ apsim = SoilModel(data.path)
 # Now insert weather file into the model
 apsim.replace_met_file(weather_file=weather)
 # check if it was successful
-print(apsim.show_met_file_in_simulation())
+
 # try running
 apsim.run()
 # collect the results

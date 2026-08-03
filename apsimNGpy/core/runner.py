@@ -119,7 +119,6 @@ def run_apsim_by_path(
     else:
         # Single APSIM file
         model_path = str(_ensure_model(model))
-
         cmd: list[str] = [
             apsim_exec,
             model_path,
@@ -131,6 +130,7 @@ def run_apsim_by_path(
         cmd.append("--verbose")
 
     if to_csv:
+        Path()
         cmd.append("--csv")
 
     logger.debug("Executing APSIM command: %s", " ".join(cmd))

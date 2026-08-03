@@ -931,10 +931,7 @@ class CoreModel(PlotManager):
             This parameter is useful when the number of simulations are more than 1, below that performance differences are minimal
             added in 0.39.11.21+
         to_csv: bool dfault is False,
-             If True, results are wrriten to a csv file instantly at the location of the apsimx file.
-
-
-
+             If True, results are written to a csv file instantly at the location of the apsimx file.
 
         Warning:
         --------------

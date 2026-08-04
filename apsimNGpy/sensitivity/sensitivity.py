@@ -22,7 +22,15 @@ from apsimNGpy.sensitivity.helpers import (default_n, define_problem,
 from apsimNGpy.settings import logger
 from apsimNGpy.starter import CLR
 from apsimNGpy.sensitivity.salib_sample import generate_samples
-
+import warnings
+warnings.warn(
+    "The 'sensitivity' module is deprecated; use 'sens_file' for improved "
+    "speed and efficiency. When analyzing cultivar parameters, sow a dummy "
+    "cultivar in the Manager script or ensure that the cultivar parameters "
+    "defined in the ConfigProblem are not in any custom cultivar sown.",
+    category=DeprecationWarning,
+    stacklevel=2,
+)
 dataError = sqlalchemy.exc.OperationalError
 
 __all__ = ['ConfigProblem', 'run_sensitivity']

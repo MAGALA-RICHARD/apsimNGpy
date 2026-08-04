@@ -119,4 +119,4 @@ if __name__ == '__main__':
                         else:
                             i.unlink(missing_ok=True)
                         print('removed {}'.format(i))
-    clean('.db', '.apsimx', 'db-wal', '.met', '.scratch')
+    clean('.db', '.apsimx', 'db-wal', '.met', '.scratch', '.csv')

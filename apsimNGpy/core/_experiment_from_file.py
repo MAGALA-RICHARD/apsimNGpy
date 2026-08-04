@@ -113,10 +113,10 @@ if __name__ == '__main__':
             p = Path(r'D:\package\apsimNGpy2\apsimNGpy')
             for i in p.rglob(f'*{suffix}'):
                 if i.suffix == suffix:
-                    with suppress(PermissionError):
+                    with suppress(PermissionError, FileNotFoundError):
                         if i.is_dir():
                             shutil.rmtree(i)
                         else:
-                            i.unlink(missing_ok=True)
+                            i.unlink()
                         print('removed {}'.format(i))
     clean('.db', '.apsimx', 'db-wal', '.met', '.scratch', '.csv')

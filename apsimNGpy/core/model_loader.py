@@ -13,7 +13,7 @@ from apsimNGpy.config import load_crop_from_disk
 from dataclasses import dataclass
 from typing import Any
 from pathlib import Path
-
+from apsimNGpy.settings import SCRATCH as _SCRATCH
 get_apsim_file_writer = CLR.get_file_writer
 get_apsim_file_reader = CLR.get_file_reader
 Models = CLR.Models
@@ -22,9 +22,7 @@ GC = CLR.System.GC
 List, KeyValuePair = CLR.System.Collections.Generic.List, CLR.System.Collections.Generic.KeyValuePair
 
 GLOBAL_IS_FILE_MODIFIED = CLR.file_format_modified
-scratch_dir = Path.cwd().joinpath('.scratch')
-scratch_dir.mkdir(exist_ok=True)
-SCRATCH = os.environ.get('WS', str(scratch_dir))
+SCRATCH = os.environ.get('WS', str(_SCRATCH))
 AUTO_PATH = object()
 MODEL_NOT_PROVIDED = object()
 
@@ -566,5 +564,5 @@ if __name__ == '__main__':
         constants = trace(maize, Models.Functions.Constant)
         names = [i.Name for i in constants]
         fp = [i.FullPath for i in constants]
-        mm.open_in_gui(watch=True)
+       # mm.open_in_gui(watch=True)
         pass

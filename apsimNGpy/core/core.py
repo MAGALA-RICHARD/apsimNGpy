@@ -50,7 +50,7 @@ from apsimNGpy.core_utils.database_utils import read_db_table
 from apsimNGpy.core_utils.utils import open_apsimx_file_in_window, is_scalar, timer
 from apsimNGpy.exceptions import ModelNotFoundError, NodeNotFoundError
 from apsimNGpy.manager.weather_loader import get_weather
-from apsimNGpy.settings import workspace, MissingOption
+from apsimNGpy.settings import  MissingOption, SCRATCH
 from apsimNGpy.logger import logger
 from apsimNGpy.core.doc_strings import EDIT_MODEL_DOC
 
@@ -143,7 +143,7 @@ class CoreModel(PlotManager):
         self.model = model
         self.out_path = out_path
         self.experiment = experiment
-        self.set_wd = workspace(set_wd)
+        self.set_wd = SCRATCH
         self.copy = copy  # deprecated but accepted
         self.others = {}  # additional runtime options
         self.wk_info = {}
@@ -175,7 +175,7 @@ class CoreModel(PlotManager):
         self.run_method = None
 
         # Working directories
-        self.work_space = workspace(set_wd)
+        self.work_space =SCRATCH
         self._met_file = None
 
         # Models namespace handle

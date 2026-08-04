@@ -6,6 +6,8 @@ from pathlib import Path
 from shutil import rmtree
 
 VERSION = '1.5.1'
+SCRATCH = Path('./apsimNGpy.scratch').resolve()
+SCRATCH.mkdir(parents=True, exist_ok=True)
 
 
 class MissingType:
@@ -126,8 +128,8 @@ logger = setup_logger()
 APSIM_LOCATION = os.environ.get('APSIM_LOCATION')
 
 
-def workspace(work_space: str = '.scratch') -> Path:
-    work_space: str = work_space or '.scratch'
+def workspace(work_space: str = SCRATCH ) -> Path:
+    print(work_space)
     SCRATCH = Path(work_space).resolve()
     try:
         SCRATCH.mkdir(parents=True, exist_ok=True)

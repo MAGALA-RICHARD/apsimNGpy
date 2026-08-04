@@ -1,3 +1,3 @@
-,[Maize].Leaf.Photosynthesis.RUE.FixedValue,[Sow using a variable rule].Script.Population,name_column,FactorFromFile
-0,2,3,ID,1
-1,2,6,ID,2
+,[Maize].Leaf.Photosynthesis.RUE.FixedValue,[Sow using a variable rule].Script.Population,FactorFromFile
+0,2,3,1
+1,2,6,2

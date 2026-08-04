@@ -82,7 +82,7 @@ def test_factor_from_file(*, rue, population):
        """
     vaRs = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": [*case1],
             '[Sow using a variable rule].Script.Population': [*case2]}
-    X = create_factor_table(**vaRs, name_column="ID")
+    X = create_factor_table(**vaRs, name_column="FactorFromFile")
 
     X.to_csv('data.csv')
     experiment = _create_experiment_from_file('Maize', experiment_from_file='data.csv', name_column='FactorFromFile')
@@ -106,6 +106,7 @@ if __name__ == '__main__':
 
 
     def clean(*args):
+        import shutil
         for suffix in args:
             from pathlib import Path
             from contextlib import suppress
@@ -113,6 +114,9 @@ if __name__ == '__main__':
             for i in p.rglob(f'*{suffix}'):
                 if i.suffix == suffix:
                     with suppress(PermissionError):
-                        i.unlink(missing_ok=True)
+                        if i.is_dir():
+                            shutil.rmtree(i)
+                        else:
+                            i.unlink(missing_ok=True)
                         print('removed {}'.format(i))
-    clean('.db', '.apsimx', 'db-wal')
+    clean('.db', '.apsimx', 'db-wal', '.met', '.scratch')

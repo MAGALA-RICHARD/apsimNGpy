@@ -4,12 +4,10 @@ from abc import ABC, abstractmethod
 from os import chdir as _chdir
 from pathlib import Path
 from unittest import TestCase
+from apsimNGpy.settings import SCRATCH
 
 wd = Path.cwd() / 'apsimNGpy_tests'
 
-from apsimNGpy.settings import workspace
-
-SCRATCH  = workspace(str(wd))
 
 def get_files(pattern):
     return list(Path(SCRATCH).rglob(pattern))
@@ -49,6 +47,7 @@ class BaseTester(TestCase, ABC):
             WD = _wd
         WD.mkdir(exist_ok=True)
         _chdir(wd)
+
     @staticmethod
     def _clean_up(where):
         scratch = list(where.glob("*scratch"))

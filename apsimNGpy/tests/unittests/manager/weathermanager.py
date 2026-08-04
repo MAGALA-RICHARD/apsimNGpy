@@ -41,10 +41,13 @@ class TestWeatherManager(BaseTester):
             if df is not None:
                 self.assertFalse(df.empty, 'read_apsim_met failed')
                 # test writing to file
-                write_file = weathermanager.write_edited_met(wf, df, filename=self.weather_file_name)
+                out =Path('out.met')
+                write_file = weathermanager.write_edited_met(wf, df, filename=str(out))
                 self.assertTrue(write_file)
                 exi_file = os.path.isfile(write_file)
                 self.assertTrue(exi_file, msg=f"Writing met to file failed")
+                self.assertGreater(os.path.getsize(out), 0, "Downloaded met file should not be empty")
+                out.unlink(missing_ok=True)
 
     def tearDown(self):
         if os.path.isfile(self.weather_file_name):

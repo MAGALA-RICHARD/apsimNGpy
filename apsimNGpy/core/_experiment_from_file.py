@@ -105,12 +105,14 @@ if __name__ == '__main__':
     test_factor_from_file(rue=(2, 2), population=(3, 6))
 
 
-    def clean(suffix):
-        from pathlib import Path
-        from contextlib import suppress
-        p = Path(r'D:\package\apsimNGpy2\apsimNGpy')
-        for i in p.rglob(f'*{suffix}'):
-            if i.suffix == suffix:
-                print('removing {}'.format(i))
-                with suppress(PermissionError):
-                    i.unlink(missing_ok=True)
+    def clean(*args):
+        for suffix in args:
+            from pathlib import Path
+            from contextlib import suppress
+            p = Path(r'D:\package\apsimNGpy2\apsimNGpy')
+            for i in p.rglob(f'*{suffix}'):
+                if i.suffix == suffix:
+                    with suppress(PermissionError):
+                        i.unlink(missing_ok=True)
+                        print('removed {}'.format(i))
+    clean('.db', '.apsimx', 'db-wal')

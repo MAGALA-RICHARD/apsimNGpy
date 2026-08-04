@@ -291,14 +291,17 @@ class ConfigProblem:
         Optional SALib parameter groups.
     index_id
         Name of the factor-file column that uniquely identifies every sample.
-
     apsim_result_tables : sequence of str or None, default=None
             Names of APSIM output tables to retrieve during model evaluation.
             When ``None``, the tables configured by ``configured_prob`` are used. if there is only one table in the apsimx base file, no need to
             specify this parameter
+    base_simulation : str or int, default=0
+            Name or zero-based index of the APSIM simulation used as the template
+            when generating experiment simulations from the sample matrix.
+
     Example
     -----------------
-    ..code-block:: python
+    .. code-block:: python
 
          problem = ConfigProblem(
         base_model="Maize",
@@ -313,18 +316,18 @@ class ConfigProblem:
     )
     """
 
-    def __init__(
-            self,
-            base_model: str | Path,
-            params: dict[str, Sequence[float]],
-            outputs: str | Sequence[str],
-            *,
-            names: Iterable[str] | None = None,
-            dist: Sequence[str] | None = None,
-            groups: Sequence[str | int] | None = None,
-            index_id: str = "FactorFromFile",
-            apsim_result_tables=None
-    ) -> None:
+    def __init__(self,
+                 base_model: str | Path,
+                 params: dict[str, Sequence[float]],
+                 outputs: str | Sequence[str],
+                 *,
+                 names: Iterable[str] | None = None,
+                 dist: Sequence[str] | None = None,
+                 groups: Sequence[str | int] | None = None,
+                 index_id: str = "FactorFromFile",
+                 apsim_result_tables=None,
+                 base_simulation: str | int = 0, ) -> None:
+
         self.base_model = base_model
         self.params = dict(params)
         self.param_keys = list(self.params)
@@ -333,6 +336,7 @@ class ConfigProblem:
         self.num_vars = len(self.param_keys)
         self.names = names
         self.apsim_result_tables = apsim_result_tables
+        self.base_simulation = base_simulation
 
         if not self.outputs:
             raise ValueError("At least one APSIM output must be specified.")
@@ -500,7 +504,8 @@ class ConfigProblem:
             results[self.index_id] = results[self.index_id].astype(str)
             merged = results.merge(factors, on=self.index_id, how="inner")
             merged.sort_values(self.index_id, inplace=True)
-            self.raw_results = merged.reset_index(drop=True)
+            self.raw_results = merged.reset_index(drop=True).copy()
+
             return self.raw_results
         finally:
             database_engine.dispose()
@@ -574,8 +579,7 @@ class ConfigProblem:
             retry_rate: int = 2,
             chunk_size: int | None = None,
             grouping: str | Sequence[str] | None = None,
-            tables: Sequence[str] | None = None,
-            base_simulation: str | int = 0) -> Iterator[tuple[object, np.ndarray, np.ndarray]]:
+    ) -> Iterator[tuple[object, np.ndarray, np.ndarray]]:
         """Evaluate a supplied SALib sample matrix with APSIM.
 
         ``n_cores``, ``threads``, ``engine``, and ``total_chunks`` are retained
@@ -590,7 +594,7 @@ class ConfigProblem:
             batch_size=chunk_size,
             retry_rate=retry_rate,
             tables=self.apsim_result_tables,
-            base_simulation=base_simulation
+            base_simulation=self.base_simulation
         )
 
         grouping_columns = _as_list(grouping)
@@ -623,7 +627,6 @@ def evaluate_model_sensitivity(
         analyze_options: dict | None = None,
         chunk_size: int | None = None,
         grouping: str | Sequence[str] | None = None,
-        base_simulation: str | int = 0,
         json_filename: str | None = 'sens_file_metadata.json'
 ) -> Results:
     """Run APSIM simulations and calculate global sensitivity indices.
@@ -732,10 +735,6 @@ def evaluate_model_sensitivity(
             calculates indices for each unique year-and-soil combination.
 
             Grouping columns are appended to the resulting sensitivity table.
-
-        base_simulation : str or int, default=0
-            Name or zero-based index of the APSIM simulation used as the template
-            when generating experiment simulations from the sample matrix.
 
         json_filename : str or None, default="sens_file_metadata.json"
             Destination file for the sensitivity-analysis metadata.
@@ -891,7 +890,6 @@ def evaluate_model_sensitivity(
         retry_rate=retry_rate,
         chunk_size=chunk_size,
         grouping=grouping,
-        base_simulation=base_simulation,
 
     )
 
@@ -929,8 +927,9 @@ def evaluate_model_sensitivity(
             raise RuntimeError("Sensitivity analysis produced no results.")
         end_time = perf_counter()
         sens = pd.concat(analyzed, ignore_index=True)
-
-        res = Results(original_data=configured_prob.raw_results, method=method, sensitivity=sens,
+        original_data = configured_prob.raw_results.copy()
+        original_data['Method'] = method
+        res = Results(original_data=original_data, method=method, sensitivity=sens,
                       failed_simulations=len(configured_prob.incomplete_jobs),
                       elapsed_seconds=end_time - start_time, chunk_size=chunk_size, sample_matrix=X,
                       model_path=configured_prob.base_model, simulation_count=len(X),

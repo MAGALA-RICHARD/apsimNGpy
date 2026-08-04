@@ -964,8 +964,8 @@ if __name__ == "__main__":
 
     se = evaluate_model_sensitivity(
         my_problem,
-        method="fast",
-        N=100,
+        method="sobol",
+        N=102,
         agg_func="sum",
         chunk_size=50,
         retry_rate=2,

@@ -20,7 +20,7 @@ Classes
    run_sensitivity, ConfigProblem,
    ExperimentManager, SensitivityManager.
 
-   .. py:method:: apsimNGpy.Apsim.__init__(self, apsim_bin_path=<object object at 0x000001E5A4737530>, dotenv_path=None, bin_key=None)
+   .. py:method:: apsimNGpy.Apsim.__init__(self, apsim_bin_path=<object object at 0x000002377F687530>, dotenv_path=None, bin_key=None)
 
    Temporarily configure the APSIM-NG ``bin`` path used by ``apsimNGpy``
 
@@ -576,7 +576,7 @@ Classes
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt`
    - :meth:`~apsimNGpy.core.apsim.ApsimModel.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x000001E5AC6D0850>, set_wd=None, **kwargs)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.__init__(self, model: Union[os.PathLike, dict, str], out_path: Union[str, pathlib.Path] = <object object at 0x0000023709650870>, set_wd=None, **kwargs)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -1712,7 +1712,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001E5D6889560>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000237337E94C0>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -4142,7 +4142,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001E5D6889560>) (inherited)
+   .. py:method:: apsimNGpy.core.apsim.ApsimModel.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000237337E94C0>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -5394,7 +5394,7 @@ Classes
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt`
    - :meth:`~apsimNGpy.core.experimentmanager.ExperimentManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x000001E5AC6D0850>)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.__init__(self, model, out_path=<object object at 0x0000023709650870>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -6931,7 +6931,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001E5D6889560>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000237337E94C0>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -9361,7 +9361,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001E5D6889560>) (inherited)
+   .. py:method:: apsimNGpy.core.experiment.ExperimentManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000237337E94C0>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -11603,7 +11603,7 @@ Functions
    Raises:
        ``ValueError: `` If no matching files are found.
 
-.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x000001E5D6889200>, timeout: 'int | None' = None, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_apsim_by_path(model: 'Union[str, Path, Iterable[str], Iterable[Path]]', *, bin_path: 'Union[str, Path, object]' = <object object at 0x00000237337E91F0>, timeout: 'int | None' = None, n_cores: 'int' = -1, verbose: 'bool' = False, to_csv: 'bool' = False) -> 'subprocess.CompletedProcess[str]'
 
    Execute an APSIM model safely and reproducibly.
 
@@ -11668,7 +11668,7 @@ Functions
    RuntimeError
        If APSIM returns a non-zero exit code.
 
-.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x000001E5D6889200>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
+.. py:function:: apsimNGpy.core.runner.run_model_externally(model: 'Union[Path, str]', *, apsim_bin_path: 'Optional[Union[Path, str]]' = <object object at 0x00000237337E91F0>, verbose: 'bool' = False, to_csv: 'bool' = False, timeout: 'int' = 20, cpu_count=-1, cwd: 'Optional[Union[Path, str]]' = None) -> 'subprocess.CompletedProcess[str]'
 
    Run APSIM externally (cross-platform) with safe defaults.
 
@@ -11888,7 +11888,7 @@ Classes
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt`
    - :meth:`~apsimNGpy.core.senstivitymanager.SensitivityManager.update_mgt_by_path`
 
-   .. py:method:: apsimNGpy.core.sensitivity_manager.SensitivityManager.__init__(self, model, out_path=<object object at 0x000001E5AC6D0850>)
+   .. py:method:: apsimNGpy.core.sensitivity_manager.SensitivityManager.__init__(self, model, out_path=<object object at 0x0000023709650870>)
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -13263,7 +13263,7 @@ Classes
    self : object
        Returns the updated ApsimModel instance.
 
-   .. py:method:: apsimNGpy.core.sensitivity_manager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x000001E5D6889560>, reload=True) (inherited)
+   .. py:method:: apsimNGpy.core.sensitivity_manager.SensitivityManager.save(self, file_name: 'Union[str, Path]' = <object object at 0x00000237337E94C0>, reload=True) (inherited)
 
    Saves the current APSIM NG model (``Simulations``) to disk and refresh runtime state.
 
@@ -15693,7 +15693,7 @@ Classes
    ---------------------------------------------------------------------------
    returns an array of the parameter values
 
-   .. py:method:: apsimNGpy.core.sensitivity_manager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x000001E5D6889560>) (inherited)
+   .. py:method:: apsimNGpy.core.sensitivity_manager.SensitivityManager.inspect_model(self, model_type: 'Union[str, Models]', fullpath=True, scope=<object object at 0x00000237337E94C0>) (inherited)
 
    Inspect the model types and returns the model paths or names.
 
@@ -18822,7 +18822,7 @@ We finally got the answer to the computation problem, users are encouraged to us
 Functions
 ^^^^^^^^^
 
-.. py:function:: apsimNGpy.sensitivity.sens_file.evaluate_model_sensitivity(configured_prob: 'ConfigProblem', *, method: 'str' = 'morris', N: 'int | None' = None, seed: 'int | None' = 48, agg_func: 'str | None' = 'sum', retry_rate: 'int' = 2, sample_options: 'dict | None' = None, analyze_options: 'dict | None' = None, chunk_size: 'int | None' = None, grouping: 'str | Sequence[str] | None' = None, base_simulation: 'str | int' = 0, json_filename: 'str | None' = 'sens_file_metadata.json') -> 'Results'
+.. py:function:: apsimNGpy.sensitivity.sens_file.evaluate_model_sensitivity(configured_prob: 'ConfigProblem', *, method: 'str' = 'morris', N: 'int | None' = None, seed: 'int | None' = 48, agg_func: 'str | None' = 'sum', retry_rate: 'int' = 2, sample_options: 'dict | None' = None, analyze_options: 'dict | None' = None, chunk_size: 'int | None' = None, grouping: 'str | Sequence[str] | None' = None, json_filename: 'str | None' = 'sens_file_metadata.json') -> 'Results'
 
    Run APSIM simulations and calculate global sensitivity indices.
 
@@ -18930,14 +18930,6 @@ Functions
        calculates indices for each unique year-and-soil combination.
 
        Grouping columns are appended to the resulting sensitivity table.
-
-   tables : sequence of str or None, default=None
-       Names of APSIM output tables to retrieve during model evaluation.
-       When ``None``, the tables configured by ``configured_prob`` are used.
-
-   base_simulation : str or int, default=0
-       Name or zero-based index of the APSIM simulation used as the template
-       when generating experiment simulations from the sample matrix.
 
    json_filename : str or None, default="sens_file_metadata.json"
        Destination file for the sensitivity-analysis metadata.
@@ -19073,9 +19065,17 @@ Classes
            Optional SALib parameter groups.
        index_id
            Name of the factor-file column that uniquely identifies every sample.
+       apsim_result_tables : sequence of str or None, default=None
+               Names of APSIM output tables to retrieve during model evaluation.
+               When ``None``, the tables configured by ``configured_prob`` are used. if there is only one table in the apsimx base file, no need to
+               specify this parameter
+       base_simulation : str or int, default=0
+               Name or zero-based index of the APSIM simulation used as the template
+               when generating experiment simulations from the sample matrix.
+
        Example
        -----------------
-       ..code-block:: python
+       .. code-block:: python
 
             problem = ConfigProblem(
            base_model="Maize",
@@ -19085,6 +19085,7 @@ Classes
 
            },
            outputs=["Yield", 'Maize.AboveGround.Wt'],
+           apsim_result_tables = ['Report']
 
        )
 
@@ -19098,7 +19099,7 @@ Classes
    - :meth:`~apsimNGpy.sensitivity.sens_file.ConfigProblem.evaluate`
    - :meth:`~apsimNGpy.sensitivity.sens_file.ConfigProblem.write_factor_file`
 
-   .. py:method:: apsimNGpy.sensitivity.sens_file.ConfigProblem.__init__(self, base_model: 'str | Path', params: 'dict[str, Sequence[float]]', outputs: 'str | Sequence[str]', *, names: 'Iterable[str] | None' = None, dist: 'Sequence[str] | None' = None, groups: 'Sequence[str | int] | None' = None, index_id: 'str' = 'FactorFromFile', apsim_result_tables=None) -> 'None'
+   .. py:method:: apsimNGpy.sensitivity.sens_file.ConfigProblem.__init__(self, base_model: 'str | Path', params: 'dict[str, Sequence[float]]', outputs: 'str | Sequence[str]', *, names: 'Iterable[str] | None' = None, dist: 'Sequence[str] | None' = None, groups: 'Sequence[str | int] | None' = None, index_id: 'str' = 'FactorFromFile', apsim_result_tables=None, base_simulation: 'str | int' = 0) -> 'None'
 
    Initialize self.  See help(type(self)) for accurate signature.
 
@@ -19110,7 +19111,7 @@ Classes
 
    Write a sample matrix as an APSIM-compatible CSV factor file.
 
-   .. py:method:: apsimNGpy.sensitivity.sens_file.ConfigProblem.evaluate(self, X: 'np.ndarray', *, agg_func: 'str | None' = 'sum', retry_rate: 'int' = 2, chunk_size: 'int | None' = None, grouping: 'str | Sequence[str] | None' = None, tables: 'Sequence[str] | None' = None, base_simulation: 'str | int' = 0) -> 'Iterator[tuple[object, np.ndarray, np.ndarray]]'
+   .. py:method:: apsimNGpy.sensitivity.sens_file.ConfigProblem.evaluate(self, X: 'np.ndarray', *, agg_func: 'str | None' = 'sum', retry_rate: 'int' = 2, chunk_size: 'int | None' = None, grouping: 'str | Sequence[str] | None' = None) -> 'Iterator[tuple[object, np.ndarray, np.ndarray]]'
 
    Evaluate a supplied SALib sample matrix with APSIM.
 
@@ -19148,7 +19149,7 @@ Classes
 
    Initialize self.  See help(type(self)) for accurate signature.
 
-   .. py:method:: apsimNGpy.sensitivity.sens_file.Results.save_json(self, file_path: 'str | Path' = 'sens_file.json', *, include_sample_matrix: 'bool' = True, indent: 'int' = 4) -> 'Path'
+   .. py:method:: apsimNGpy.sensitivity.sens_file.Results.save_json(self, file_path: 'str | Path' = '__sens_file__.json', *, include_sample_matrix: 'bool' = True, indent: 'int' = 4) -> 'Path'
 
    Save sensitivity-analysis metadata to a JSON file.
 

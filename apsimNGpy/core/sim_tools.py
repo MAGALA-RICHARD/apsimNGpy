@@ -63,10 +63,16 @@ def serialize_root(root_dir='.', file_name=None, base_file=None):
 
 def _filter_out_simulation(model: ApsimModel):
     children = list(model.Simulations.GetChildren())
+    datastore_type = CLR.Models.Storage.DataStore().GetType()
     for Child in children:
         typ = Child.GetType()
-        if typ not in (CLR.Models.Storage.DataStore().GetType(), CLR.Models.Core.Folder().GetType()):
+        if typ not in {datastore_type,
+                       CLR.Models.Core.Folder().GetType()}:
             model.Simulations.RemoveChild(Child)
+            # Add datastore here
+    sim_children_types = [i.GetType() for i in model.Simulations.Children]
+    if datastore_type not in sim_children_types:
+        model.Simulations.Children.Add(CLR.Models.Storage.DataStore())
 
 
 def get_root_model(base, simulation_name):
@@ -92,7 +98,7 @@ def get_root_model(base, simulation_name):
             )
 
 
-def create_factor_table( name_column='FactorFromFile', **parameters,):
+def create_factor_table(name_column='FactorFromFile', **parameters, ):
     """parameter_path: and values"""
     from pandas import DataFrame
     df = DataFrame(parameters)

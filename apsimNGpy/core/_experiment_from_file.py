@@ -131,7 +131,7 @@ def _test_params(candidates: dict, func, model, output, base_sim=0):
 
         with experiment:
             pass
-
+        print(Path(experiment.datastore).exists())
         return {
             "params": candidates,
             "passed": bool(changed_outputs),

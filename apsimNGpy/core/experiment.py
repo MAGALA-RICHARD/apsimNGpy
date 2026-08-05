@@ -1011,3 +1011,8 @@ if __name__ == '__main__':
         # exp.finalize()
 
     print('datastore Path exists after exit:', Path(exp.datastore).exists())
+    vals = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": (1, 3, 2.5),
+            '[Fertilise at sowing].Script.Amount':(0, 300),
+            '[Sow using a variable rule].Script.Population': (1, 12, 6)}
+    out = pre_experiment_test(vals, 'Maize', outputs=['Yield', 'Maize.Grain.Wt'])
+    print(out)

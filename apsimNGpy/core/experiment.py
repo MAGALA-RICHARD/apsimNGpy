@@ -13,11 +13,99 @@ from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.starter.starter import CLR
 from apsimNGpy.logger import logger
 from apsimNGpy.core.sim_tools import create_factor_table
+from apsimNGpy.core._experiment_from_models import _create_experiment_from_models, EXPERIMENT_NAME
 
 CastHelper = CLR.CastHelper
 NodeUtils = CLR.APsimCore
 System = CLR.System
 apsim_version = CLR.apsim_compiled_version
+
+
+def create_experiment_from_models(
+    model,
+    specifications: dict[str, str],
+    base_simulation: int | str = 0,
+    permutation: bool = True,
+    experiment_name: str = EXPERIMENT_NAME,
+):
+    """
+    Create an APSIM factorial experiment from a model object.
+
+    Unlike file-based experiment builders, this function creates the
+    experiment directly from an APSIM Models namespace object or an existing
+    ``ApsimModel`` instance. Factor definitions are supplied as a dictionary,
+    preventing duplicate factor names.
+
+    **model** : str | pathlib.Path | ApsimModel
+        Path to an APSIM model file or an existing ``ApsimModel`` instance.
+
+    **specifications** : dict[str, str]
+        Mapping of unique factor names to APSIM factor specifications. Each
+        specification identifies the parameter path and the values to test.
+
+        For example::
+
+            {
+                "fertiliser_type":
+                    "[Fertilise at sowing].Script.FertiliserType=DAP,NO3N",
+                "amount":
+                    "[Fertilise at sowing].Script.Amount=0,300",
+            }
+
+    **base_simulation** : int | str, default=0
+        Index or name of the simulation used as the experiment template.
+
+    **permutation** : bool, default=True
+        Whether to generate every possible combination of the supplied factor
+        levels. When ``False``, factors are not combined as a full factorial
+        permutation.
+
+    **experiment_name** : str, default=EXPERIMENT_NAME
+        Name assigned to the generated APSIM experiment.
+
+    Returns
+    -------
+    ApsimModel
+        APSIM model containing the newly created factorial experiment. The
+        returned object can be run, inspected, or modified like any other
+        ``ApsimModel`` instance.
+
+    Examples
+    --------
+    Create a factorial experiment with fertiliser type and application rate:
+
+    .. code-block:: python
+
+        experiment = create_experiment_from_models(
+            model="Maize.apsimx",
+            specifications={
+                "fertiliser_type": (
+                    "[Fertilise at sowing].Script."
+                    "FertiliserType=DAP,NO3N"
+                ),
+                "amount": (
+                    "[Fertilise at sowing].Script.Amount=0,300"
+                ),
+            },
+            base_simulation=0,
+            permutation=True,
+            experiment_name="FertiliserExperiment",
+        )
+
+    Run the experiment and retrieve its results:
+
+    .. code-block:: python
+
+        experiment.run()
+        results = experiment.results
+
+        print(results.head())
+
+    .. versionadded:: 1.5.7
+    """
+    return _create_experiment_from_models(model=model, specifications=specifications,
+                                          experiment_name=experiment_name,
+                                          permutation=permutation, base_simulation=base_simulation)
 
 
 def create_experiment_from_file(
@@ -100,6 +188,8 @@ def create_experiment_from_file(
     ...     name_column="Treatment",
     ...     sheet="SobolSamples",
     ... )
+
+    .. versionadded:: 1.5.6
     """
     experiment_from_file = Path(experiment_from_file)
 
@@ -1012,7 +1102,7 @@ if __name__ == '__main__':
 
     print('datastore Path exists after exit:', Path(exp.datastore).exists())
     vals = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": (1, 3, 2.5),
-            '[Fertilise at sowing].Script.Amount':(0, 300),
+            '[Fertilise at sowing].Script.Amount': (0, 300),
             '[Sow using a variable rule].Script.Population': (1, 12, 6)}
     out = pre_experiment_test(vals, 'Maize', outputs=['Yield', 'Maize.Grain.Wt'])
     print(out)

@@ -33,7 +33,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
-from typing import Iterable, Iterator, Sequence
+from typing import Iterable, Iterator, Sequence, Callable, Any
 import numpy as np
 import pandas as pd
 from SALib.util.problem import ProblemSpec
@@ -326,7 +326,9 @@ class ConfigProblem:
                  groups: Sequence[str | int] | None = None,
                  index_id: str = "FactorFromFile",
                  apsim_result_tables=None,
-                 base_simulation: str | int = 0, ) -> None:
+                 base_simulation: str | int = 0,
+                 runtime_callback: Callable[..., Any] = None
+                 ) -> None:
 
         self.base_model = base_model
         self.params = dict(params)
@@ -337,6 +339,7 @@ class ConfigProblem:
         self.names = names
         self.apsim_result_tables = apsim_result_tables
         self.base_simulation = base_simulation
+        self.runtime_callback = runtime_callback
 
         if not self.outputs:
             raise ValueError("At least one APSIM output must be specified.")
@@ -627,7 +630,8 @@ def evaluate_model_sensitivity(
         analyze_options: dict | None = None,
         chunk_size: int | None = None,
         grouping: str | Sequence[str] | None = None,
-        json_filename: str | None = 'sens_file_metadata.json'
+        json_filename: str | None = 'sens_file_metadata.json',
+
 ) -> Results:
     """Run APSIM simulations and calculate global sensitivity indices.
 

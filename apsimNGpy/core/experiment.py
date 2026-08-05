@@ -3,7 +3,7 @@ import re
 from collections import OrderedDict
 from pathlib import Path
 from typing import Union, Iterable
-from apsimNGpy.core._experiment_from_file import _create_experiment_from_file, NAME
+from apsimNGpy.core._experiment_from_file import _create_experiment_from_file, NAME, _pre_experiment_test
 from apsimNGpy import NodeNotFoundError
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.core.model_loader import get_node_by_path, AUTO_PATH
@@ -916,7 +916,65 @@ class ExperimentManager(ApsimModel):
         invoke_csharp_gc()
 
 
-__all__ = ['ExperimentManager',  "create_experiment_from_file", 'create_factor_table']
+def pre_experiment_test(params,
+                        base_model,
+                        outputs,
+                        base_simulation=0,
+                        func=create_experiment_from_file,
+                        use_threads=True, ):
+    """
+        Test parameter paths before creating a large-scale experiment.
+
+        Each parameter is tested against the base APSIM model to identify valid
+        and invalid parameter paths.
+
+        **params** : dict[str, tuple[Any, ...]] | list[dict[str, tuple[Any, ...]]]
+            Parameter paths mapped to the values that should be tested.
+
+        **base_model** : str | Path | object
+            Base APSIM model or path to the model file.
+
+        **base_simulation** : int, default=0
+            Index of the simulation used for parameter testing.
+
+        **outputs** : list, str, tuple required.
+            The simulated output, which will be used to measure the parameters changes
+
+        **func** : callable, default=_create_experiment_from_file
+            Function used to create the experiment model.
+
+        **use_threads** : bool, default=True
+            Whether to use threads for parallel parameter testing.
+
+        Returns
+        -------
+        dict
+            A dictionary containing ``passed`` and ``failed`` parameter lists.
+        Examples:
+        -------------
+
+        .. code-block:: python
+
+            vals = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": (1, 3, 2.5),
+                '[Sow using a variable rule].Script.Population': (1, 12, 6)}
+            out = pre_experiment_test(vals, 'Maize', outputs=['Yield', 'Maize.Grain.Wt'])
+
+        .. code-block:: python
+
+            {'passed': [{'[Sow using a variable rule].Script.Population': (1, 12, 6)},
+              {'[Maize].Leaf.Photosynthesis.RUE.FixedValue': (1, 3, 2.5)}],
+             'failed': []}
+
+        """
+    return _pre_experiment_test(params,
+                                base_model,
+                                outputs=outputs,
+                                base_simulation=base_simulation,
+                                func=func,
+                                use_threads=use_threads, )
+
+
+__all__ = ['ExperimentManager', "create_experiment_from_file", 'create_factor_table', 'pre_experiment_test']
 if __name__ == '__main__':
     with ExperimentManager("Maize", out_path='dtb.apsimx') as exp:
         exp.init_experiment(permutation=True)
@@ -941,7 +999,7 @@ if __name__ == '__main__':
         #                factor_name='Population')
         exp.factor(
             param_node_location="Maize",
-            node_type="Plant",
+            node_type="Models.PMF.Plant",
             param_identifier="Leaf.Photosynthesis.RUE.FixedValue",  #
             values=[0.9, 2, 3], rename=''
         )

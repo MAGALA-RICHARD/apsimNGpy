@@ -1,20 +1,13 @@
-import shutil
 from contextlib import suppress
-from pathlib import Path
-import numpy as np
+from pydantic import BaseModel
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.starter.starter import CLR
-from uuid import uuid4
-from pydantic import BaseModel
-from typing import Iterable, Optional
-
-from pydantic import BaseModel, ConfigDict, Field
 
 Models = CLR.Models
-from apsimNGpy.core.sim_tools import get_root_model, create_factor_table
-from typing import Any
+from apsimNGpy.core.sim_tools import get_root_model
 
 EXPERIMENT_NAME = "ExperimentFromModels"
+from apsimNGpy.core._test_utils import test_experiment, build_test_results
 
 
 class Specification(BaseModel):
@@ -27,11 +20,6 @@ class Specification(BaseModel):
         fm.Name = self.name
         fm.set_Specification(self.specification)
         return fm, self.specification
-
-
-class Specifications(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-    specifications: list[Specification] = Field(default_factory=list)
 
 
 def _create_experiment_from_models(model, specifications: dict, base_simulation=0, permutation: bool = True,
@@ -121,83 +109,38 @@ def _create_experiment_from_models(model, specifications: dict, base_simulation=
     return root
 
 
-def _test_params(candidates: dict, func, model, output, base_sim=0):
+def _test_specification(candidates: dict, model, output, base_sim=0):
     """
-               Vary any factor and keep another constant to test
-               @return:
+               permutation is set to True to avoid unexpected behavioral tests
                """
     vaRs = dict(candidates)
-    # vaRs['[Sow using a variable rule].Script.CultivarName'] = ['Cultivar', "Cultivar"]
-    X = create_factor_table(**vaRs, name_column='FactorFromFile')
-    csf_file_name = f'tmp_{uuid4()}.csv'
-    if isinstance(output, tuple):
-        output = list(output)
+
     try:
-        NAME_COLUMN = 'FactorFromFile'
-        Path(csf_file_name).unlink(missing_ok=True)
-        X.to_csv(csf_file_name)
-        experiment = func(model, experiment_from_file=csf_file_name, base_simulation=base_sim,
-                          name_column=NAME_COLUMN)
-        experiment.run()
-        res = experiment.results
-        final = res.merge(X, how='inner', on=NAME_COLUMN)
-        factor_levels = X["FactorFromFile"].nunique(dropna=False)
-        output_columns = [output] if isinstance(output, str) else list(output)
+        NAME_COLUMN = 'SimulationID'
 
-        group_means = (
-            final.groupby(NAME_COLUMN, dropna=False)[output_columns]
-            .mean()
-        )
-
-        if len(group_means) != factor_levels:
-            raise ValueError(
-                f"Expected {factor_levels} factor groups, but found "
-                f"{len(group_means)}."
-            )
-
-        # Compare every factor level with the first level for each output.
-        is_unchanged = np.all(
-            np.isclose(
-                group_means.to_numpy(dtype=float),
-                group_means.iloc[0].to_numpy(dtype=float),
-                rtol=1e-5,
-                atol=1e-8,
-                equal_nan=True,
-            ),
-            axis=0,
-        )
-
-        changed_outputs = [
-            column
-            for column, unchanged in zip(output_columns, is_unchanged)
-            if not unchanged
-        ]
-
-        with experiment:
-            pass
-        print(Path(experiment.datastore).exists())
-        return {
-            "params": candidates,
-            "passed": bool(changed_outputs),
-            "changed_outputs": changed_outputs,
-        }
+        experiment = _create_experiment_from_models(model, specifications=vaRs, base_simulation=base_sim,
+                                                    permutation=True)
+        changed_outputs = test_experiment(experiment=experiment, outputs=output,name_column=NAME_COLUMN)
+        return build_test_results(vaRs, changed_outputs, outputs=output)
     finally:
         with suppress(PermissionError):
-            Path(csf_file_name).unlink(missing_ok=True)
+            pass
 
 
 if __name__ == '__main__':
 
     vals = {"[Maize].Leaf.Photosynthesis.RUE.FixedValue": (1, 3, 2.5),
             '[Sow using a variable rule].Script.Population': (1, 12, 6)}
+    spe = specifications = {
+        'ftype': "[Fertilise at sowing].Script.FertiliserType= DAP,DAP",
+        'Amount': "[Fertilise at sowing].Script.Amount= 0, 300",
+    }
     experi = _create_experiment_from_models('Maize',
-                                            specifications={
-                                                'ftype': "[Fertilise at sowing].Script.FertiliserType= DAP,NO3N",
-                                                'Amount': "[Fertilise at sowing].Script.Amount= 0, 300",
-                                            }, permutation=False)
+                                            specifications=spe, permutation=False)
     experi.run()
-    print(experi.results)
-    experi.open_in_gui()
+
+    tests = _test_specification(spe, 'Maize', output=['Yield'])
+    print(tests)
 
 
     def clean(*args, **kwargs):

@@ -29,7 +29,7 @@ def create_experiment_from_models(
     experiment_name: str = EXPERIMENT_NAME,
 ):
     """
-    Create an APSIM factorial experiment from a model object.
+    Create an APSIM factorial experiment from a Models namespace.
 
     Unlike file-based experiment builders, this function creates the
     experiment directly from an APSIM Models namespace object or an existing

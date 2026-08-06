@@ -116,7 +116,7 @@ def _create_experiment_from_models(model, specifications: dict, base_simulation=
         evaluated_specifications.add(evaluated.factor_model)
     for spec in evaluated_specifications:
         parent_node.Children.Add(spec[0])
-    # to be continued
+
     root.save()
     return root
 
@@ -194,7 +194,9 @@ if __name__ == '__main__':
                                             specifications={
                                                 'ftype': "[Fertilise at sowing].Script.FertiliserType= DAP,NO3N",
                                                 'Amount': "[Fertilise at sowing].Script.Amount= 0, 300",
-                                            })
+                                            }, permutation=False)
+    experi.run()
+    print(experi.results)
     experi.open_in_gui()
 
 

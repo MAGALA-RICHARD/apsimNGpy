@@ -15,7 +15,7 @@ from apsimNGpy.starter.starter import CLR
 from apsimNGpy.logger import logger
 from apsimNGpy.core.sim_tools import create_factor_table
 from apsimNGpy.core._experiment_from_models import _create_experiment_from_models, EXPERIMENT_NAME, build_experiment
-
+import textwrap
 CastHelper = CLR.CastHelper
 NodeUtils = CLR.APsimCore
 System = CLR.System
@@ -208,6 +208,25 @@ def create_experiment_from_file(
         experiment_name=experiment_name,
     )
 
+example = """experiment = create_experiment_from_models(
+              model="Maize.apsimx",
+              specifications={
+                  "fertiliser_type": (
+                      "[Fertilise at sowing].Script."
+                      "FertiliserType=DAP,NO3N"
+                  ),
+                  "amount": (
+                      "[Fertilise at sowing].Script.Amount=0,300"
+                  ),
+              },
+              base_simulation=0,
+              permutation=True,
+              experiment_name="FertiliserExperiment",
+          )
+
+          experiment.run()
+          results = experiment.results
+"""
 
 class ExperimentManager(ApsimModel):
     """
@@ -247,7 +266,7 @@ class ExperimentManager(ApsimModel):
     This class is retained temporarily for backward compatibility. New code
     should use :func:`create_experiment_from_models`, which produces an instance of ApsimModel with the same functionality as ExperimentManager instance
 
-    This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
+    It inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
     with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
     experiment itself with: :meth:`init_experiment`, which creates a new experiment from the suggested base simulation and ``permutation`` type
 
@@ -267,10 +286,23 @@ class ExperimentManager(ApsimModel):
     """
 
     def __init__(self, model, out_path=AUTO_PATH):
+        message = textwrap.dedent(
+            f"""
+            ExperimentManager is deprecated and will be removed in a future release.
+            Use create_experiment_from_models() instead.
+
+            Migration example
+            ----------------------------------------------------------------------
+            from apsimNGpy.core.experiment import create_experiment_from_models
+
+            {textwrap.dedent(example).strip()}
+            ----------------------------------------------------------------------
+            """
+        ).strip()
+
         warnings.warn(
-            "ExperimentManager is deprecated and will be removed in a\n "
-            "future release. Use create_experiment_from_models() instead.",
-            DeprecationWarning,
+            message,
+            FutureWarning,
             stacklevel=2,
         )
         super().__init__(model=model, out_path=out_path)

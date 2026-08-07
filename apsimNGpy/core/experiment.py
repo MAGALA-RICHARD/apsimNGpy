@@ -246,8 +246,7 @@ class ExperimentManager(ApsimModel):
               model="Maize.apsimx",
               specifications={
                   "fertiliser_type": (
-                      "[Fertilise at sowing].Script."
-                      "FertiliserType=DAP,NO3N"
+                      "[Fertilise at sowing].Script.FertiliserType=DAP,NO3N"
                   ),
                   "amount": (
                       "[Fertilise at sowing].Script.Amount=0,300"

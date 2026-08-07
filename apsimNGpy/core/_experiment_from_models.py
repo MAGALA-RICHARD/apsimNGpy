@@ -1,5 +1,5 @@
 from contextlib import suppress
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from apsimNGpy.core.apsim import ApsimModel
 from apsimNGpy.starter.starter import CLR
 
@@ -8,6 +8,7 @@ from apsimNGpy.core.sim_tools import get_root_model
 
 EXPERIMENT_NAME = "ExperimentFromModels"
 from apsimNGpy.core._test_utils import test_experiment, build_test_results
+from apsimNGpy.core.experiment_tools import build_experiment
 
 
 class Specification(BaseModel):
@@ -86,33 +87,23 @@ def _create_experiment_from_models(model, specifications: dict, base_simulation=
         10             1             2  ...    1095.363002       Report
 
     """
-    obj = get_root_model(model, simulation_name=base_simulation)
-    root, base_sim = obj["root"], obj["simulation"]
-    exp = Models.Factorial.Experiment()
-    exp.Name = experiment_name
-    factor_holder_node = Models.Factorial.Factors()
-    exp.Children.Add(factor_holder_node)
-    exp.Children.Add(base_sim)
-    root.Simulations.Children.Add(exp)
-    parent_node = factor_holder_node if not permutation else Models.Factorial.Permutation()
-    if permutation:
-        factor_holder_node.Children.Add(parent_node)
+    experiment_info = build_experiment(model, experiment_name=experiment_name, base_simulation=base_simulation,
+                                       permutation=permutation)
 
-    evaluated_specifications = set()
+    evaluated_specifications = []
     for name, spec in specifications.items():
         evaluated = Specification(name=name, specification=spec)
-        evaluated_specifications.add(evaluated.factor_model)
+        evaluated_specifications.append(evaluated.factor_model)
     for spec in evaluated_specifications:
-        parent_node.Children.Add(spec[0])
-
-    root.save()
-    return root
+        experiment_info.factors.Children.Add(spec[0])
+    experiment_info.apsim_model.save()
+    return experiment_info.apsim_model
 
 
 def _test_specification(candidates: dict, model, output, base_sim=0):
     """
-               permutation is set to True to avoid unexpected behavioral tests
-               """
+       permutation is set to True to avoid unexpected behavioral tests
+       """
     vaRs = dict(candidates)
 
     try:
@@ -120,7 +111,7 @@ def _test_specification(candidates: dict, model, output, base_sim=0):
 
         experiment = _create_experiment_from_models(model, specifications=vaRs, base_simulation=base_sim,
                                                     permutation=True)
-        changed_outputs = test_experiment(experiment=experiment, outputs=output,name_column=NAME_COLUMN)
+        changed_outputs = test_experiment(experiment=experiment, outputs=output, name_column=NAME_COLUMN)
         return build_test_results(vaRs, changed_outputs, outputs=output)
     finally:
         with suppress(PermissionError):

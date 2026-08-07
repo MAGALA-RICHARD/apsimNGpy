@@ -9,7 +9,7 @@ from uuid import uuid4
 Models = CLR.Models
 from apsimNGpy.core.sim_tools import get_root_model, create_factor_table
 from typing import Any
-
+from apsimNGpy.core.experiment_tools import build_experiment
 NAME = "ExperimentFromFile"
 
 
@@ -50,14 +50,9 @@ def _create_experiment_from_file(model, experiment_from_file, name_column, sheet
         experiment
     ==========================================================
     """
-    obj = get_root_model(model, simulation_name=base_simulation)
-    root, base_sim = obj["root"], obj["simulation"]
-    exp = Models.Factorial.Experiment()
-    exp.Name = experiment_name
-    factor_holder_node = Models.Factorial.Factors()
-    exp.Children.Add(factor_holder_node)
-    exp.Children.Add(base_sim)
-    root.Simulations.Children.Add(exp)
+    PERMUTATION = False # do not change
+    experiment = build_experiment(model, experiment_name=experiment_name, base_simulation=base_simulation, permutation=PERMUTATION)
+    root = experiment.apsim_model
     try:
         FactorialFactorFromFile = Models.Factorial.FactorFromFile()
     except AttributeError as error:
@@ -72,7 +67,7 @@ def _create_experiment_from_file(model, experiment_from_file, name_column, sheet
             raise ValueError(f"Expected sheet name to be specified got {sheet} instead")
         FactorialFactorFromFile.Sheet = sheet
     FactorialFactorFromFile.FileName = str(Path(experiment_from_file).resolve())
-    factor_holder_node.Children.Add(FactorialFactorFromFile)
+    experiment.factors.Children.Add(FactorialFactorFromFile)
 
     return root
 

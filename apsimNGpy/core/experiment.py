@@ -1,5 +1,6 @@
 from __future__ import annotations
 import re
+import warnings
 from collections import OrderedDict
 from pathlib import Path
 from typing import Union, Iterable
@@ -13,7 +14,7 @@ from apsimNGpy.core.version_inspector import is_higher_apsim_version
 from apsimNGpy.starter.starter import CLR
 from apsimNGpy.logger import logger
 from apsimNGpy.core.sim_tools import create_factor_table
-from apsimNGpy.core._experiment_from_models import _create_experiment_from_models, EXPERIMENT_NAME
+from apsimNGpy.core._experiment_from_models import _create_experiment_from_models, EXPERIMENT_NAME, build_experiment
 
 CastHelper = CLR.CastHelper
 NodeUtils = CLR.APsimCore
@@ -22,11 +23,11 @@ apsim_version = CLR.apsim_compiled_version
 
 
 def create_experiment_from_models(
-    model,
-    specifications: dict[str, str],
-    base_simulation: int | str = 0,
-    permutation: bool = True,
-    experiment_name: str = EXPERIMENT_NAME,
+        model,
+        specifications: dict[str, str],
+        base_simulation: int | str = 0,
+        permutation: bool = True,
+        experiment_name: str = EXPERIMENT_NAME,
 ):
     """
     Create an APSIM factorial experiment from a Models namespace.
@@ -210,6 +211,42 @@ def create_experiment_from_file(
 
 class ExperimentManager(ApsimModel):
     """
+
+    .. deprecated:: 1.5.7
+
+       ``ExperimentManager`` is deprecated and will be removed in a future
+       release. Use :func:`create_experiment_from_models` instead. The
+       functional API provides a simpler experiment-building workflow and
+       avoids the state and inheritance requirements of this class.
+
+       For example:
+
+       .. code-block:: python
+
+          experiment = create_experiment_from_models(
+              model="Maize.apsimx",
+              specifications={
+                  "fertiliser_type": (
+                      "[Fertilise at sowing].Script."
+                      "FertiliserType=DAP,NO3N"
+                  ),
+                  "amount": (
+                      "[Fertilise at sowing].Script.Amount=0,300"
+                  ),
+              },
+              base_simulation=0,
+              permutation=True,
+              experiment_name="FertiliserExperiment",
+          )
+
+          experiment.run()
+          results = experiment.results
+
+    Notes
+    -----
+    This class is retained temporarily for backward compatibility. New code
+    should use :func:`create_experiment_from_models`, which produces an instance of ApsimModel with the same functionality as ExperimentManager instance
+
     This class inherits methods and attributes from: :class:`~apsimNGpy.core.apsim.ApsimModel` to manage APSIM Experiments
     with pure factors or permutations. You first need to initiate the instance of this class and then initialize the
     experiment itself with: :meth:`init_experiment`, which creates a new experiment from the suggested base simulation and ``permutation`` type
@@ -230,6 +267,12 @@ class ExperimentManager(ApsimModel):
     """
 
     def __init__(self, model, out_path=AUTO_PATH):
+        warnings.warn(
+            "ExperimentManager is deprecated and will be removed in a\n "
+            "future release. Use create_experiment_from_models() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         super().__init__(model=model, out_path=out_path)
         self.parent_factor = None
         self.experiment_node = None
@@ -259,108 +302,6 @@ class ExperimentManager(ApsimModel):
             print(self.model_info.datastore)
 
     # put here during debugging context db file manager, but sure will be removed after full tests
-    def _run(self, report_name: Union[tuple, list, str] = None,
-             simulations: Union[tuple, list] = None,
-             clean_up: bool = True,
-             verbose: bool = False,
-             timeout: int = 800,
-             **kwargs) -> 'CoreModel':
-        """
-        Run APSIM model simulations to write the results either to SQLite database or csv file. Does not collect the
-         simulated output into memory. Please see related APIs: :attr:`results` and :meth:`get_simulated_output`.
-
-        Parameters
-        ----------
-        report_name: Union[tuple, list, str], optional
-            Defaults to APSIM default Report Name if not specified.
-            - If iterable, all report tables are read and aggregated into one DataFrame.
-
-        simulations: Union[tuple, list], optional
-            List of simulation names to run. If None, runs all simulations.
-
-        clean_up: bool, optional
-            If True, removes the existing database before running.
-
-        verbose: bool, optional
-            If True, enables verbose output for debugging. The method continues with debugging info anyway if the run was unsuccessful
-
-        timeout: int, defualt is 800 seconds
-              Enforces a timeout and returns a CompletedProcess-like object.
-
-        kwargs: **dict
-            Additional keyword arguments, e.g., to_csv=True, use this flag to correct results from
-            a csv file directly stored at the location of the running apsimx file.
-
-        Warning:
-        --------------
-        In my experience with Models.exe, CSV outputs are not always overwritten; after edits, stale results can persist. Proceed with caution.
-
-
-        Returns
-        -------
-            Instance of the respective model class e.g.,  ApsimModel, ExperimentManager.
-       ``RuntimeError``
-            Raised if the ``APSIM`` run is unsuccessful. Common causes include ``missing meteorological files``,
-            mismatched simulation ``start`` dates with ``weather`` data, or other ``configuration issues``.
-
-       Example:
-
-       Instantiate an ``apsimNGpy.core.apsim.ApsimModel`` object and run::
-
-              from apsimNGpy.core.apsim import ApsimModel
-              model = ApsimModel(model= 'Maize')# replace with your path to the apsim template model
-              model.run(report_name = "Report")
-              # check if the run was successful
-              model.ran_ok
-              'True'
-
-       .. note::
-
-          Updates the ``ran_ok`` flag to ``True`` if no error was encountered.
-
-       .. seealso::
-
-           Related APIs: :attr:`results` and :meth:`get_simulated_output`.
-             """
-        try:
-            from System import InvalidOperationException
-            self.save()
-            if clean_up:
-                try:
-                    _path = Path(self.path)
-                    # delete or clear all tables
-                    try:
-                        self._DataStore.Dispose()
-                        self.Datastore.Dispose()
-                    except (AttributeError, InvalidOperationException):
-                        pass
-                        # delete_all_tables(str(db))
-                except PermissionError:
-                    pass
-
-            # Run APSIM externally
-            res = run_model_externally(
-                # we run using the copied file
-
-                self.path,
-                verbose=verbose,
-                to_csv=kwargs.get('to_csv', False),
-                timeout=timeout
-            )
-
-            if res.returncode == 0:
-                self.ran_ok = True
-                self.report_names = report_name
-                self.run_method = run_model_externally
-
-            # If the model failed and verbose was off, rerun to diagnose
-            if not self.ran_ok and not verbose:
-                print('run time errors occurred')
-
-            return self
-
-        finally:
-            ...
 
     def init_experiment(self, permutation: bool = True, base_simulation: str = None):
 

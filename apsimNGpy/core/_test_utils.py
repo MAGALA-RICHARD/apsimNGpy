@@ -1,6 +1,5 @@
 import numpy as np
 from apsimNGpy.core.apsim import ApsimModel
-from pathlib import Path
 
 
 def test_experiment(*, experiment: ApsimModel, outputs, name_column, agg_func='sum'):

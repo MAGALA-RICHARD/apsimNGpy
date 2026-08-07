@@ -230,7 +230,6 @@ example = """experiment = create_experiment_from_models(
 
 class ExperimentManager(ApsimModel):
     """
-
     .. deprecated:: 1.5.7
 
        ``ExperimentManager`` is deprecated and will be removed in a future
@@ -246,11 +245,9 @@ class ExperimentManager(ApsimModel):
               model="Maize.apsimx",
               specifications={
                   "fertiliser_type": (
-                      "[Fertilise at sowing].Script.FertiliserType=DAP,NO3N"
-                  ),
+                      "[Fertilise at sowing].Script.FertiliserType=DAP,NO3N"),
                   "amount": (
-                      "[Fertilise at sowing].Script.Amount=0,300"
-                  ),
+                      "[Fertilise at sowing].Script.Amount=0,300"),
               },
               base_simulation=0,
               permutation=True,

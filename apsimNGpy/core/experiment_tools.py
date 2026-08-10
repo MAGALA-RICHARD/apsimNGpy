@@ -220,7 +220,7 @@ def factor_spec(
     .. code-block:: python
 
         population = factor_spec(
-            "Maize.apsimx",
+            "Maize",
             param_node_location="Sow using a variable rule",
             node_type="Manager",
             param_identifier="Population",
@@ -242,7 +242,7 @@ def factor_spec(
     .. code-block:: python
 
         nitrogen = factor_spec(
-            "Maize.apsimx",
+            "Maize",
             param_node_location=(
                 ".Simulations.Simulation.Field.Fertilise at sowing"
             ),
@@ -334,9 +334,9 @@ def factor_spec(
     .. code-block:: python
 
         experiment = create_experiment_from_models(
-            model="Maize.apsimx",
+            model="Maize",
             specifications=factor_spec(
-                "Maize.apsimx",
+                "Maize",
                 param_node_location="Sow using a variable rule",
                 node_type="Manager",
                 param_identifier="Population",

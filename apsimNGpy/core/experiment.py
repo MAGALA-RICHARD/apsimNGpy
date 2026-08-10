@@ -16,6 +16,7 @@ from apsimNGpy.logger import logger
 from apsimNGpy.core.sim_tools import create_factor_table
 from apsimNGpy.core._experiment_from_models import _create_experiment_from_models, EXPERIMENT_NAME, build_experiment
 import textwrap
+
 CastHelper = CLR.CastHelper
 NodeUtils = CLR.APsimCore
 System = CLR.System
@@ -174,7 +175,7 @@ def create_experiment_from_file(
     Create an experiment from a CSV file:
 
     >>> model = create_experiment_from_file(
-    ...     model="Maize.apsimx",
+    ...     model="Maize",
     ...     experiment_from_file="factors.csv",
     ...     name_column="FactorFromFile",
     ...     base_simulation=0,
@@ -184,7 +185,7 @@ def create_experiment_from_file(
     Create an experiment from an Excel worksheet:
 
     >>> model = create_experiment_from_file(
-    ...     model="Maize.apsimx",
+    ...     model="Maize",
     ...     experiment_from_file="factors.xlsx",
     ...     name_column="Treatment",
     ...     sheet="SobolSamples",
@@ -208,6 +209,7 @@ def create_experiment_from_file(
         experiment_name=experiment_name,
     )
 
+
 example = """experiment = create_experiment_from_models(
               model="Maize.apsimx",
               specifications={
@@ -227,6 +229,7 @@ example = """experiment = create_experiment_from_models(
           experiment.run()
           results = experiment.results
 """
+
 
 class ExperimentManager(ApsimModel):
     """

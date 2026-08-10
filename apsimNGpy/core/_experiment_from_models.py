@@ -97,6 +97,7 @@ def _create_experiment_from_models(model, specifications: dict, base_simulation=
     for spec in evaluated_specifications:
         experiment_info.factors.Children.Add(spec[0])
     experiment_info.apsim_model.save()
+    setattr(experiment_info.apsim_model, 'n_factors', len(evaluated_specifications))
     return experiment_info.apsim_model
 
 

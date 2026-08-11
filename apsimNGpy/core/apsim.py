@@ -100,6 +100,7 @@ class ApsimModel(CoreModel):
         self._model = model
         self.out_path = Path(out_path) if out_path is not AUTO_PATH else AUTO_PATH
         self._extra_kwargs = kwargs or {}
+        self.n_factors = None
 
     def __hash__(self):
         """

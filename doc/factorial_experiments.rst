@@ -31,13 +31,16 @@ Simulation outputs are also readily available for downstream analysis.
 Quick Overview
 ------------------
 
-The :class:`~apsimNGpy.core.experiment.ExperimentManager`: class wraps an existing APSIM model and allows you to:
+The `create_experiment_from_models` workflow provides a streamlined way to build APSIM experiments directly from one or more ApsimModel instances. It allows you to:
 
-- Clone and isolate a base simulation
-- Add multiple input factors (e.g., fertilizer rate, sowing density)
-- Generate permutations or combinations of those factors
-- Export the updated ``.apsimx`` file with fully configured experiments
-- visualize outputs easily
+Use existing ApsimModel instances as the basis for an experiment
+Define and add multiple experimental factors, such as fertilizer rate or sowing density
+Generate factor combinations or treatment permutations
+Create and configure the corresponding APSIM experiment simulations
+Export the resulting experiment to an .apsimx file
+Return an ApsimModel instance that can be further inspected, edited, run, and visualized
+
+Note: This workflow replaces the deprecated `ExperimentManager` class, which will be removed in a future release.
 
 Step 1. Import the API and initialize it
 -----------------------------------------
@@ -108,7 +111,7 @@ As specification is a dict, we can start with an empty dict and add one factor a
             )
         )
 
- Pass the specifications to :func:`~apsimNGpy.core.experiment.create_experiment_from_models`:
+Pass the specifications to :func:`~apsimNGpy.core.experiment.create_experiment_from_models`
 
     .. code-block:: python
 

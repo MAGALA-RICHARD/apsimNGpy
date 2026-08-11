@@ -45,19 +45,82 @@ Step 1. Import the API and initialize it
 .. code-block:: python
 
    from apsimNGpy.core.experiment import ExperimentManager
-   exp = ExperimentManager("Maize", out_path="Maize_experiment.apsimx")
+   from apsimNGpy.core.experiment import create_experiment_from_models
+   from apsimNGpy.core.experiment_tools import factor_spec
+   experiment = create_experiment_from_models(
+            model="Maize",# this loads default maize model, but you can replace with file path with suffix .apsimx
+            specifications=factor_spec(
+                "Maize",
+                param_node_location="Sow using a variable rule",
+                node_type="Manager",
+                param_identifier="Population",
+                values=[6, 10, 14],
+                rename="population",
+            ),
+        )
+   experiment.run()
+   df = experiment.results
 
-Step 2. Adding Factors
+Configuring Factors
 ----------------------------
-The following example demonstrates how plant population density and nitrogen fertilizer rates are added with one at a time.
-
-a) Add nitrogen levels as a continuous factor:
+Multiple factors can be added using a dict. the keys correspond to the fact name and the value is the path specification.
+see examples below
 
 .. code-block:: python
 
-    exp.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 50", factor_name='Nitrogen')
+    experiment = create_experiment_from_models('Maize',
+                                            specifications={
+                                                'ftype': "[Fertilise at sowing].Script.FertiliserType= DAP,NO3N",
+                                                'Amount': "[Fertilise at sowing].Script.Amount= 0, 300",
+                                            }
 
-b) Add population density as a categorical factor:
+.. note::
+
+   Using a dictionary is simple and convenient, but it can also make it easy to introduce invalid configurations without realizing it.
+   The ``factor_spec`` method helps avoid this by allowing you to explicitly specify the model, node name or parameter path, and the corresponding values.
+
+   Under the hood, Pydantic models together with ``ApsimModel`` are used to validate the supplied arguments and ensure that the specification is correctly structured.
+
+As specification is a dict, we can start with an empty dict and add one factor at a time as follows
+
+.. code-block:: python
+
+        specifications = {}
+
+        specifications.update(
+            factor_spec(
+                "Maize",
+                param_node_location="Organic",
+                node_type="Organic",
+                param_identifier="Carbon[1]",
+                values=[0.45, 1, 3],
+                rename="initial_carbon",
+            )
+        )
+
+        specifications.update(
+            factor_spec(
+                "Maize",
+                param_node_location="Sow using a variable rule",
+                node_type="Manager",
+                param_identifier="Population",
+                values=[6, 10, 14],
+                rename="population",
+            )
+        )
+
+ Pass the specifications to ``create_experiment_from_models``:
+
+    .. code-block:: python
+
+        experiment = create_experiment_from_models(
+            model="Maize",
+            specifications=specifications,
+            permutation=True,
+        )
+
+        experiment.run()
+        results = experiment.results
 
 .. code-block:: python
 
@@ -65,19 +128,12 @@ b) Add population density as a categorical factor:
                      factor_name='Population')
 
 
-Step 3. Running the Experiment
-------------------------------------
 
-Execute the simulation and visualize results:
 
-.. code-block:: python
-
-    exp.run(report_name='Report')
-    df = apsim.results
-    df[['population']] = pd.Categorical(['Population'])
-
-Step 4. Visualization and other analysis
+Visualization and other analysis
 ---------------------------------------------
+The returned ApsimModel instance provides access to all methods and attributes available on ApsimModel objects,
+including tools for model visualization, inspection, editing, and simulation management.
 
 a) Visualization
 ^^^^^^^^^^^^^^^^^^^^
@@ -132,57 +188,16 @@ it is evident that nitrogen fertilizer has a greater influence
 on corn grain yield than plant population density, as reflected by
 the higher mean yield values, especially at high nitrogen rates.
 
-Factorial Experiment with Cultivar Replacements
------------------------------------------------
 
 .. Hint::
 
    To conduct a factorial experiment involving ``cultivar`` modifications, a crop replacement must be added.
+   use ``add_crop_replacements`` method before running
 
-Load the maize simulations again and initialize APSIM:
+.. note::
 
-.. code-block:: python
+   This workflow replaces the ``ExperimentManager`` class, which is deprecated and will be removed in a future release.
 
-   from apsimNGpy.core.experiment import ExperimentManager
-   exp = ExperimentManager("Maize", out_path="Maize_experiment.apsimx")
-
-
-Create an experiment with permutation enabled:
-
-.. code-block:: python
-
-    exp.init_experiment(permutation=True)
-
-Add nitrogen and population density factors:
-
-.. code-block:: python
-
-    exp.add_factor(specification="[Fertilise at sowing].Script.Amount = 0 to 200 step 20",
-    factor_name='Nitrogen')
-    exp.add_factor(specification="[Sow using a variable rule].Script.Population = 4, 10, 2, 7, 6",
-                      factor_name='Population')
-
-Replace the crop with an alternative maize cultivar:
-
-.. code-block:: python
-
-    exp.add_crop_replacements(_crop='Maize')
-
-Add a factor for radiation use efficiency (RUE):
-
-.. code-block:: python
-
-     exp.add_factor(specification='[Maize].Leaf.Photosynthesis.RUE.FixedValue = 1.0, 1.23, 4.3',
-     factor_name='RUE')
-
-
-API Summary
--------------
-
-- :class:`~apsimNGpy.core.experiment.ExperimentManager`: Main entry point to create and manipulate factorial designs.
-- :meth:`~apsimNGpy.core.experiment.ExperimentManager.init_experiment`: Prepares the experiment node structure in the model.
-- :meth:`~apsimNGpy.core.experiment.ExperimentManager.add_factor`: Adds a new varying parameter or script-defined rule.
-- :meth:`~apsimNGpy.core.experiment.ExperimentManager.finalize`: Validates and commits the experiment structure to the model.
 
 Further Reading
 --------------------

@@ -1,6 +1,8 @@
 from pathlib import Path
 from uuid import uuid4
 
+from apsimNGpy.core.apsim import ApsimModel
+
 from apsimNGpy.core.experiment import create_experiment_from_models, create_experiment_from_file
 from apsimNGpy.core.experiment_tools import factor_spec
 import unittest
@@ -52,6 +54,60 @@ class TestExperimentFromModels(unittest.TestCase):
                 experiment_from_file="factors.xlsx",
                 name_column="Treatment",
                 sheet="SobolSamples",
+            )
+
+    def test_experiment_from_apsimx_many_simulations(self):
+        with ApsimModel('Maize') as model:
+            create_experiment_from_models(
+                model=model,
+                specifications=factor_spec(
+                    "Maize",
+                    param_node_location="Sow using a variable rule",
+                    node_type="Manager",
+                    param_identifier="Population",
+                    values=[6, 10, 14],
+                    rename="population",
+                ),
+
+            )
+
+    def test_experiment_from_apsim_model(self):
+        with ApsimModel('Maize') as model:
+            # add more simulation
+            model.clone_simulation(rename='sim2', base_simulation=0)
+            model.clone_simulation(rename='sim3', base_simulation=0)
+            assert len(model) == 3, 'Cloning simulation was not successful'
+            experiment = create_experiment_from_models(
+                model=model,
+                specifications=factor_spec(
+                    "Maize",
+                    param_node_location="Sow using a variable rule",
+                    node_type="Manager",
+                    param_identifier="Population",
+                    values=[6, 10, 14],
+                    rename="population",
+                ),
+                base_simulation=2
+            )
+            self.assertEqual(True, hasattr(experiment, "n_factors"))
+            self.assertEqual(1, experiment.n_factors)
+            experiment.run()
+            df = experiment.results
+            self.assertEqual(df.SimulationID.nunique(), 3)
+
+    def test_raises_index_error_when_base_simulation_not_found(self):
+        with self.assertRaises(IndexError):
+            create_experiment_from_models(
+                model="Maize",
+                specifications=factor_spec(
+                    "Maize",
+                    param_node_location="Sow using a variable rule",
+                    node_type="Manager",
+                    param_identifier="Population",
+                    values=[6, 10, 14],
+                    rename="population",
+                ),
+                base_simulation=2
             )
 
 

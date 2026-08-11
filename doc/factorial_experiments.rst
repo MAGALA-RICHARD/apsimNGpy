@@ -44,11 +44,10 @@ Step 1. Import the API and initialize it
 
 .. code-block:: python
 
-   from apsimNGpy.core.experiment import ExperimentManager
    from apsimNGpy.core.experiment import create_experiment_from_models
    from apsimNGpy.core.experiment_tools import factor_spec
    experiment = create_experiment_from_models(
-            model="Maize",# this loads default maize model, but you can replace with file path with suffix .apsimx
+            model="Maize",# This loads default maize model, but you can replace it with an .apsimx file path
             specifications=factor_spec(
                 "Maize",
                 param_node_location="Sow using a variable rule",
@@ -63,8 +62,8 @@ Step 1. Import the API and initialize it
 
 Configuring Factors
 ----------------------------
-Multiple factors can be added using a dict. the keys correspond to the fact name and the value is the path specification.
-see examples below
+Multiple factors can be specified using a dictionary. Each dictionary key represents the factor name, and
+the corresponding value defines the parameter-path specification. See the examples below
 
 .. code-block:: python
 
@@ -109,7 +108,7 @@ As specification is a dict, we can start with an empty dict and add one factor a
             )
         )
 
- Pass the specifications to ``create_experiment_from_models``:
+ Pass the specifications to :func:`~apsimNGpy.core.experiment.create_experiment_from_models`:
 
     .. code-block:: python
 
@@ -121,12 +120,6 @@ As specification is a dict, we can start with an empty dict and add one factor a
 
         experiment.run()
         results = experiment.results
-
-.. code-block:: python
-
-    exp.add_factor(specification="[Sow using a variable rule].Script.Population =  4, 6, 10"",
-                     factor_name='Population')
-
 
 
 

@@ -240,7 +240,7 @@ def clear_db(
 
 
 def generate_default_db_path(tag=""):
-    base = Path.cwd() / '.scratch'
+    base = Path.cwd() / 'apsimNGpy.scratch'
     base.mkdir(parents=True, exist_ok=True)
     ans = base / f"{tag}{uuid.uuid1()}_.db"
     return str(ans)

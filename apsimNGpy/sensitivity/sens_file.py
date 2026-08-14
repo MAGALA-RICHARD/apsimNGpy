@@ -327,7 +327,7 @@ class ConfigProblem:
                  index_id: str = "FactorFromFile",
                  apsim_result_tables=None,
                  base_simulation: str | int = 0,
-                 runtime_callback: Callable[..., Any] = None
+                 apsim_model_callback: Callable[..., Any] = None
                  ) -> None:
 
         self.base_model = base_model
@@ -339,7 +339,7 @@ class ConfigProblem:
         self.names = names
         self.apsim_result_tables = apsim_result_tables
         self.base_simulation = base_simulation
-        self.runtime_callback = runtime_callback
+        self.apsim_model_callback = apsim_model_callback
 
         if not self.outputs:
             raise ValueError("At least one APSIM output must be specified.")
@@ -422,6 +422,8 @@ class ConfigProblem:
             )
 
             with model:
+                if self.apsim_model_callback:
+                    self.apsim_model_callback(model)
                 model.run(report_name=self.apsim_result_tables)
                 results = model.results.copy()
 

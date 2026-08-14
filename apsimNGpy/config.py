@@ -315,6 +315,22 @@ def get_apsim_bin_path():
     return _get_bin()
 
 
+from pathlib import Path
+
+
+class NullPath:
+    """Path wrapper that safely handles None."""
+
+    def __init__(self, path=None):
+        self.path = Path(path) if path is not None else None
+
+    def exists(self) -> bool:
+        return self.path is not None and self.path.exists()
+
+    def is_dir(self) -> bool:
+        return self.path is not None and self.path.is_dir()
+
+
 @dataclass(slots=True, frozen=False)
 class Configuration:
     """
@@ -323,10 +339,17 @@ class Configuration:
 
     """
     bin_path: Union[str, Path] = None
-    _bin_path: Union[str, Path, None]=None
+    _bin_path: Union[str, Path, None] = None
+    apsimx_source_dir: Union[str, Path] = None
 
     def __post_init__(self):
         self._bin_path = get_apsim_bin_path()
+        nul_path = NullPath(self._bin_path)
+        if nul_path.exists():
+            self.apsimx_source_dir = (nul_path.path.parent / 'Examples').resolve()
+            if not self.apsimx_source_dir.is_dir():
+                logger.warn('apsimx default source folder might be not have been configured properly')
+
         if self.bin_path is None:
             self.bin_path = get_apsim_bin_path()
         temporal_bin = os.environ.get(TEMPORAL_BIN_ENV_KEY, None)
@@ -601,13 +624,20 @@ def _load_crop_from_disk(crop: str, out: Union[str, Path], bin_path: Union[str, 
         suffix = suffix
     if not suffix.startswith('.'):
         raise ValueError(f"Unrecognized suffix '{suffix}'")
-    if BIN and os.path.exists(BIN):
+    if NullPath(BIN).exists():
         # assumes /Examples dir is in the same parent directory where bins
-        EXa = Path(locate_model_bin_path(BIN)).parent / 'Examples'
-        # print(f"{EXa}*/{crop}.{suffix}")
-        assert EXa.exists(), (
-            f"Failed to located example files folder relative to the location of the {BIN}. Make sure "
-            f"you entered the correct bin path")
+        EXa = configuration.apsimx_source_dir
+
+        if not NullPath(EXa).is_dir():
+            raise NotADirectoryError(
+                f"APSIM source directory not found: {EXa}\n"
+                "Set it explicitly with:\n\n"
+                "    from apsimNGpy import configuration\n"
+                "    configuration.apsimx_source_dir = '/path/to/source/files'\n\n"
+                "Also ensure that the configured APSIM bin path is correct. "
+                "By default, the source directory normally points to the 'Examples' "
+                "directory relative to the compiled APSIM binaries."
+            )
         target_location = glob.glob(f"{os.path.realpath(EXa)}/**/*{crop}{suffix}", recursive=True)  # case-sensitive
         if target_location:
             loaded_path = target_location[0]

@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from apsimNGpy.logger import logger
-from apsimNGpy.mailer.mail import send_report
+# from apsimNGpy.mailer.mail import send_report
 
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 from apsimNGpy.config import path_checker
@@ -130,10 +130,10 @@ def run_suite(_bin_path, verbosity_level=2):
                 )
                 logger.info(f"tested APSIM is {bin_path}")
                 # Send report
-
-                send_report(sms=report,
-                            subject=f"{apsim_version} Test Suite Report"
-                            )
+                logger.info(f"{report}\n Apsim Version: {apsim_version}")
+                # send_report(sms=report,
+                #             subject=f"{apsim_version} Test Suite Report"
+                #             )
 
                 return report
             finally:

@@ -1,11 +1,9 @@
 name: apsimNGpy Unittests Runner
 
 on:
-  schedule:
-    # Runs at --- America/Chicago on the 11th-31st.
-    # reminder.py decides whether it is actually the last day of the month.
-    - cron: "17,47 7-9 13-31 * *"
-      timezone: "America/Chicago"
+  push:
+    branches:
+      - main
 
   # Lets you test it manually from the GitHub Actions tab
   workflow_dispatch:

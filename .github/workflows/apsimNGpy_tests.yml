@@ -11,12 +11,12 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: pearlrise-payment-reminder
+  group: apsimNGpy-unit-tests
   cancel-in-progress: false
 
 jobs:
   send-reminders:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run PearlRise reminder
+      - name: Run apsimNGpy Unit Tests
         env:
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}

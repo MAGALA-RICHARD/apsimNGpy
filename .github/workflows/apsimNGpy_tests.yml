@@ -1,4 +1,4 @@
-name: PearlRise Payment Reminder
+name: apsimNGpy Unittests Runner
 
 on:
   schedule:

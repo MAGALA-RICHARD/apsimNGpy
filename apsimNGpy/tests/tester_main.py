@@ -23,16 +23,11 @@ args = parser.parse_args()
 bin_path = args.bin or Path(os.environ.get('TEST_APSIM_BINARY', )) or get_apsim_bin_path()
 if not bin_path or not bin_path.is_dir():
     bin_path = ACTIONS_APSIM_BINARY
+
 if not path_checker(bin_path):
-    new_path = input("APSIM binary path is not valid.\n"
-                     "Please enter a valid APSIM binary path "
-                     "or configure it using apsimNGpy.set_apsim_bin_path(): ").strip()
+    raise ValueError(f"Invalid APSIM binary path: {bin_path}")
 
-    if not path_checker(new_path):
-        raise ValueError(f"Invalid APSIM binary path: {new_path}")
-
-    set_apsim_bin_path(new_path)
-    bin_path = new_path
+set_apsim_bin_path(bin_path)
 
 logger.info('Using apsim bin: {}'.format(bin_path))
 

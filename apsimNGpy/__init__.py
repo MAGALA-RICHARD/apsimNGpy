@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from apsimNGpy.config import configuration
 from apsimNGpy.logger import logger
-
+from apsimNGpy.config import get_apsim_bin_path, set_apsim_bin_path
 _AutoBin = object()
 
 #  Option 1

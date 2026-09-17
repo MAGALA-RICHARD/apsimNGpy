@@ -20,11 +20,10 @@ parser.add_argument(
     help="Path to APSIM binary directory")
 
 args = parser.parse_args()
-bin_path = args.bin or Path(os.environ.get('TEST_APSIM_BINARY', )) or get_apsim_bin_path()
-if not bin_path or not bin_path.is_dir():
-    bin_path = ACTIONS_APSIM_BINARY
-
-if not path_checker(bin_path):
+bin_path = args.bin or os.environ.get('TEST_APSIM_BINARY', ) or get_apsim_bin_path() or ACTIONS_APSIM_BINARY
+if path_checker(bin_path):
+    bin_path = Path(bin_path).resolve()
+else:
     raise ValueError(f"Invalid APSIM binary path: {bin_path}")
 
 set_apsim_bin_path(bin_path)

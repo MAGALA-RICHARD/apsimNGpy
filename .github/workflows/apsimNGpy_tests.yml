@@ -39,7 +39,7 @@ jobs:
           LAST_DAY: ${{vars.LAST_DAY }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-        run: python -m apsimNGpy.tests.tester_main
+        run: python apsimNGpy/tests/tester_main.py
 
       - name: Upload reminder log
         if: always()

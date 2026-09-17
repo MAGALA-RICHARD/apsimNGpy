@@ -1,6 +1,6 @@
 # apsimNGpy runtime dependencies
 # Keep this file portable: no local file:// paths, Conda build paths, or environment-specific packages.
-
+apsimNGpy @ git+https://github.com/MAGALA-RICHARD/apsimNGpy.git@main
 numpy>=1.20.0
 scipy>=1.7
 xmltodict>=0.13.0

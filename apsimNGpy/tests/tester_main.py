@@ -170,4 +170,4 @@ if __name__ == '__main__':
             logger.error(f'tests from {t} failed')
         logger.info(f'test {test} passed {out}')
 
-       # run = (run_suite(bin_path, verbosity_level=2))
+        run = (run_suite(bin_path, verbosity_level=2))

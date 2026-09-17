@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  send-reminders:
+  apsimNGpy-tests:
     runs-on: windows-latest
 
     steps:

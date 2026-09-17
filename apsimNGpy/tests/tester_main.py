@@ -7,7 +7,7 @@ from pathlib import Path
 
 from apsimNGpy.logger import logger
 # from apsimNGpy.mailer.mail import send_report
-
+ACTIONS_APSIM_BINARY = Path(__file__).parent/'apsim_binaries'
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 from apsimNGpy.config import path_checker
 from apsimNGpy.config import apsim_bin_context, get_apsim_bin_path, set_apsim_bin_path
@@ -20,7 +20,8 @@ parser.add_argument(
 
 args = parser.parse_args()
 bin_path = args.bin or Path(os.environ.get('TEST_APSIM_BINARY', )) or get_apsim_bin_path()
-
+if not bin_path.exists():
+    bin_path = ACTIONS_APSIM_BINARY
 if not path_checker(bin_path):
     new_path = input("APSIM binary path is not valid.\n"
         "Please enter a valid APSIM binary path "

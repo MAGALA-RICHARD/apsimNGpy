@@ -6,8 +6,9 @@ from datetime import datetime
 from pathlib import Path
 
 from apsimNGpy.logger import logger
+
 # from apsimNGpy.mailer.mail import send_report
-ACTIONS_APSIM_BINARY = Path(__file__).parent/'apsim_binaries'
+ACTIONS_APSIM_BINARY = Path(__file__).parent / 'apsim_binaries'
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 from apsimNGpy.config import path_checker
 from apsimNGpy.config import apsim_bin_context, get_apsim_bin_path, set_apsim_bin_path
@@ -24,9 +25,8 @@ if not bin_path or not bin_path.is_dir():
     bin_path = ACTIONS_APSIM_BINARY
 if not path_checker(bin_path):
     new_path = input("APSIM binary path is not valid.\n"
-        "Please enter a valid APSIM binary path "
-        "or configure it using apsimNGpy.set_apsim_bin_path(): "
-    ).strip()
+                     "Please enter a valid APSIM binary path "
+                     "or configure it using apsimNGpy.set_apsim_bin_path(): ").strip()
 
     if not path_checker(new_path):
         raise ValueError(f"Invalid APSIM binary path: {new_path}")
@@ -153,7 +153,8 @@ if __name__ == '__main__':
     processes = []
     # this should run in separate processes
     Parent = Path(__file__).parent
-    for test in ['unittests/laze_import_tests.py', 'unittests/config_apsim_bin_context.py', 'unittests/manager/weathermanager.py']:
+    for test in ['unittests/laze_import_tests.py', 'unittests/config_apsim_bin_context.py',
+                 'unittests/manager/weathermanager.py']:
         t = os.path.realpath(Parent.joinpath(test))
         p = subprocess.Popen(
             [sys.executable, t],

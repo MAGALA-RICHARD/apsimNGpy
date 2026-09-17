@@ -20,7 +20,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 bin_path = args.bin or Path(os.environ.get('TEST_APSIM_BINARY', )) or get_apsim_bin_path()
-if not bin_path.exists():
+if not bin_path or not bin_path.is_dir():
     bin_path = ACTIONS_APSIM_BINARY
 if not path_checker(bin_path):
     new_path = input("APSIM binary path is not valid.\n"
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     processes = []
     # this should run in separate processes
     Parent = Path(__file__).parent
-    for test in ['unittests/laze_import_tests.py', 'unittests/config_apsim_bin_context.py', 'unittests\manager\weathermanager.py']:
+    for test in ['unittests/laze_import_tests.py', 'unittests/config_apsim_bin_context.py', 'unittests/manager/weathermanager.py']:
         t = os.path.realpath(Parent.joinpath(test))
         p = subprocess.Popen(
             [sys.executable, t],

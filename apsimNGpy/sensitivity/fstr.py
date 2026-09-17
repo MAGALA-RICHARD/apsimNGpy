@@ -14,9 +14,11 @@ def _clean_array(arr):
 def format_salib_results(ans, method=None, outputs=None):
     data = []
     response_name = 'Response'
+    print(ans)
 
     def create_df(i):
         for k, v in i.items():
+
             v = list(v) if not is_scalar(v) else v
             edf[k] = v
         return edf
@@ -36,6 +38,7 @@ def format_salib_results(ans, method=None, outputs=None):
             edf['Method'] = method_lower_case
             if {"ST", 'S1'}.issubset(edf.columns):
                 edf['ST-S1'] = edf['ST'] - edf['S1']
+                edf['S1/ST'] = (edf['S1'] / edf['ST']) * 100
             return edf
         case _:
             return ans

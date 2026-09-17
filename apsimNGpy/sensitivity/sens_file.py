@@ -4,6 +4,8 @@ Sensitivity analysis utilities for APSIM Next Generation.
 This module provides functionality for constructing and running sensitivity
 analysis experiments using APSIM `ExperimentFromFile` model.
 
+It provides an alternative way besides the workflow provided by APSIM, and does not require to have Rstudio installed
+
 The user specifies the parameter path and their bounds as dicts
 
 Under the hood, the sensitivity-analysis workflow generates the required
@@ -971,17 +973,20 @@ if __name__ == "__main__":
     se = evaluate_model_sensitivity(
         my_problem,
         method="sobol",
-        N=102,
+        N=2 ** 6,
         agg_func="sum",
         chunk_size=50,
         retry_rate=2,
-        grouping=['Clock.Today'],
+        #grouping=['Clock.Today'],
         sample_options={
             "num_levels": 6,
             "optimal_trajectories": 10,
+            "calc_second_order": True,
         },
         analyze_options={
             "num_resamples": 500,
-            "print_to_console": False,
+            "print_to_console": True,
+            "calc_second_order": True,
         },
     )
+    print(se.sensitivity.columns)

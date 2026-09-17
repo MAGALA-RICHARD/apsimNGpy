@@ -1,0 +1,52 @@
+name: PearlRise Payment Reminder
+
+on:
+  schedule:
+    # Runs at --- America/Chicago on the 11th-31st.
+    # reminder.py decides whether it is actually the last day of the month.
+    - cron: "17,47 7-9 13-31 * *"
+      timezone: "America/Chicago"
+
+  # Lets you test it manually from the GitHub Actions tab
+  workflow_dispatch:
+
+concurrency:
+  group: pearlrise-payment-reminder
+  cancel-in-progress: false
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run PearlRise reminder
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          DUE_DAY: ${{ vars.DUE_DAY }}
+          LAST_DAY: ${{vars.LAST_DAY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: python -m apsimNGpy.tests.tester_main
+
+      - name: Upload reminder log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sent-reminders-${{ github.run_id }}
+          path: sent_reminders.log
+          if-no-files-found: ignore

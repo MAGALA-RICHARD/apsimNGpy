@@ -1,0 +1,7 @@
+apsimNGpy
+loguru
+pandas
+numpy
+pydantic
+pymoo
+SALib

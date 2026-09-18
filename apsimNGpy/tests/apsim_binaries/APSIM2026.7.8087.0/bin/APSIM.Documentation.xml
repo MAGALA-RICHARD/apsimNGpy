@@ -1,0 +1,2204 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>APSIM.Documentation</name>
+    </assembly>
+    <members>
+        <member name="T:APSIM.Documentation.Bibliography.BibTeX">
+            <summary>
+            Provides functionality for reading .bib (bibliography) files (http://www.bibtex.org/Format/)
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Bibliography.BibTeX.contents">
+            <summary>The raw BibTeX contents</summary>
+            <remarks>
+            The entire .bib file is read into memory during the constructor,
+            for each instance of this class, and is only released when the
+            instance is finalized. Should consider alternative ways of handling
+            this. As at Sep 2021, the .bib file is approx 2MB.
+            </remarks>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.BibTeX.#ctor">
+            <summary>Initializes a new instance of the <see cref="T:APSIM.Documentation.Bibliography.BibTeX"/> class.</summary>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.BibTeX.Lookup(System.String)">
+            <summary>Lookups the specified citation name and returns it.</summary>
+            <param name="citationName">Name of the citation to search for.</param>
+            <returns>Returns the found citation or null if not found.</returns>
+        </member>
+        <member name="T:APSIM.Documentation.Bibliography.Citation">
+            <summary>
+            A citation in a bibliography.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Bibliography.Citation.contents">
+            <summary>The raw BibTeX contents</summary>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.Citation.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Bibliography.Citation"/> class.
+            </summary>
+            <param name="contents">The raw BibTeX contents.</param>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.Citation.Name">
+            <summary>Gets the name of the citation</summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.Citation.InTextCite">
+            <summary>Gets the in-text cite.</summary>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.Citation.LastName(System.String)">
+            <summary>Return the last name of the specified author.</summary>
+            <param name="author">The author.</param>
+            <returns>The last name</returns>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.Citation.Authors">
+            <summary>Gets the authors</summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.Citation.FirstAuthor">
+            <summary>
+            Gets the last name of the first author.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.Citation.Year">
+            <summary>Gets the year of publication</summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.Citation.URL">
+            <summary>Gets the URL of the publication</summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.Citation.BibliographyText">
+            <summary>
+            The full text of the citation, as it will appear in the bibliography.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.Citation.GetBibliographyText">
+            <summary>Gets the text for the references section.</summary>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.Citation.Get(System.String)">
+            <summary>Gets the value of a specified keyword.</summary>
+            <param name="keyword">The keyword.</param>
+            <returns>The found value or string.Empty if not found.</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.Citation.AppendString(System.String,System.String)">
+            <summary>Append a string if it isn't already there.</summary>
+            <param name="st">The original string.</param>
+            <param name="stringToAppend">The string to append.</param>
+            <returns>The new string.</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.Citation.PrefixString(System.String,System.String)">
+            <summary>Prefix a string if it isn't already there.</summary>
+            <param name="st">The original string.</param>
+            <param name="stringToPrefix">The string to prefix.</param>
+            <returns>The new string.</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.Citation.WrapInBrackets(System.String)">
+            <summary>Wrap a string in brackets</summary>
+            <param name="st">The original string.</param>
+            <returns>The new string.</returns>
+        </member>
+        <member name="T:APSIM.Documentation.Bibliography.CitationComparer">
+            <summary>
+            This class can compare citations in a bibliography.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.CitationComparer.Compare(APSIM.Documentation.Bibliography.ICitation,APSIM.Documentation.Bibliography.ICitation)">
+            <summary>
+            Calls CaseInsensitiveComparer.Compare with the parameters reversed.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Bibliography.ICitation">
+            <summary>
+            An interface for a citation in a bibliography.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.ICitation.Name">
+            <summary>Gets the name of the citation</summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.ICitation.InTextCite">
+            <summary>Gets the citation as it should be shown in-text.</summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.ICitation.FirstAuthor">
+            <summary>
+            Gets the last name of the first author.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.ICitation.Year">
+            <summary>Gets the year of publication</summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.ICitation.URL">
+            <summary>Gets the URL of the publication</summary>
+        </member>
+        <member name="P:APSIM.Documentation.Bibliography.ICitation.BibliographyText">
+            <summary>Gets the citation as it should be shown in-bibliography.</summary>
+        </member>
+        <member name="T:APSIM.Documentation.Bibliography.ICitationHelper">
+            <summary>
+            An interface for a class which resolves citations for a bibliography.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Bibliography.ICitationHelper.Lookup(System.String)">
+            <summary>Lookups the specified citation name and returns it.</summary>
+            <param name="citationName">Name of the citation to search for.</param>
+            <returns>Returns the found citation or null if not found.</returns>
+        </member>
+        <member name="T:APSIM.Documentation.DocumentationSettings">
+            <summary>
+            Class that holds settings variables for generating documentation. Passed into documentation functions from the Top Level.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.DocumentationSettings.GenerateGraphs">
+            <summary>
+            If GenerateGraphs is true, graph models will generate and display graphs in the documentation. By default is off.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.DocumentationUtilities">
+            <summary>
+            Contains utility methods for Documentation.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.DocumentationUtilities.CleanEmptySections(System.Collections.Generic.List{APSIM.Shared.Documentation.ITag})">
+            <summary>
+            Gets a documentation list without empty tags.
+            </summary>
+            <param name="tags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:APSIM.Documentation.DocumentationUtilities.CreateListWithoutEmptyTags(System.Collections.Generic.List{APSIM.Shared.Documentation.ITag})">
+            <summary>
+            Cleans a list of documentation tags.
+            </summary>
+            <param name="tags"></param>
+            <returns>Tuple with boolean that notifies if any tags where empty and a list of tags that are not empty.</returns>
+        </member>
+        <member name="M:APSIM.Documentation.DocumentationUtilities.CheckForBlankTags(System.Collections.Generic.List{APSIM.Shared.Documentation.ITag})">
+            <summary>
+            Cleans a list of documentation tags.
+            </summary>
+            <param name="tags"></param>
+            <returns>Tuple with boolean that notifies if any tags where empty and a list of tags that are not empty.</returns>
+        </member>
+        <member name="M:APSIM.Documentation.DocumentationUtilities.AddHeader(System.String,System.Collections.Generic.List{APSIM.Shared.Documentation.ITag})">
+            <summary>
+            Replaces a starting section with a header, or adds a header if first tag is a paragraph
+            </summary>
+            <param name="title"></param>
+            <param name="tags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:APSIM.Documentation.DocumentationUtilities.GetDocumentationName(Models.Core.IModel)">
+            <summary>
+            Gets the name of the documentation based on the provided model, with rules for Simulations and models
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:APSIM.Documentation.DocumentationUtilities.GetFilepathOfNamespace(System.Type)">
+            <summary>
+            Given a type, returns a string of the file path instead of the namespace.
+            This is only a temporary patch until namespaces can be fixed, and more fixes will need to be added as required.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.DocumentationUtilities.GetGithubMarkdownLink(Models.Core.IModel)">
+            <summary>
+            Creates a markdown link for a model to connect it to its github page
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.DocumentationUtilities.GetPhaseTable(Models.PMF.Phen.Phenology)">
+            <summary>
+            Returns a DataTable with each Phase listed for documentation
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.AxisExtensions">
+            <summary>
+            Extension methods for the <see cref="T:APSIM.Shared.Graphing.Axis"/> type.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.AxisExtensions.ToOxyPlotAxis(APSIM.Shared.Graphing.Axis,APSIM.Documentation.Graphing.AxisRequirements,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Convert the given apsim axis to an oxyplot <see cref="T:OxyPlot.Axes.Axis"/>.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.AxisExtensions.CreateAxis(APSIM.Shared.Graphing.AxisType)">
+            <summary>
+            Create an axis for the given axis type.
+            </summary>
+            <param name="axisType">The type of axis to create.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.AxisLabelCollection">
+            <summary>
+            A collection of axis labels.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.AxisLabelCollection.XLabels">
+            <summary>
+            X-axis labels.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.AxisLabelCollection.YLabels">
+            <summary>
+            Y-axis labels.
+            </summary>
+            <value></value>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.AxisLabelCollection.#ctor(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Graphing.AxisLabelCollection"/> instance.
+            </summary>
+            <param name="xLabels">X-axis labels.</param>
+            <param name="yLabels">Y-axis labels.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.AxisLabelCollection.Empty">
+            <summary>
+            Get an empty axis label collection.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.AxisRequirements">
+            <summary>
+            This class describes requirements that a particular series may have of an axis.
+            For example, a series may require that an axis be a category axis in order
+            to display string data.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.AxisRequirements.FieldName">
+            <summary>
+            Field name for the axis - stored for error reporting purposes.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.AxisRequirements.AxisKind">
+            <summary>
+            Type of axis required by the series. If null, the series doesn't
+            have any particular required axis type (possibly because it contains
+            no data).
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.AxisRequirements.#ctor(System.Nullable{APSIM.Shared.Graphing.AxisType},System.String)">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Graphing.AxisRequirements"/> instance.
+            </summary>
+            <param name="type">Required axis type.</param>
+            <param name="field">Field name for the axis, used for error reporting purposes.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.AxisRequirements.ThrowIfIncompatibleWith(APSIM.Documentation.Graphing.AxisRequirements)">
+            <summary>
+            Ensure that this set of axis requirements is compatible with another.
+            Throw if not.
+            </summary>
+            <param name="other">Another set of axis requirements.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.ColumnXYSeries">
+            <summary>
+            A column series for graphing that doesn't need a category axis.
+            </summary>
+            <remarks>
+            Note that the meaning of the tracker format string has been changed.
+            0: Series title
+            1: X axis title
+            2: X value of the column
+            3: Y axis title
+            4: Y value of the column
+            </remarks>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ColumnXYSeries.UpdateData">
+            <summary>Updates the data.</summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ColumnXYSeries.Render(OxyPlot.IRenderContext)">
+            <summary>
+            Renders the Series on the specified rendering context.
+            </summary>
+            <param name="rc">
+            The rendering context.
+            </param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ColumnXYSeries.MovePointsToItems">
+            <summary>
+            Create a series of RectangleBarItem objects in Items based on Points.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ColumnXYSeries.GetNearestPoint(OxyPlot.ScreenPoint,System.Boolean)">
+            <summary>Gets the point in the dataset that is nearest the specified point.</summary>
+            <param name="point">The point.</param>
+            <param name="interpolate">Specifies whether to interpolate or not.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.EnumerationExtensions">
+            <summary>
+            Extension methods for converting apsim graphing enumerations
+            into their oxyplot equivalents.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.EnumerationExtensions.ToOxyPlotLineStyle(APSIM.Shared.Graphing.LineType)">
+            <summary>
+            Convert an apsim line style to an oxyplot line style.
+            </summary>
+            <param name="lineType">Apsim line type/style.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.EnumerationExtensions.ToOxyPlotThickness(APSIM.Shared.Graphing.LineThickness)">
+            <summary>
+            Convert an apsim line thickness into an oxyplot line thickness.
+            </summary>
+            <param name="thickness">Apsim line thickness.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.EnumerationExtensions.ToOxyPlotMarkerSize(APSIM.Shared.Graphing.MarkerSize)">
+            <summary>
+            Convert an apsim marker size into an oxyplot marker size.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.EnumerationExtensions.ToOxyPlotMarkerType(APSIM.Shared.Graphing.MarkerType)">
+            <summary>
+            Convert an apsim marker type into an oxyplot marker type.
+            </summary>
+            <param name="marker">Marker type.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.EnumerationExtensions.ToOxyPlotLegendOrientation(APSIM.Shared.Graphing.LegendOrientation)">
+            <summary>
+            Convert an apsim legend orientation to an oxyplot legend orientation.
+            </summary>
+            <param name="orientation">An apsim legend orientation.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.EnumerationExtensions.ToOxyPlotLegendPosition(APSIM.Shared.Graphing.LegendPosition)">
+            <summary>
+            Convert an apsim legend position to an oxyplot legend position.
+            </summary>
+            <param name="position">An apsim legend position.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.EnumerationExtensions.ToOxyColour(System.Drawing.Color)">
+            <summary>
+            Convert a System.Drawing.Color to an OxyColor.
+            </summary>
+            <param name="colour">The colour to be converted.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.EnumerationExtensions.ToOxyAxisPosition(APSIM.Shared.Graphing.AxisPosition)">
+            <summary>
+            Convert an apsim AxisPosition to an OxyPlot AxisPosition.
+            </summary>
+            <param name="position">The axis position to be converted.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.ExportedSeries">
+            <summary>
+            Encapsulates a series which can be displayed on an oxyplot graph.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.ExportedSeries.Result">
+            <summary></summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.ExportedSeries.XAxisRequirements">
+            <summary></summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.ExportedSeries.YAxisRequirements">
+            <summary></summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.ExportedSeries.AxisLabels">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ExportedSeries.#ctor(OxyPlot.Series.Series,APSIM.Documentation.Graphing.AxisRequirements,APSIM.Documentation.Graphing.AxisRequirements,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Graphing.ExportedSeries"/> instance.
+            </summary>
+            <param name="series">The actual series.</param>
+            <param name="xAxisRequirements">X axis requirements of the series.</param>
+            <param name="yAxisRequirements">Y axis requirements of the series.</param>
+            <param name="labels">Axis labels required by the series.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ExportedSeries.ThrowIfIncompatibleWith(APSIM.Documentation.Graphing.ExportedSeries)">
+            <summary>
+            Check if this series is compatible with another series. That is,
+            can the two series be displayed on the same graph. This could fail if,
+            for instance, one series shows DateTime data on the x-axis but the other
+            series shows numeric data on the x-axis.
+            </summary>
+            <param name="other">The other series to check for compatibility.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.GraphExporter">
+            <summary>
+            This class will export a graph to an image.
+            </summary>
+            <remarks>
+            This class is responsible for graph -> oxyplot and oxyplot -> image conversions.
+            </remarks>
+        </member>
+        <member name="F:APSIM.Documentation.Graphing.GraphExporter.pointsToPixels">
+            <summary>
+            Points to pixels conversion factor.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Graphing.GraphExporter.font">
+            <summary>
+            Font used for labels/headings/legends/etc.
+            </summary>
+            <remarks>
+            todo: make this user configurable.
+            </remarks>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.GraphExporter.Export(APSIM.Shared.Documentation.IGraph,System.Double,System.Double,System.Double)">
+            <summary>
+            Export a graph to an image.
+            </summary>
+            <param name="graph">Graph to be exported.</param>
+            <param name="width">Desired width of the image (in px).</param>
+            <param name="height">Desired height of the image (in px).</param>
+            <param name="dpi">Desired api image</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.GraphExporter.Export(OxyPlot.IPlotModel,System.Double,System.Double,System.Double)">
+            <summary>
+            Export a plot model to an image.
+            </summary>
+            <param name="plot">Plot model to be exported.</param>
+            <param name="width">Desired width of the image (in px).</param>
+            <param name="height">Desired height of the image (in px).</param>
+            <param name="dpi">Desired api image</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.GraphExporter.ToPlotModel(APSIM.Shared.Documentation.IGraph)">
+            <summary>
+            Convert the given apsim graph to an oxyplot <see cref="T:OxyPlot.PlotModel"/>.
+            </summary>
+            <param name="graph">The graph to be converted.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.HoverPointArgs">
+            <summary>
+            When the user hovers over a point on a graph, this structure will be 
+            passed from GraphView to the presenter. The presenter then needs to
+            fill in the hover text.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.HoverPointArgs.SeriesName">
+            <summary>
+            Gets or sets the name of the series being hovered over
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.HoverPointArgs.X">
+            <summary>
+            Gets or sets the X point
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.HoverPointArgs.Y">
+            <summary>
+            Gets or sets the Y point
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.HoverPointArgs.HoverText">
+            <summary>
+            The presenter needs to set the hover text.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.ImageUtilities">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ImageUtilities.ResizeImage(SkiaSharp.SKImage,System.Double,System.Double)">
+            <summary>
+            Resize the specified image ensuring that it fits within the specified target
+            width and height without changing the aspect ratio. The return value will
+            be a new image instance.
+            </summary>
+            <param name="image">The image to resize.</param>
+            <param name="targetWidth">The width to aim for when rescaling.</param>
+            <param name="targetHeight">The height to aim for when rescaling.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.ISeriesExporter">
+            <summary>
+            An interface for a class which can export an apsim series
+            into an oxyplot series.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ISeriesExporter.CanExport(APSIM.Shared.Graphing.ISeries)">
+            <summary>
+            Can this class export the given series?
+            </summary>
+            <param name="series">The series to be exported.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ISeriesExporter.Export(APSIM.Shared.Graphing.ISeries,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Export the series to an oxyplot series.
+            </summary>
+            <remarks>
+            When dealing with string data, the returned data points are ints
+            which are indices into the axis labels list. Therefore we
+            need to know about any existing axis labels.
+            </remarks>
+            <param name="series">The series to be exported.</param>
+            <param name="existingAxisLabels">Existing axis labels on the graph.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.LineSeriesWithTracker">
+            <summary>
+            A line series with a better tracker.
+            </summary>
+        </member>
+        <member name="E:APSIM.Documentation.Graphing.LineSeriesWithTracker.OnHoverOverPoint">
+            <summary>
+            Invoked when the user hovers over a series point.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.LineSeriesWithTracker.XFieldName">
+            <summary>
+            Name of the variable behind the X data.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.LineSeriesWithTracker.YFieldName">
+            <summary>
+            Name of the variable behind the Y data.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.LineSeriesWithTracker.GetNearestPoint(OxyPlot.ScreenPoint,System.Boolean)">
+            <summary>
+            Tracker is calling to determine the nearest point.
+            </summary>
+            <param name="point">The point clicked</param>
+            <param name="interpolate">A value indicating whether interpolation should be used.</param>
+            <returns>The return hit result</returns>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.PlotModelExtensions">
+            <summary>
+            Extension methods for OxyPlot's plot model which provide a
+            unified gtk2/3 API.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendBorder(OxyPlot.PlotModel,OxyPlot.OxyColor)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendTextColour(OxyPlot.PlotModel,OxyPlot.OxyColor)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendTitleColour(OxyPlot.PlotModel,OxyPlot.OxyColor)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendBackground(OxyPlot.PlotModel,OxyPlot.OxyColor)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendFontSize(OxyPlot.PlotModel,System.Double)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendFont(OxyPlot.PlotModel,System.String)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendPosition(OxyPlot.PlotModel,OxyPlot.Legends.LegendPosition)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendOrientation(OxyPlot.PlotModel,OxyPlot.Legends.LegendOrientation)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendSymbolLength(OxyPlot.PlotModel,System.Double)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.SetLegendPlacement(OxyPlot.PlotModel,OxyPlot.Legends.LegendPlacement)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.PlotModelExtensions.GetLegendPlacement(OxyPlot.PlotModel)">
+            <summary></summary>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.SeriesExporterBase`1">
+            <summary>
+            Base class for exporting apsim series to oxyplot series.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.SeriesExporterBase`1.DataPointCollection">
+            <summary>
+            This struct is really just a wrapper around a value tuple.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.SeriesExporterBase`1.DataPointCollection.Points">
+            <summary>
+            The actual data points.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Graphing.SeriesExporterBase`1.DataPointCollection.Labels">
+            <summary>
+            The x-axis labels.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExporterBase`1.DataPointCollection.#ctor(System.Collections.Generic.IEnumerable{OxyPlot.DataPoint},System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Graphing.SeriesExporterBase`1.DataPointCollection"/> instance.
+            </summary>
+            <param name="dataPoints">The data points.</param>
+            <param name="xLabels">The x-axis labels.</param>
+            <param name="yLabels">The y-axis labels.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExporterBase`1.CanExport(APSIM.Shared.Graphing.ISeries)">
+            <summary>
+            Can this class export the given series?
+            </summary>
+            <param name="series">The series to be exported.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExporterBase`1.Export(APSIM.Shared.Graphing.ISeries,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Export the series to an oxyplot series.
+            </summary>
+            <remarks>
+            When dealing with string data, the returned data points are ints
+            which are indices into the axis labels list. Therefore we
+            need to know about any existing axis labels.
+            </remarks>
+            <param name="series">The series to be exported.</param>
+            <param name="existingAxisLabels">Existing axis labels on the graph.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExporterBase`1.Export(`0,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Export the series to an oxyplot series.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExporterBase`1.GetDataPoints(System.Collections.Generic.IEnumerable{System.Object},System.Collections.Generic.IEnumerable{System.Object},APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            fixme: use classes for different data types
+            </summary>
+            <remarks>
+            When dealing with string data, the returned data points are ints
+            which are indices into the axis labels list. Therefore we
+            need to know about any existing axis labels.
+            </remarks>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExporterBase`1.GetDataPointValue(System.Object,System.Collections.Generic.List{System.String})">
+            <summary>
+            fixme, use classes for different types of datapoint
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExporterBase`1.GetRequiredAxisType(System.Object)">
+            <summary>
+            Get the axis requirements to render an object on a graph.
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.BarSeriesExporter">
+            <summary>
+            This class can export an apsim bar series to an oxyplot series.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.BarSeriesExporter.Export(APSIM.Shared.Graphing.BarSeries,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Export the bar series to an oxyplot series.
+            </summary>
+            <param name="series">The bar series to be exported.</param>
+            <param name="labels">Existing axis labels.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.BoxWhiskerSeriesExporter">
+            <summary>
+            This class can export an apsim box and whisker series to an oxyplot series.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.BoxWhiskerSeriesExporter.Export(APSIM.Shared.Graphing.BoxWhiskerSeries,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Export the box and whisker series to an oxyplot series.
+            </summary>
+            <param name="series">The box and whisker series to be exported.</param>
+            <param name="labels">Existing axis labels.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.ErrorSeriesExporter">
+            <summary>
+            This class can export an apsim error series to an oxyplot series.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ErrorSeriesExporter.Export(APSIM.Shared.Graphing.ErrorSeries,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Export the error series to an oxyplot series.
+            </summary>
+            <param name="series">The error series to be exported.</param>
+            <param name="labels">Existing axis labels on the graph.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.ErrorSeriesExporter.GetErrorDataPoints(System.Collections.Generic.IEnumerable{System.Object},System.Collections.Generic.IEnumerable{System.Object},System.Collections.Generic.IEnumerable{System.Object},System.Collections.Generic.IEnumerable{System.Object},APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Get error points.
+            </summary>
+            <param name="x">X data.</param>
+            <param name="y">Y data.</param>
+            <param name="xError">X error data.</param>
+            <param name="yError">Y error data.</param>
+            <param name="labels">Existing axis labels on the graph.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.LineSeriesExporter">
+            <summary>
+            This class can export an apsim line series to an oxyplot series.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.LineSeriesExporter.Export(APSIM.Shared.Graphing.LineSeries,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Export the line series to an oxyplot series.
+            </summary>
+            <param name="series">The line series to be exported.</param>
+            <param name="labels">Existing axis labels.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.RegionSeriesExporter">
+            <summary>
+            This class can export an apsim region series to an oxyplot series.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.RegionSeriesExporter.Export(APSIM.Shared.Graphing.RegionSeries,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Export the region series to an oxyplot series.
+            </summary>
+            <param name="series">The region series to be exported.</param>
+            <param name="labels">Existing axis labels.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.SeriesExtensions">
+            <summary>
+            Extensions for the <see cref="T:OxyPlot.Series.Series"/> class.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Graphing.SeriesExtensions.seriesExporters">
+            <summary>
+            The default set of series exporters.
+            </summary>
+            <remarks>
+            todo: Expose functionality for adding custom exporters to this list.
+            </remarks>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExtensions.GetSeriesExporters">
+            <summary>
+            This is the default list of series exporters.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Graphing.SeriesExtensions.exportersLookup">
+            <summary>
+            Cache to speed up searches for series exporters.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExtensions.ToOxyPlotSeries(APSIM.Shared.Graphing.Series,APSIM.Documentation.Graphing.AxisLabelCollection)">
+            <summary>
+            Convert an apsim series to an oxyplot series.
+            </summary>
+            <remarks>
+            When dealing with string data, the returned data points are ints
+            which are indices into the axis labels list. Therefore we
+            need to know about any existing axis labels.
+            </remarks>
+            <param name="series">The series to be converted.</param>
+            <param name="labels">Existing axis labels on the graph.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SeriesExtensions.FindSeriesExporter(APSIM.Shared.Graphing.Series)">
+            <summary>
+            Find an <see cref="T:APSIM.Documentation.Graphing.ISeriesExporter"/> instance capable of exporting the given series.
+            </summary>
+            <param name="series">The series to be exported.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Graphing.SmartDateTimeAxis">
+            <summary>
+            This class extends OxyPlot's DateTimeAxis, with "better" formatting
+            of axis tick labels and intervals.
+            </summary>
+            <remarks>
+            Technically we could achieve the same result here without extending
+            the DateTimeAxis class. However, doing so gives us convenient access
+            to the min and max values being displayed on the axis.
+            </remarks>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SmartDateTimeAxis.CalculateActualInterval(System.Double,System.Double,System.Double,System.Double)">
+            <summary></summary>
+        </member>
+        <member name="M:APSIM.Documentation.Graphing.SmartDateTimeAxis.CalculateInterval(System.DateTime,System.DateTime)">
+            <summary>
+            This method provides a better axis tick resolution algorithm for date time axes.
+            Returns an appropriate interval and format string for the given date range.
+            </summary>
+            <param name="min">The earliest date displayed on the axis.</param>
+            <param name="max">The latest date displayed on the axis.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.AutoDocumentation">
+            <summary>
+            A class of auto-documentation methods and HTML building widgets.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.AutoDocumentation.Bibilography">
+            <summary>BibteX library loaded with APSIM.bib</summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.AutoDocumentation.DefineFunctions">
+            <summary>Returns a dictionary to match model classes to document class.</summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.AutoDocumentation.Document(Models.Core.IModel)">
+            <summary>Writes the description of a class to the tags.</summary>
+            <param name="model">The model to get documentation for.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.AutoDocumentation.DocumentModel(Models.Core.IModel)">
+            <summary>Writes the description of a class to the tags.</summary>
+            <param name="model">The model to get documentation for.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.AutoDocumentation.DocumentHeader(Models.Core.IModel)">
+            <summary>Writes only the documentation header</summary>
+            <param name="model">The model to get documentation for.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.DocsFromFile">
+            <summary>
+            A pdf file which is built from multiple input (.apsimx) files.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.DocsFromFile.inputFiles">
+            <summary>
+            Input files. Autodocs will be built for each of these files
+            into a single document.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocsFromFile.Name">
+            <summary>
+            Display name of the file.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocsFromFile.OutputFileName">
+            <summary>
+            The output name of the file.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromFile.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.DocsFromFile"/> instance for the given input file.
+            </summary>
+            <param name="name">Name to show on web site.</param>
+            <param name="input">The input file.</param>
+            <param name="output">Name of the file which will be generated.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromFile.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String},System.String)">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.DocsFromFile"/> instance for
+            the given input files.
+            </summary>
+            <param name="name">Name to show on web site.</param>
+            <param name="inputs">Input files from which a document will be generated.</param>
+            <param name="output">Name of the file which will be generated.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromFile.Generate(System.String)">
+            <summary>
+            Generate the auto-documentation at the given output path.
+            </summary>
+            <param name="path">Path to which the file will be generated.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromFile.AppendToDocument(System.String)">
+            <summary>
+            Append the given input file to a pdf document.
+            </summary>
+            <param name="file">Input file.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromFile.DocumentModel(Models.Core.IModel)">
+            <summary>
+            Document the model.
+            </summary>
+            <param name="model">Model to be documented.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.DocsFromModel`1">
+            <summary>
+            A pdf file which is built from a model.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocsFromModel`1.Name">
+            <summary>
+            Display name of the file.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocsFromModel`1.OutputFileName">
+            <summary>
+            The output name of the file.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromModel`1.#ctor(System.String)">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.DocsFromFile"/> instance for
+            the given input files.
+            </summary>
+            <param name="output">Name of the file which will be generated.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromModel`1.Generate(System.String)">
+            <summary>
+            Generate the auto-documentation at the given output path.
+            </summary>
+            <param name="path">Path to which the file will be generated.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromModel`1.DocumentModel(Models.Core.IModel)">
+            <summary>
+            Document the model.
+            </summary>
+            <param name="model">Model to be documented.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromModel`1.CreateDocument">
+            <summary>
+            Create a standard document.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.DocsFromModelPath">
+            <summary>
+            A pdf file which is built from a model path and a file path.
+            The file path should point to an .apsimx file on disk.
+            The model path should point to a model inside this file. This model
+            will be documented.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocsFromModelPath.Name">
+            <summary>
+            Display name of the file.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocsFromModelPath.OutputFileName">
+            <summary>
+            The output name of the file.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.DocsFromModelPath.filePath">
+            <summary>
+            Path to an .apsimx file on disk.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.DocsFromModelPath.modelPath">
+            <summary>
+            Path to a model in the file specified by
+            <see cref="F:APSIM.Documentation.Models.DocsFromModelPath.filePath"/>.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.DocsFromModelPath.documentRestOfFile">
+            <summary>
+            Should the rest of the file be documented? If true, the root model's
+            docs will be written after those of the specified model. If false,
+            only the specified model's documentation will be written.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromModelPath.#ctor(System.String,System.String,System.String,System.Boolean)">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.DocsFromFile"/> instance for
+            the given input files.
+            </summary>
+            <param name="filePath">Path to an .apsimx file on disk.</param>
+            <param name="modelPath">Path to a model inside the .apsimx file.</param>
+            <param name="output">Name of the file which will be generated.</param>
+            <param name="documentRestOfFile">Should the rest of the file be documented?</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocsFromModelPath.Generate(System.String)">
+            <summary>
+            Generate the auto-documentation at the given output path.
+            </summary>
+            <param name="path">Path to which the file will be generated.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.DocumentationCell">
+            <summary>
+            A cell in an autodocs table. Contains multiple files.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocumentationCell.Files">
+            <summary>
+            Files in the cell.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocumentationCell.#ctor(APSIM.Documentation.Models.IDocumentationFile)">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.DocumentationCell"/> instance which holds
+            a single file.
+            </summary>
+            <param name="file">The file to show in the cell.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocumentationCell.#ctor(System.Collections.Generic.IEnumerable{APSIM.Documentation.Models.IDocumentationFile})">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.DocumentationCell"/> instance which holds
+            the given files.
+            </summary>
+            <param name="files">Files in the cell.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.DocumentationRow">
+            <summary>
+            A row in an autodocs table, made up of multiple cells.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocumentationRow.Name">
+            <summary>
+            Name of the row.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocumentationRow.Cells">
+            <summary>
+            Cells in the row.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocumentationRow.#ctor(System.String,System.Collections.Generic.IEnumerable{APSIM.Documentation.Models.IDocumentationCell})">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.DocumentationRow"/> instance.
+            </summary>
+            <param name="name">Name of the row.</param>
+            <param name="cells">Cells in the row.</param>
+        </member>
+        <member name="F:APSIM.Documentation.Models.DocumentationTable.columns">
+            <summary>
+            Names of the columns in the table.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.DocumentationTable.rows">
+            <summary>
+            Rows in the table.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.DocumentationTable.Name">
+            <summary>
+            Name of the table.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocumentationTable.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{APSIM.Documentation.Models.IDocumentationRow})">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.DocumentationTable"/> instance.
+            </summary>
+            <param name="name">Name of the table.</param>
+            <param name="cols">Table column names.</param>
+            <param name="rows">Table rows.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocumentationTable.BuildDocuments(System.String)">
+            <summary>
+            Build all documents referenced by the table.
+            </summary>
+            <param name="path">Output path for the generated documents.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.DocumentationTable.BuildHtmlDocument">
+            <summary>
+            Build a HTML document representing this table.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.ExternalDocument">
+            <summary>
+            A link to an external document.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.ExternalDocument.Name">
+            <summary>
+            Display name of the file.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.ExternalDocument.OutputFileName">
+            <summary>
+            File URI.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.ExternalDocument.Generate(System.String)">
+            <summary>
+            Generate the output files.
+            </summary>
+            <param name="path"></param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.IDocumentationCell">
+            <summary>
+            Interface for a cell in an autodocs table.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.IDocumentationCell.Files">
+            <summary>
+            Files in the cell.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.IDocumentationFile">
+            <summary>
+            Interface for an auto-generated documentation file.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.IDocumentationFile.Name">
+            <summary>
+            Display name of the file.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.IDocumentationFile.OutputFileName">
+            <summary>
+            The output name of the file.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.IDocumentationFile.Generate(System.String)">
+            <summary>
+            Generate the auto-documentation at the given output path.
+            </summary>
+            <param name="path">Path to which the file will be generated.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.IDocumentationRow">
+            <summary>
+            Interface for a row in an autodocs table.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.IDocumentationRow.Name">
+            <summary>
+            Name of the row.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.IDocumentationRow.Cells">
+            <summary>
+            Cells in the row.
+            </summary>
+            <value></value>
+        </member>
+        <member name="M:APSIM.Documentation.Models.IDocumentationTable.BuildDocuments(System.String)">
+            <summary>
+            Build all documents referenced by the table.
+            </summary>
+            <param name="path">Output path for the generated documents.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.IDocumentationTable.BuildHtmlDocument">
+            <summary>
+            Build a HTML document representing this table.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.InterfaceDocumentation">
+            <summary>
+            This class documents a model's parameters, inputs, and outputs.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.InterfaceDocumentation.propertiesToExclude">
+            <summary>Properties to exclude from the doc.</summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.InterfaceDocumentation.maxTypeLength">
+            <summary>The maximum length of a type name.</summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.InterfaceDocumentation.FLAGS">
+            <summary>Binding Flags used by reflection to get Properties, Fields, Events, Methods etc from types.</summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.Document(Models.Core.IModel)">
+            <summary>Document a Model Interface into ITags</summary>
+            <param name="model"></param>
+            <returns>A list of ITags with the documentation for this interface</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.DocumentType(System.Type)">
+            <summary>Document the specified model.</summary>
+            <param name="type"></param>
+            <returns>An ITag section with the summary, remarks, outputs, links, events and methods for that type</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetTypes(Models.Core.IModel)">
+            <summary>Get all the types that should be documented for this model. This includes Properties and Fields within the same namespace.</summary>
+            <param name="model"></param>
+            <returns>An array of types to be documented</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetParameterNames(Models.Core.IModel)">
+            <summary>Gets the list of parameter names for a model. If the model is a resource, it will load them from the resource.</summary>
+            <param name="model"></param>
+            <returns>An array of string name for each of the parameters.</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetParameters(Models.Core.IModel,System.String[])">
+            <summary>
+            Create and return a new Output object for member
+            </summary>
+            <param name="model">model to be documented.</param>
+            <param name="parameterNames">model to be documented.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetOutputs(System.Type,System.String[])">
+            <summary>
+            Create and return a new Output object for member
+            </summary>
+            <param name="type"></param>
+            <param name="parameterNames"></param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.DocumentLinksEventsMethods(System.Type)">
+            <summary>Gets documentation tags for Links, Events and Methods for a type.</summary>
+            <param name="type"></param>
+            <returns>An array of ITag section for each of the Links, Events and Methods to be documented</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetLinks(System.Type)">
+            <summary>Return a datatable of links for the specified type.</summary>
+            <param name="type">The type to document.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetEvents(System.Type)">
+            <summary>Return a datatable of links for the specified type.</summary>
+            <param name="type">The type to document.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetMethods(System.Type)">
+            <summary>Return a datatable of methods for the specified type.</summary>
+            <param name="type">The type to document.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetTypeName(System.Type)">
+            <summary>Get a type name for the specified class member.</summary>
+            <param name="memberType">The type to get a name for.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.ConvertPropertiesToDataTable(System.Collections.Generic.List{System.Reflection.PropertyInfo},System.Object)">
+            <summary>
+            Convert a list of properties in a DataTable
+            </summary>
+            <param name="properties">The list of properties to put into table.</param>
+            <param name="objectToDocument">The object to use for getting property values. If null, then no value column will be added.</param>
+            <returns>A datatable containing the content for the properties</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.ConvertToITags(System.Data.DataTable)">
+            <summary>Convert a DataTable into an ITag table</summary>
+            <param name="table"></param>
+            <returns>An ITag list with the table name in a paragraph and table as a sibling.</returns>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetModelParameterNames(System.String)">
+            <summary>
+            Get a list of parameter names for this model.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetModelParameterNamesFromJSON(System.String)">
+            <summary>
+            Get a list of parameter names for a model represented as a JSON string.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:APSIM.Documentation.Models.InterfaceDocumentation.GetParametersFromToken(Newtonsoft.Json.Linq.JToken,System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Get a list of parameter names for the specified token.
+            </summary>
+            <param name="token">The token to extract parameter names from.</param>
+            <param name="namePrefix">The prefix to add in front of each name.</param>
+            <param name="parameterNames">The list of parameter names to add to.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.ParamsDocsFromFile">
+            <summary>
+            A params/inputs/outputs pdf file.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.ParamsDocsFromFile.path">
+            <summary>
+            Optional path to the model to be documented.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.ParamsDocsFromFile.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.ParamsDocsFromFile"/> instance for the given input file.
+            </summary>
+            <param name="input">The input file.</param>
+            <param name="output">Name of the file which will be generated.</param>
+            <param name="path">(Optional) path to model to be documented.</param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.ParamsDocsFromModel`1">
+            <summary>
+            A params/inputs/outputs pdf file.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.ParamsDocsFromModel`1.#ctor(System.String)">
+            <summary>
+            Create a new <see cref="T:APSIM.Documentation.Models.ParamsDocsFromFile"/> instance for the given input file.
+            </summary>
+            <param name="output">Name of the file which will be generated.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.ParamsDocsFromModel`1.DocumentModel(Models.Core.IModel)">
+            <summary>
+            Document the model.
+            </summary>
+            <param name="model">Model to be documented.</param>
+        </member>
+        <member name="M:APSIM.Documentation.Models.ParamsDocsFromModel`1.CreateDocument">
+            <summary>
+            Create a standard document (overriding to make it landscape).
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocAlias">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocAlias.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocAlias" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocAlias.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocBiomassArbitrationFunction">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocBiomassArbitrationFunction.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocBiomassArbitrationFunction" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocBiomassArbitrationFunction.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocBoundFunction">
+            <summary>
+            Documentation for BoundFunction model
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocBoundFunction.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocBoundFunction" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocBoundFunction.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocClock">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocClock.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocClock" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocClock.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocClock.GetModelEventsInvoked(System.Type,System.String,System.String,System.Boolean)">
+            <summary>
+            Gets a list of Event Handles that are Invoked in the provided function
+            </summary>
+            <remarks>
+            Model source file must be included as embedded resource in project xml
+            </remarks>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocCompositeBiomass">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocCompositeBiomass.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocCompositeBiomass" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocCompositeBiomass.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocCultivar">
+            <summary>
+            Documentation for the <see cref="T:Models.PMF.Cultivar"/> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocCultivar.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocPlant" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocCultivar.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocExperiment">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocExperiment.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocGenericWithChildren" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocExperiment.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocFolder">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFolder.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocGenericWithChildren" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFolder.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFolder.GetChildGraphs">
+            <summary>
+            Gets child graphs from a folder model.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocFrostSenescenceFunction">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFrostSenescenceFunction.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocFrostSenescenceFunction" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFrostSenescenceFunction.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocFunction">
+            <summary>
+            Documentation class for Functions
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFunction.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocFunction" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFunction.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFunction.GetFunctionText(APSIM.Core.IFunction)">
+            <summary>
+            Get paragraph text on simple functions
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFunction.GetFunctionChildText(APSIM.Core.IFunction,System.String)">
+            <summary>
+            Get paragraph text on simple functions
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFunction.ChildFunctionList(Models.Core.IModel)">
+            <summary>
+            Creates a list of child function names
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFunction.FindUnits(Models.Functions.Constant)">
+            <summary>
+            Get the units for a constant
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocFunction.DocumentMathFunction(System.Char,APSIM.Core.IFunction)">
+            <summary>Writes documentation for this function by adding to the list of documentation tags.</summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocGeneric">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.Types.DocGeneric.model">
+            <summary>
+            The model that the documentation should be generated for
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGeneric.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocGeneric" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGeneric.Document(System.Int32)">
+            <summary>
+            Document the model
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGeneric.GetSectionTitle(Models.Core.IModel)">
+            <summary>
+            Get a section with the Summary, Remarks and Memo text included.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGeneric.GetSummaryAndRemarksSection(Models.Core.IModel)">
+            <summary>
+            Get a section with the Summary, Remarks and Memo text included.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocGenericBlank">
+            <summary>
+            A generic documentation class that does nothing except document documentation classes.
+            No summary and remarks or other inclusions.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGenericBlank.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocGeneric" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGenericBlank.Document(System.Int32)">
+            <summary>
+            Document the model
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocGenericOrgan">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGenericOrgan.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocGenericOrgan" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGenericOrgan.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocGenericWithChildren">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGenericWithChildren.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocGenericWithChildren" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGenericWithChildren.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocGraph">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGraph.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocGraph" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocGraph.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocLeaf">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocLeaf.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocGenericWithChildren" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocLeaf.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocLeafCohort">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocLeafCohort.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocGenericWithChildren" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocLeafCohort.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocLeafCohortParameters">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocLeafCohortParameters.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocLeafCohortParameters" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocLeafCohortParameters.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocLinearInterpolationFunction">
+            <summary>
+            Documentation class for LinearInterpolationFunction
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocLinearInterpolationFunction.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocLinearInterpolationFunction" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocLinearInterpolationFunction.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocManager">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocManager.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocManager" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocManager.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocMap">
+            <summary>
+            Documentation for Map
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocMap.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocMap" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocMap.Document(System.Int32)">
+            <summary>
+            Document the model
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocMap.GetConvertedMarkers(System.Collections.Generic.IEnumerable{Models.Mapping.Coordinate})">
+            <summary>
+            Converts a list of Models assembly coordinates to the documentation version of coordinates.
+            Reason: Mapsui is an external nuget package that requires a MapTag, which requires a specific type of Models.Mapping.Coordinates.
+            The MapView specifically uses MapTag to show maps in ApsimNG GUI.
+            </summary>
+            <param name="markers"></param>
+            <returns></returns>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocMemo">
+            <summary>
+            Documentation for the <see cref="T:Models.IText"/> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocMemo.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Models.IText" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocMemo.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocMinimumMaximumFunction">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocMinimumMaximumFunction.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocMinimumMaximumFunction" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocMinimumMaximumFunction.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocMinimumMaximumFunction.DocumentMinMaxFunction(System.String,System.String,System.Collections.Generic.IEnumerable{Models.Core.IModel})">
+            <summary>Writes documentation for this function by adding to the list of documentation tags.</summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocNodule">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocNodule.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocNodule" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocNodule.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocNutrient">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocNutrient.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocNutrient" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocNutrient.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocOrgan">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocOrgan.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocOrgan" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocOrgan.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocPerennialLeaf">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocPerennialLeaf.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocPerennialLeaf" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocPerennialLeaf.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocPhase">
+            <summary>
+            Documentation class for phase models.
+            Reduces need for repeated functionality for documentation by phase models.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocPhase.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocPhase" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocPhase.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocPhase.GetPhaseText(Models.PMF.Phen.IPhase)">
+            <summary>
+            Gets the text for a specific type of Phase model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocPhenology">
+            <summary>
+            Documentation class for Phenology
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocPhenology.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocPhenology" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocPhenology.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocPlant">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocPlant.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocPlant" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocPlant.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocReproductiveOrgan">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocReproductiveOrgan.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocReproductiveOrgan" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocReproductiveOrgan.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocRoot">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocRoot.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocRoot" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocRoot.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocSimulation">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSimulation.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocSimulation" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSimulation.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocSimulations">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSimulations.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocSimulations" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSimulations.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSimulations.AddAdditionals(Models.Core.IModel)">
+            <summary>
+            Adds extra documents or media for specific apsimx file documents.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSimulations.GetSimulationsName(Models.Core.Simulations)">
+            <summary>
+            Create the name for a Simulations documentation depending if it's validation, tutorial or other file
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocSimulations.DocAdditions">
+            <summary>
+            Stores additional resources for model documentation.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.Types.DocSimulations.DocAdditions.ScienceDocLink">
+            <summary>
+            Link to science documentation.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.Types.DocSimulations.DocAdditions.VideoLink">
+            <summary>
+            Link to a related video.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.Types.DocSimulations.DocAdditions.ExtraLinkName">
+            <summary>
+            Name of an optional extra link.
+            </summary>
+        </member>
+        <member name="P:APSIM.Documentation.Models.Types.DocSimulations.DocAdditions.ExtraLink">
+            <summary>
+            Extra resource link.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSimulations.DocAdditions.#ctor(System.String,System.String,System.String,System.String)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="scienceDocLink"></param>
+            <param name="videoLink"></param>
+            <param name="extraLinkName"></param>
+            <param name="extraLink"></param>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocSorghumLeaf">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSorghumLeaf.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocSorghumLeaf" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSorghumLeaf.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocSpeciesTable">
+            <summary>
+            Documentation class for SpeciesTable file
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSpeciesTable.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSpeciesTable.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocStorageNDemandFunction">
+            <summary>
+            Documentation class for StorageNDemandFunction
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocStorageNDemandFunction.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocStorageNDemandFunction" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocStorageNDemandFunction.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocStructure">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocStructure.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Models.PMF.Struct.Structure"/> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocStructure.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocSubDailyInterpolation">
+            <summary>
+            Documentation class for SubDailyInterpolation
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSubDailyInterpolation.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocSubDailyInterpolation" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocSubDailyInterpolation.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocWaterSenescenceFunction">
+            <summary>
+            Documentation class for generic models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocWaterSenescenceFunction.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocWaterSenescenceFunction" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocWaterSenescenceFunction.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocXYPairs">
+            <summary>
+            Documentation class for DocXYPairs
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocXYPairs.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:APSIM.Documentation.Models.Types.DocXYPairs" /> class.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocXYPairs.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.Models.Types.DocZadok">
+            <summary>
+            Base documentation class for models
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocZadok.#ctor(Models.Core.IModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Models.PMF.Phen.Zadok" /> class.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.Models.Types.DocZadok.stageNames">
+            <summary>
+            Stage names specific to Wheat.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Models.Types.DocZadok.Document(System.Int32)">
+            <summary>
+            Document the model.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.Program.GenerateDocument(System.String,System.String,System.Boolean)">
+            <summary>Generate documentation for a single file.</summary>
+            <param name="path">The absolute path to the file to document.</param>
+            <param name="outputPath">The output path where the generated file should be placed.</param>
+            <param name="generateGraphs">Set whether graphs should be generated.</param>
+        </member>
+        <member name="T:APSIM.Documentation.TestUtilities">
+            <summary>
+            This class contains the code for generating the files used for unit testing documentation structure.
+            </summary>
+        </member>
+        <member name="F:APSIM.Documentation.TestUtilities.FILES">
+            <summary>
+            List of Models and Tutorials to test
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.TestUtilities.GenerateComparisonJSONs">
+            <summary>
+            This function creates each of the example doc structure jsons that the test TestDocumentationStructure uses to compare against.
+            This needs to be run again if the documentation structure code is changed in a way that causes the structure of docs to change.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.TestUtilities.GetJSON(System.Collections.Generic.List{APSIM.Shared.Documentation.ITag})">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.TestUtilities.TagsToJSON(System.Collections.Generic.List{APSIM.Shared.Documentation.ITag})">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.TestUtilities.GetTags(System.String)">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.TestUtilities.JSONToTags(Newtonsoft.Json.Linq.JArray)">
+            <summary>
+            </summary>
+        </member>
+        <member name="T:APSIM.Documentation.WebDocs">
+            <summary>
+            A pdf file which is built from a model.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GetPage(System.String,System.String)">
+            <summary>
+            Gets a html page as a string generated from an apsimx file.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GetCSS">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.Generate(Models.Core.IModel)">
+            <summary>
+            Generate the auto-documentation at the given output path.
+            </summary>
+            <param name="model">Path to which the file will be generated.</param>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GenerateWeb(Models.Core.IModel)">
+            <summary>
+            Generate the auto-documentation at the given output path.
+            </summary>
+            <param name="model">Path to which the file will be generated.</param>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.TagsToHTMLString(System.Collections.Generic.List{APSIM.Shared.Documentation.ITag},Models.Core.IModel)">
+             <summary>
+            
+             </summary>
+             <param name="tags">Tags to be converted</param>
+             <param name="model">Model being documented</param>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.AddHeaderImageTag">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GetNavigationHTML(System.Collections.Generic.List{APSIM.Shared.Documentation.ITag})">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.LoadFromResource(System.String)">
+             <summary>
+            
+             </summary>
+             <param name="resourceName">Resource file name.</param>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GetStreamFromResource(System.String)">
+            <summary>
+            Loads an image stream from the given resource name
+            Will attempt to locate the resource in various assemblies.
+            </summary>
+            <param name="resourceName">Name of the resource</param>
+            <returns>The resource as a stream</returns>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.ConvertToMarkdown(System.Collections.Generic.List{APSIM.Shared.Documentation.ITag},System.String,Models.Core.IModel)">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.ProcessCitations(System.String,System.String@)">
+            <summary>
+            Returns a list of all citations found, and replaces the text of the citation with the reference
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.WriteBibliography(System.Collections.Generic.List{APSIM.Documentation.Bibliography.ICitation})">
+            <summary>
+            Add a bibliography to the document.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.ReplaceInserts(System.String,Models.Core.IModel)">
+            <summary>
+            Replace content covered by curly braces with apsim content
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.ReplaceImagePathWithEncodedString(System.String)">
+            <summary>
+            Replaces the image path in any md with a base64 encoded image string.
+            </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GetAllHTMLSegments(System.String,System.String@)">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.RestoreHTMLSegments(System.String,System.Collections.Generic.List{System.ValueTuple{System.String,System.String}})">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.AddCSSClasses(System.String)">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.AddContentWrapper(System.String,System.String)">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.AddTableWrappers(System.String)">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.AddBoilerplate(System.String,System.String,System.String)">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GetMarkdownImageFromSKImage(SkiaSharp.SKImage)">
+            <summary>
+            Converts a SKImage to an Markdown image string.
+            </summary>
+            <param name="skimage"> A <see cref="T:SkiaSharp.SKImage"/> object</param>
+            <returns></returns>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.ConvertMarkdownCode(System.Collections.Generic.List{System.String})">
+            <summary>
+            Converts code in Memo(Paragraph ITags) to markdown format.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GetValidationFolderNames(System.String)">
+            <summary>
+            Gets an array of the folder names in the validation folder.
+            </summary>
+            <param name="apsimDirectory"></param>
+            <returns></returns>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GetTutorialFileNames(System.String)">
+            <summary>
+            Get tutorial file names from the tutorials folder.
+            </summary>
+            <param name="apsimDirectory"></param>
+            <returns></returns>
+        </member>
+        <member name="M:APSIM.Documentation.WebDocs.GetGraphImage(APSIM.Shared.Documentation.Graph,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Get an image from a graph tag
+            </summary>
+            <param name="graph"></param>
+            <param name="width"></param>
+            <param name="height"></param>
+            <param name="dpi"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

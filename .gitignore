@@ -235,5 +235,7 @@ apsimNGpy/.scratch/*.db-wal
 **/.scratch/
 apsimNGpy/mailer/*
 
+!tests/
+tests/*
 !tests/apsim_binaries/
 !tests/apsim_binaries/**

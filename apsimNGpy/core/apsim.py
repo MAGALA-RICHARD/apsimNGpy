@@ -124,106 +124,204 @@ class ApsimModel(CoreModel):
         if ret.returncode == 0:
             self.ran_ok = True
 
-    def append_simulation(self, simulation: Union[Models.Core.Simulation], rename: str = None,
-                          payload: Union[dict, tuple, list] = None, fp=False) -> None:
+    def append_simulation(
+            self,
+            simulation: Models.Core.Simulation,
+            rename: str = None,
+            payload: Union[dict, tuple, list] = None,
+            fp: bool = False,) -> None:
         """
         Add a simulation to the simulation collection.
 
         Parameters
         ----------
-        simulation : Union[str, int]
-            Simulation object or identifier to append.
+        simulation : Models.Core.Simulation
+            Simulation object to append to the current ``ApsimModel``.
 
-        rename : str
+            The simulation may originate from the current model or from another
+            ``ApsimModel`` instance.
+
+        rename : str, optional
             Unique name assigned to the appended simulation.
-            Renaming is expensive as appended simulations grow, since the method first checks if the suggested name exists in the simulation, use external simulation and rename them before insertion
 
-        payload: list[dict] or dict
-            list of edits following the edit_model methods that should be applied to the appended simulations. exception is that no ned to specify the simulation
+            Renaming may become increasingly expensive as the number of simulations
+            grows because the method first checks whether the proposed name already
+            exists. When repeatedly appending many external simulations, it may
+            therefore be more efficient to rename them before insertion.
+
+        payload : dict or sequence of dict, optional
+            One or more parameter-edit specifications to apply to the appended
+            simulation.
+
+            When ``fp=False``, each dictionary should contain arguments accepted by
+            :meth:`edit_model`. The ``simulations`` argument does not need to be
+            supplied because it is automatically set to the name of the appended
+            simulation.
+
+            When ``fp=True``, each dictionary should contain arguments accepted by
+            :meth:`set_params`, including a full model ``path``. The simulation
+            component of the path is automatically replaced with the name of the
+            appended simulation.
+
+            Cultivar-edit payloads containing ``commands`` or ``command`` are
+            automatically assigned a unique cultivar name when ``rename`` is not
+            explicitly provided in the payload.
 
         fp : bool, default=False
-            Selects the parameter update method. If `False`, updates are performed via
-            `edit_model()`, where parameters are identified by their simulation name,
-            model type, and model name. If `True`, updates are performed via
-            `set_params()`, where each parameter must be specified using its full path relative to the root of the simulation
-            path. All these must be defined properly in the payload argument
+            Select the parameter-update method.
+
+            If ``False``, updates are performed using :meth:`edit_model`, where
+            parameters are identified by simulation name, model type, and model
+            name.
+
+            If ``True``, updates are performed using :meth:`set_params`, where each
+            parameter must be identified by its full path relative to the root of
+            the model. Full paths must therefore be supplied correctly through the
+            ``payload`` argument.
 
         Raises
         ------
-        ValueError
-            If a simulation with the same name already exists.
+        TypeError
+            If ``simulation`` is not a simulation object or if an item in
+            ``payload`` is not a dictionary.
 
-        Unlike ``clone_simulation``, the ``append_simulation` method supports appending
-        external simulations originating from other ``ApsimModel`` objects,
-        making it more flexible for workflows involving cross-model simulation
-        transfer and aggregation. In addition to external simulations,
-        ``append`` can also duplicate or append existing simulations already
-        present within the current ``ApsimModel`` instance.
+        ValueError
+            If a simulation with the same name already exists, or if ``fp=True``
+            and a payload item does not contain a valid ``path``.
+
+        Notes
+        -----
+        Unlike :meth:`clone_simulation`, ``append_simulation`` supports appending
+        external simulations originating from other ``ApsimModel`` objects. This
+        makes it useful for workflows involving cross-model simulation transfer
+        and aggregation.
+
+        In addition to external simulations, the method can append simulations
+        originating from the current ``ApsimModel`` instance, provided that the
+        appended simulation is assigned a unique name.
 
         .. note::
 
            This method should not be used with ``ExperimentManager`` objects,
            even though ``ExperimentManager`` inherits from ``ApsimModel``.
            Experiment-related simulation structures are managed differently and
-           may produce unintended behavior when appended directly.
+           may produce unintended behavior when simulations are appended directly.
 
-           If you want to test 2–10 different model input combinations, this
-            method is typically fast because APSIM executes simulations using
-            threads internally. However, it may not be efficient for large-scale
-            parameter permutations or factorial experiment designs. For such
-            workflows, please use ``ExperimentManager`` instead.
+           If you want to test approximately 2--10 different model-input
+           combinations, this method is typically efficient because APSIM executes
+           simulations using threads internally. However, it may not be efficient
+           for large parameter permutations or factorial experiment designs. For
+           such workflows, use ``ExperimentManager`` instead.
         """
 
-        if rename:
-            existing_names = self.inspect_model('Models.Core.Simulation', fullpath=False)
-            rename = rename.strip()
-            if rename in existing_names:
-                raise ValueError(
-                    f"Simulation '{rename}' already exists. "
-                    "Choose a unique simulation name."
+        if simulation is None:
+            raise TypeError("simulation cannot be None.")
+
+        # Determine the final simulation name before insertion.
+        if rename is not None:
+            if not isinstance(rename, str):
+                raise TypeError("rename must be a string or None.")
+
+            target_name = rename.strip()
+
+            if not target_name:
+                raise ValueError("rename cannot be an empty string.")
+        else:
+            target_name = simulation.Name
+
+        # Ensure that the simulation name is unique.
+        existing_names = self.inspect_model(
+            "Models.Core.Simulation",
+            fullpath=False,
+        )
+
+        if target_name in existing_names:
+            raise ValueError(
+                f"Simulation '{target_name}' already exists. "
+                "Choose a unique simulation name."
+            )
+
+        # Rename before insertion so that the child enters the collection with
+        # its final name.
+        if rename is not None:
+            simulation.Name = target_name
+
+        # Add simulation.
+        self.Simulations.AddChild(simulation)
+
+        # Persist the new simulation structure.
+        self.save(reload=True)
+
+        if not payload:
+            return
+
+        payloads = get_array_like(payload, container=tuple)
+
+        def prepare_cultivar_edit(edit: dict) -> dict:
+            """Return a copy of an edit payload with a unique cultivar name."""
+            edit = dict(edit)
+
+            if edit.get("commands") or edit.get("command"):
+                edit.setdefault(
+                    "rename",
+                    f"CultivarFor{target_name}",
                 )
 
-        # Add simulation
-        self.Simulations.AddChild(simulation)
-        if rename:
-            simulation.Name = rename
-        # Persist changes
-        self.save(reload=True)
-        if payload:
-            payload = get_array_like(payload, container=tuple)
+            return edit
 
-            def edit_with_no_fp(pa):
-                pa_copy = dict(pa)
-                pa_copy['simulations'] = simulation.Name
-                if pa_copy.get('commands') or pa_copy.get('command'):
-                    rename_cultivar = f"CultivarFor{simulation.Name}"
-                    pa_copy['rename'] = pa_copy.get('rename') or rename_cultivar
-                    self.edit_model(**pa_copy)
+        def edit_without_full_path(edit: dict) -> None:
+            """Apply an edit using edit_model()."""
+            if not isinstance(edit, dict):
+                raise TypeError(
+                    "Each payload item must be a dictionary."
+                )
 
-            if not fp:
-                _ = [edit_with_no_fp(p) for p in payload]
-            else:
-                def re_organize(pyload):
-                    pl = dict(pyload)
-                    if pyload.get('commands') or pyload.get('command'):
-                        _rename_cultivar = f"CultivarFor{simulation.Name}"
-                        pl['rename'] = pyload.get('rename') or _rename_cultivar
-                    node_p = pyload['path'].split(".")
-                    node_p[2] = simulation.Name
-                    nfp = '.'.join(node_p).strip()
-                    if 'Replacements' not in node_p:
-                        # node_in = get_node_by_path(self.Simulations, nfp, cast_as='auto')
-                        pl['path'] = nfp
-                        return pl
-                    return pl
+            edit = prepare_cultivar_edit(edit)
+            edit["simulations"] = target_name
 
-                def edit_with_fp(pa):
-                    pa['simulations'] = simulation.Name
-                    pld = re_organize(pa)
-                    self.set_params(**pld)
+            self.edit_model(**edit)
 
-                _ = [edit_with_fp(p) for p in payload]
+        def prepare_full_path_edit(edit: dict) -> dict:
+            """Rewrite a full-path payload for the appended simulation."""
+            if not isinstance(edit, dict):
+                raise TypeError(
+                    "Each payload item must be a dictionary."
+                )
 
+            edit = prepare_cultivar_edit(edit)
+
+            path = edit.get("path")
+
+            if not path:
+                raise ValueError(
+                    "A payload item must contain 'path' when fp=True."
+                )
+
+            node_path = path.split(".")
+
+            if "Replacements" not in node_path:
+                if len(node_path) < 3:
+                    raise ValueError(
+                        f"Invalid APSIM model path: {path!r}. "
+                        "Expected a full path containing the simulation name."
+                    )
+
+                node_path[2] = target_name
+                edit["path"] = ".".join(node_path)
+
+            return edit
+
+        def edit_with_full_path(edit: dict) -> None:
+            """Apply an edit using set_params()."""
+            edit = prepare_full_path_edit(edit)
+            self.set_params(**edit)
+
+        if fp:
+            for edit in payloads:
+                edit_with_full_path(edit)
+        else:
+            for edit in payloads:
+                edit_without_full_path(edit)
     def edit_simulations(self, load):
         from apsimNGpy.parallel.process import custom_parallel
         simulation_id = load.get('ID')

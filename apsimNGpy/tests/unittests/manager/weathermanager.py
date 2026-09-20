@@ -1,6 +1,6 @@
 import os.path
 import unittest
-
+from pathlib import Path
 from apsimNGpy.tests.unittests.base_unit_tests import BaseTester
 
 from apsimNGpy.manager import weather_loader as weathermanager

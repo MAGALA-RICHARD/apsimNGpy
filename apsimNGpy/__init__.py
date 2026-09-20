@@ -10,7 +10,7 @@ from apsimNGpy.config import configuration
 from apsimNGpy.logger import logger
 from apsimNGpy.config import get_apsim_bin_path, set_apsim_bin_path
 _AutoBin = object()
-
+from apsimNGpy.config import path_checker
 #  Option 1
 #############################
 #

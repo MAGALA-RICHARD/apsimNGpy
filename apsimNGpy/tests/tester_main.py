@@ -10,25 +10,13 @@ from apsimNGpy.logger import logger
 # from apsimNGpy.mailer.mail import send_report
 ACTIONS_APSIM_BINARY = Path(__file__).parent / 'apsim_binaries'
 date_STR = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-from apsimNGpy.config import path_checker
+from apsimNGpy.tests.test_set_up import setup_apsim_binary
 from apsimNGpy.config import apsim_bin_context, get_apsim_bin_path, set_apsim_bin_path
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '-bp', "--bin",
-    required=False,
-    help="Path to APSIM binary directory")
-
-args = parser.parse_args()
-bin_path = args.bin or os.environ.get('TEST_APSIM_BINARY', None) or get_apsim_bin_path() or ACTIONS_APSIM_BINARY
-if path_checker(bin_path):
-    bin_path = Path(bin_path).resolve()
-else:
-    raise ValueError(f"Invalid APSIM binary path: {bin_path}")
-
+bin_path = setup_apsim_binary()
 set_apsim_bin_path(bin_path)
 
-logger.info('Using apsim bin: {}'.format(bin_path))
+logger.info('Using apsim bin: {}'.format(get_apsim_bin_path()))
 
 
 def run_suite(_bin_path, verbosity_level=2):
@@ -165,4 +153,4 @@ if __name__ == '__main__':
             logger.error(f'tests from {t} failed')
         logger.info(f'test {test} passed {out}')
 
-        run = (run_suite(bin_path, verbosity_level=2))
+    run = (run_suite(bin_path, verbosity_level=2))

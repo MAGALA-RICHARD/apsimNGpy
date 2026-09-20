@@ -1,4 +1,6 @@
 import os
+import sys
+
 from apsimNGpy.logger import logger
 from apsimNGpy.config import apsim_bin_context, path_checker, configuration, Path, set_apsim_bin_path
 import unittest
@@ -13,7 +15,8 @@ ENV_FILE = Path(__file__).parent.parent / '.env_bin'
 if not path_checker(ENV_FILE):
     logger.warning(f"{__file__}  test requires that {ENV_FILE} is  set and populated with bins 1  and two")
 
-
+if  not os.path.isfile(ENV_FILE):
+    sys.exit()
 class TestConfigApsimBinContext(unittest.TestCase):
     def setUp(self):
         load_dotenv(dotenv_path=ENV_FILE)

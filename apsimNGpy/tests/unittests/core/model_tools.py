@@ -35,7 +35,7 @@ class TestModelTools(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_get_or_check_model_get(self):
-        with ApsimModel('Maize', out_path=self.apsim_path) as model:
+        with ApsimModel('Maize') as model:
             model_class = find_model("Clock")
             result = get_or_check_model(model.Simulations, model_class, 'Clock', 'get')
             self.assertTrue(result)
@@ -70,7 +70,7 @@ class TestModelTools(unittest.TestCase):
             self.assertIsNone(sowing_manager)
 
     def test_get_or_check_model_delete1(self):
-        with ApsimModel('Maize', out_path=self.apsim_path) as model:
+        with ApsimModel('Maize') as model:
             model_class = find_model("Clock")
             result = get_or_check_model(model.Simulations, model_class, 'Clock', 'delete')
             self.assertIsNone(result)

@@ -958,6 +958,10 @@ class ExperimentManager(ApsimModel):
             """
         return len(self.specs)
 
+    @n_factors.setter
+    def n_factors(self, value):
+       pass
+
     def finalize(self):
         """"
         Finalizes the experiment setup by re-creating the internal APSIM factor nodes from specs.

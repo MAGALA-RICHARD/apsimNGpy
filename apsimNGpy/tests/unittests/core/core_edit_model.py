@@ -84,12 +84,9 @@ class TestCoreModel(BaseTester):
             exp.edit_model('Models.Manager', simulations='Base0',
                           model_name= 'FertiliserRule', ApplicationAmount=170)
             print(exp.inspect_model(model_type='Models.Manager'))
-            out = exp.inspect_model_parameters('Models.Manager',
-                                               'ApplicationAmount')
-            print(
-                out
-            )
-            amount = out['Base0']['Parameters']['ApplicationAmount']
+            out = exp.inspect_model_parameters('Models.Manager',simulations='Base0', model_name='FertiliserRule')
+            print(out)
+            amount = out['Parameters']['ApplicationAmount']
             self.assertEqual(str(amount), '170',
                              msg='editing manager module in factorial simulation experiment failed')
 
@@ -466,4 +463,4 @@ class TestCoreModel(BaseTester):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=False)

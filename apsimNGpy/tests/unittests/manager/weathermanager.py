@@ -57,6 +57,4 @@ class TestWeatherManager(BaseTester):
 if __name__ == '__main__':
     from pathlib import Path
     unittest.main(exit=False)
-    pp = Path(r'.').rglob('*.met')
-    for i in pp:
-        i.unlink()
+   

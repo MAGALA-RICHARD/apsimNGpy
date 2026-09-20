@@ -2,7 +2,7 @@
 This module contains unit tests for the testing external tests if added to the suite
 """
 import unittest
-from apsimNGpy.tests.tester_main import suite, loader, run_suite
+from apsimNGpy.tests.tester_main import SUITE, LOADER, run_suite
 from apsimNGpy.core.base_data import load_default_simulations
 
 
@@ -19,5 +19,5 @@ class TestCaseAddModule(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite.addTests(loader.loadTestsFromTestCase(TestCaseAddModule))
+    SUITE.addTests(LOADER.loadTestsFromTestCase(TestCaseAddModule))
     run_suite(1)

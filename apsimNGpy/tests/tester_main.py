@@ -18,7 +18,8 @@ set_apsim_bin_path(bin_path)
 
 logger.info('Using apsim bin: {}'.format(get_apsim_bin_path()))
 
-
+LOADER = unittest.TestLoader()
+SUITE = unittest.TestSuite()
 def run_suite(_bin_path, verbosity_level=2):
     """
 
@@ -72,17 +73,16 @@ def run_suite(_bin_path, verbosity_level=2):
                     ...
 
         # Create a test suite combining all the test cases
-        loader = unittest.TestLoader()
-        suite = unittest.TestSuite()
+
 
         for mod in modules:
-            suite.addTests(loader.loadTestsFromModule(mod))
+            SUITE.addTests(LOADER.loadTestsFromModule(mod))
 
         def _run_suite(verbosity_level=2):
             logger.info('Running all tests')
             try:
                 runner = unittest.TextTestRunner(verbosity=verbosity_level)
-                result = runner.run(suite)
+                result = runner.run(SUITE, )
 
                 total_tests = result.testsRun
                 num_failures = len(result.failures)
@@ -135,6 +135,8 @@ if __name__ == '__main__':
     processes = []
     # this should run in separate processes
     Parent = Path(__file__).parent
+
+    run = (run_suite(setup_apsim_binary(), verbosity_level=2))
     for test in ['unittests/laze_import_tests.py', 'unittests/config_apsim_bin_context.py',
                  'unittests/manager/weathermanager.py']:
         t = os.path.realpath(Parent.joinpath(test))
@@ -152,5 +154,3 @@ if __name__ == '__main__':
             logger.error(err)
             logger.error(f'tests from {t} failed')
         logger.info(f'test {test} passed {out}')
-
-    run = (run_suite(bin_path, verbosity_level=2))

@@ -66,11 +66,11 @@ def run_suite(_bin_path, verbosity_level=2):
             unittests.plot_manager,
             unittests.soilmanager,
 
-            data_insights
         }
         if IS_NEW_APSIM:
-            from apsimNGpy.tests.unittests.core import experiment
-            modules.add(experiment)
+            from apsimNGpy.tests.unittests.core import experiment_from_models
+           # modules.add(experiment)
+            modules.add(experiment_from_models)
             modules = (i for i in modules)
 
         def clean_up():

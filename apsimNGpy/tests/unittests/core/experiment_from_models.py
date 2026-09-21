@@ -2,10 +2,12 @@ from pathlib import Path
 from uuid import uuid4
 
 from apsimNGpy.core.apsim import ApsimModel
-
+from apsimNGpy.tests.test_set_up import setup_apsim_binary
 from apsimNGpy.core.experiment import create_experiment_from_models, create_experiment_from_file
 from apsimNGpy.core.experiment_tools import factor_spec
 import unittest
+
+setup_apsim_binary()
 
 
 class TestExperimentFromModels(unittest.TestCase):

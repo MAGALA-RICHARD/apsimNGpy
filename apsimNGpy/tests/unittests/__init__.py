@@ -5,6 +5,7 @@ _LAZY_IMPORTS = {
     'apsim': ('apsimNGpy.tests.unittests.core.apsim', None),
     'core': ('apsimNGpy.tests.unittests.core.core', None),
     'model_tools': ('apsimNGpy.tests.unittests.core.model_tools', None),
+    'experiment_from_models': ('apsimNGpy.tests.unittests.core.experiment_from_models', None),
     'model_loader': ('apsimNGpy.tests.unittests.core.model_loader', None),
     'runner': ('apsimNGpy.tests.unittests.core.runner', None),
     'core_edit_model': ('apsimNGpy.tests.unittests.core.core_edit_model', None),

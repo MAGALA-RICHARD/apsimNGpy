@@ -1722,8 +1722,7 @@ class ApsimModel(CoreModel):
             ...     rename="IrrigationManager_v2"
             ... )
             """
-        # strict the source dict should have the parameter names as those in APSIM, and most importantly should define the type of the models
-        node_to_loc = self._get_node(self, parent_identifier, parent_type)
+
         # Copy source to avoid mutation
         pl = dict(source)
         node_from_type = pl.get("$type") or source.get(
@@ -1769,7 +1768,8 @@ class ApsimModel(CoreModel):
                 setattr(node_from_node, k, v)
             except TypeError:
                 pass
-
+        # strict the source dict should have the parameter names as those in APSIM, and most importantly should define the type of the models
+        node_to_loc = self._get_node(self, parent_identifier, parent_type)
         # Validate replacement / rename logic
         self._check_candidate_node(node_to_loc,
                                    replace=replace,

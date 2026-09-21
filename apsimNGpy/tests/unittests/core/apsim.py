@@ -283,6 +283,8 @@ class TestCoreModel(BaseTester):
         self.assertEqual(ts, self.thickness_sequence_test_values)
 
     def test_switch_wm_tp_swim3(self):
+        """test switch_wm_tp_swim3"""
+        print(f'Testing switch_wm_tp_swim3')
         mo = ApsimModel('Maize')
         mo.run()
         swat_yield = float(mo.results.Yield.mean())
@@ -302,7 +304,7 @@ class TestCoreModel(BaseTester):
                                "default_rain_duration": 500.0,
                                "Diagnostics": False,
                                # 'WaterTable': 1400
-                               }
+            }
         )
         swim = mo.inspect_model_parameters('Models.Soils.Swim3', "Swim3")
         sub = mo.inspect_model_parameters('Models.Soils.SwimSubsurfaceDrain', "SwimSubsurfaceDrain")

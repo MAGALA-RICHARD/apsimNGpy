@@ -28,8 +28,6 @@ The content of the file might look as follows but customize it the way you want 
 .. code-block:: ini
    :caption: .env
 
-
-
     # Path to the installed APSIM NG's bin folder (quote if it has spaces); use forward slashes on macOS/Linux.
     APSIM_BIN="C:\Program Files\APSIM2025.8.7837.0\bin" #replace with your path
 

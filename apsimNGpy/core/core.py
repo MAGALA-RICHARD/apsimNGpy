@@ -158,6 +158,7 @@ class CoreModel(PlotManager):
         self.path = None
         self._str_model = None
 
+
         # Metadata and experiment configuration
         self.base_name = None
         self.permutation = None

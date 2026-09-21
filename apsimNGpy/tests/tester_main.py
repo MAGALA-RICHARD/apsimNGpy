@@ -20,6 +20,17 @@ logger.info('Using apsim bin: {}'.format(get_apsim_bin_path()))
 
 LOADER = unittest.TestLoader()
 SUITE = unittest.TestSuite()
+
+
+def is_github_actions() -> bool:
+    """Return True when running inside GitHub Actions."""
+    return os.getenv("GITHUB_ACTIONS", "").lower() == "true"
+
+
+if is_github_actions():
+    print("running through github actions: ")
+
+
 def run_suite(_bin_path, verbosity_level=2):
     """
 
@@ -73,7 +84,6 @@ def run_suite(_bin_path, verbosity_level=2):
                     ...
 
         # Create a test suite combining all the test cases
-
 
         for mod in modules:
             SUITE.addTests(LOADER.loadTestsFromModule(mod))

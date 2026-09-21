@@ -48,7 +48,7 @@ class SensitivityManagerTest(unittest.TestCase):
         exp.build_sense_model(method='morris', aggregation_column_name='Clock.Today')
         exp.tree()
         # exp.preview_simulation()
-        exp.run(verbose=True)
+        exp.run(verbose=False)
         self.assertFalse(exp.results.empty, "results are empty after running sensitivity manager")
         self.assertFalse(exp.statistics.empty, "statistics results are empty after running sensitivity manager")
 

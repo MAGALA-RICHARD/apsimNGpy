@@ -161,7 +161,7 @@ class TestCoreModel(BaseTester):
             self.assertTrue(Path(model.path).exists())
         self.assertFalse(Path(model.path).exists(), 'Path exists; context manager not working')
         if datastore.exists():
-            print(f'data store exists context manager not working', file=sys.stderr)
+            print(f'\ndata store exists context manager not working', file=sys.stderr)
         else:
             print('\nContext manager working in ApsimModel Class',)
 
@@ -180,7 +180,7 @@ class TestCoreModel(BaseTester):
                                'mean corn yield at high population density is not greater than mean at low population density')
         # should be called after exiting with block
         if Path(model.datastore).exists():
-            print('context manager not working as expected while model editing', file=sys.stderr)
+            print('\ncontext manager not working as expected while model editing', file=sys.stderr)
         self.assertFalse(Path(model.path).exists(), 'context manager now working as expected while model editing')
 
     def test_saving_while_using_auto_context_manager_reload(self):
@@ -290,8 +290,7 @@ class TestCoreModel(BaseTester):
         mo.switch_wm_to_swim3(layer_structure_th=None, ss_tile_drainage={}, swim_model_params={}
                               )
         th = geometric_layers(max_depth=1800, max_thickness=10, growth=1.1, top_thickness=10)
-        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage=None, swim_model_params={}
-                              )
+        mo.switch_wm_to_swim3(layer_structure_th=th, ss_tile_drainage=None, swim_model_params={} )
         mo.switch_wm_to_swim3(
             ss_tile_drainage={
                 "DrainDepth": 1201,

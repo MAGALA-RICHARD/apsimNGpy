@@ -372,4 +372,6 @@ class TestCoreModel(BaseTester):
 
 # initialize the model
 if __name__ == '__main__':
+    from apsimNGpy import get_apsim_bin_path
+    print(get_apsim_bin_path())
     unittest.main()

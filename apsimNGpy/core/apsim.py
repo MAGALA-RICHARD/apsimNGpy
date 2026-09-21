@@ -1738,8 +1738,7 @@ class ApsimModel(CoreModel):
         #
         if _node_from_node is None:
             raise AttributeError(
-                f"Unable to resolve APSIM model type: '{node_from_type}'"
-            )
+                f"Unable to resolve APSIM model type: '{node_from_type}'")
         node_from_node = _node_from_node()
 
         for k, v in pl.items():
@@ -1750,7 +1749,6 @@ class ApsimModel(CoreModel):
                 case CLR.Models.Climate.Weather:
                     pass
                 case CLR.Models.Manager:
-
                     if k == 'Parameters':
                         net_list = List[KeyValuePair[str, str]](len(v))
                         node_from_node.Parameters = net_list
@@ -1770,6 +1768,7 @@ class ApsimModel(CoreModel):
                 pass
         # strict the source dict should have the parameter names as those in APSIM, and most importantly should define the type of the models
         node_to_loc = self._get_node(self, parent_identifier, parent_type)
+        print(parent_identifier, parent_type)
         # Validate replacement / rename logic
         self._check_candidate_node(node_to_loc,
                                    replace=replace,

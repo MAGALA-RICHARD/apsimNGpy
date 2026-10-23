@@ -1595,188 +1595,203 @@ class ApsimModel(CoreModel):
         ModelTools.ADD(node_from_node, node_to_loc)
         self.save()
 
-    def add_new_model(self, *, parent_identifier, parent_type, source: dict, replace=True, rename=None):
+    def add_new_model(
+            self, *, parent_identifier, parent_type, source: dict,
+            replace=True, rename=None
+    ):
         """
-            Add a new APSIM model node to a specified parent node using a dictionary specification.
+        Add a new APSIM model node from an APSIM-style dictionary.
 
-            This method constructs a CLR APSIM model object from a Python dictionary (`source`),
-            assigns attributes, validates insertion rules, and attaches it to the target parent node.
+        Parameters
+        ----------
+        parent_identifier : str
+            Parent node name or full APSIM path.
+        parent_type : str
+            Parent model type used to resolve the target node.
+        source : dict
+            APSIM model specification. Must contain "$type" or "type".
+        replace : bool, default=True
+            Replace an existing matching node.
+        rename : str or None, default=None
+            Optional name for the inserted node.
 
-            Parameters
-            ----------
-            parent_identifier : str
-                Identifier used to locate the parent node. Interpretation depends on `parent_type`.
-                Examples:
-                    - "Simulation"
-                    - "Clock"
-                    - ".Simulations.Simulation.Field"
+        Notes
+        -----
+        - "$type" and "type" are accepted.
+        - Clock dates are converted to System.DateTime.
+        - Manager.Parameters retains legacy KeyValuePair conversion.
+        - Typed nested dictionaries and CLR collections are converted recursively.
+        - Children is intentionally ignored for backward compatibility.
+        - Unsupported assignments remain silently ignored.
+        - The model is saved automatically.
 
-            parent_type : str
-                Type of the parent node used for resolution (e.g., "Simulation", "Zone", "Manager").
-                This ensures correct disambiguation when multiple nodes share names.
+        Examples
+        --------
+        >>> model.add_new_model(
+        ...     parent_identifier="Simulation",
+        ...     parent_type="Simulation",
+        ...     source={
+        ...         "$type": "Models.Clock, Models",
+        ...         "Start": "2000-01-01",
+        ...         "End": "2020-12-31"
+        ...     }
+        ... )
 
-            source : dict
-                Dictionary defining the APSIM model to create.
+        >>> model.add_new_model(
+        ...     parent_identifier=".Simulations.Simulation.Field",
+        ...     parent_type="Zone",
+        ...     source={
+        ...         "type": "Models.Manager, Models",
+        ...         "Name": "IrrigationManager",
+        ...         "Parameters": [{"Key": "Amount", "Value": 30}],
+        ...         "CodeArray": []
+        ...     },
+        ...     replace=False,
+        ...     rename="IrrigationManager_v2"
+        ... )
+        """
 
-                Requirements:
-                - MUST include either:
-                    * "$type" (APSIM standard), or
-                    * "type" (Python-friendly alias)
-                - The type must be resolvable to a valid APSIM CLR model.
+        def resolve_type(type_name):
+            head = type_name.split(",", 1)[0].strip()
+            found = self.find_model(head)
+            if found is None and "." in head:
+                found = self.find_model(head.rsplit(".", 1)[-1])
+            if found is None:
+                raise AttributeError(
+                    f"Unable to resolve APSIM model type: '{type_name}'"
+                )
+            return found
 
-                Example:
-                --------
-                {
-                    "$type": "Models.Manager, Models",
-                    "Name": "FertiliserManager",
-                    "Parameters": [
-                        {"Key": "Amount", "Value": 50},
-                        {"Key": "FertiliserType", "Value": "Urea"}
-                    ]
-                }
+        def build_typed(data, target_type=None):
+            """Recursively construct a CLR object from an APSIM-style dictionary."""
+            type_name = data.get("$type") or data.get("type")
 
-                Notes:
-                ------
-                - Keys must match APSIM property names exactly.
-                - Special handling is applied for:
-                    * Clock date fields (parsed to System.DateTime)
-                    * Manager.Parameters (converted to .NET List[KeyValuePair])
-                - "Children" key is ignored during assignment.
+            if type_name:
+                obj = resolve_type(type_name)()
+            elif target_type is not None:
+                obj = CLR.System.Activator.CreateInstance(target_type)
+            else:
+                return data
 
-            replace : bool, default=True
-                Controls behavior when a node with the same name and type already exists.
+            for key, value in data.items():
+                if key in {"$type", "type", "Children"}:
+                    continue
 
-                - True:
-                    Existing matching node is removed and replaced.
-                - False:
-                    Raises an error if a conflicting node exists.
-
-            rename : str or None, default=None
-                Optional new name for the incoming node.
-
-                - If provided, the node will be renamed before insertion.
-                - Useful when `replace=False` and avoiding naming conflicts.
-
-            Returns
-            -------
-            None
-                The model is modified in-place and automatically saved.
-
-            Raises
-            ------
-            ValueError
-                If `source` does not define a valid APSIM model type.
-
-            AttributeError
-                If the APSIM model type cannot be resolved.
-
-            RuntimeError
-                If insertion fails due to conflicts and `replace=False`.
-
-            Notes
-            -----
-            - The method performs the following steps:
-                1. Resolve parent node from `parent_identifier` and `parent_type`.
-                2. Instantiate APSIM CLR model from `$type` or `type`.
-                3. Assign attributes with type-aware handling.
-                4. Validate insertion using `replace` / `rename` logic.
-                5. Attach node to parent.
-                6. Persist changes via `self.save()`.
-
-            - Attribute assignment is best-effort:
-                Unsupported or incompatible attributes are silently ignored.
-
-            - This method assumes familiarity with APSIM's internal model structure.
-
-            Warnings
-            --------
-            - Incorrect `$type` values will fail at runtime.
-            - Passing improperly structured `Parameters` for Manager nodes will result in invalid configurations.
-            - Silent attribute failures may hide misconfigured keys—validate inputs carefully.
-
-            Examples
-            --------
-            >>> model = ApsimModel("Maize")
-            >>> model.add_new_model(
-            ...     parent_identifier="Simulation",
-            ...     parent_type="Simulation",
-            ...     source={
-            ...         "$type": "Models.Clock, Models",
-            ...         "Start": "2000-01-01",
-            ...         "End": "2020-12-31"
-            ...     }
-            ... )
-
-            >>> model.add_new_model(
-            ...     parent_identifier=".Simulations.Simulation.Field",
-            ...     parent_type="Zone",
-            ...     source={
-            ...         "type": "Models.Manager, Models",
-            ...         "Name": "IrrigationManager",
-            ...         "Parameters": [
-            ...             {"Key": "Amount", "Value": 30}
-            ...         ],
-                     'CodeArray':[] # code array must be defined to use this method with manager script
-            ...     },
-            ...     replace=False,
-            ...     rename="IrrigationManager_v2"
-            ... )
-            """
-
-        # Copy source to avoid mutation
-        pl = dict(source)
-        node_from_type = pl.get("$type") or source.get(
-            "type")  # the latter is more pythonic, although not a standard in APSIM key attributes names
-        if not node_from_type:
-            raise ValueError("source must define '$type' or 'type'")
-        # pop it
-        pl.pop('$type', None), pl.pop('type', None)
-        # if node is in this form "Models.PMF.Plant, Models"
-        # Extract CLR type (strip assembly if present)
-        head = node_from_type.split(",", 1)[0].strip()
-        _node_from_node = self.find_model(head)
-        #
-        if _node_from_node is None:
-            raise AttributeError(
-                f"Unable to resolve APSIM model type: '{node_from_type}'")
-        node_from_node = _node_from_node()
-
-        for k, v in pl.items():
-            match type(node_from_node):
-                case CLR.Models.Clock:
-                    if k in {'End', 'Start', 'StartDate', 'EndDate'}:
-                        v = CLR.System.DateTime.Parse(v)
-                case CLR.Models.Climate.Weather:
+                prop = obj.GetType().GetProperty(key)
+                try:
+                    setattr(
+                        obj, key,
+                        convert(value, prop.PropertyType if prop else None)
+                    )
+                except (TypeError, ValueError):
                     pass
-                case CLR.Models.Manager:
-                    if k == 'Parameters':
-                        net_list = List[KeyValuePair[str, str]](len(v))
-                        node_from_node.Parameters = net_list
-                        for i, dicto in enumerate(v):
-                            param = dicto['Key']
-                            value = dicto['Value']
 
-                            app = KeyValuePair[CLR.System.String, CLR.System.String](param, f"{value}")
-                            net_list.Add(app)
-                        continue  # skip this key for sett attr below
-            if k == 'Children':
-                # this expected to be empty at this time, above all `[]` will be rejected by pythonnet
-                continue
+            return obj
+
+        def convert(value, target_type=None):
+            """Convert Python values to the CLR type expected by a property."""
+            if value is None or target_type is None:
+                if isinstance(value, dict) and (
+                        "$type" in value or "type" in value
+                ):
+                    return build_typed(value)
+                return value
+
+            if target_type == CLR.System.DateTime:
+                return CLR.System.DateTime.Parse(str(value))
+
+            if target_type.IsEnum:
+                return (
+                    CLR.System.Enum.Parse(target_type, value, True)
+                    if isinstance(value, str)
+                    else CLR.System.Enum.ToObject(target_type, value)
+                )
+
+            if isinstance(value, dict):
+                return build_typed(value, target_type)
+
+            if isinstance(value, (list, tuple)):
+                if target_type.IsArray:
+                    item_type = target_type.GetElementType()
+                    array = CLR.System.Array.CreateInstance(item_type, len(value))
+                    for i, item in enumerate(value):
+                        array.SetValue(convert(item, item_type), i)
+                    return array
+
+                if target_type.IsGenericType:
+                    args = target_type.GetGenericArguments()
+                    if len(args) == 1:
+                        item_type = args[0]
+                        collection = CLR.System.Activator.CreateInstance(target_type)
+                        for item in value:
+                            collection.Add(convert(item, item_type))
+                        return collection
+
             try:
-                setattr(node_from_node, k, v)
-            except TypeError:
+                return CLR.System.Convert.ChangeType(value, target_type)
+            except (TypeError, ValueError):
+                return value
+
+        if not isinstance(source, dict):
+            raise TypeError("source must be a dictionary")
+
+        node_to_loc = self._get_node(
+            self, parent_identifier, parent_type
+        )
+
+        # Shallow copy preserves the previous no-mutation behaviour.
+        pl = dict(source)
+        node_type = pl.get("$type") or pl.get("type")
+
+        if not node_type:
+            raise ValueError("source must define '$type' or 'type'")
+
+        pl.pop("$type", None)
+        pl.pop("type", None)
+
+        node_from_node = resolve_type(node_type)()
+
+        for key, value in pl.items():
+            if key == "Children":
+                continue
+
+            # Preserve existing Clock behaviour exactly.
+            if isinstance(node_from_node, CLR.Models.Clock):
+                if key in {"End", "Start", "StartDate", "EndDate"}:
+                    value = CLR.System.DateTime.Parse(value)
+
+            # Preserve existing Manager.Parameters behaviour exactly.
+            if isinstance(node_from_node, CLR.Models.Manager) and key == "Parameters":
+                net_list = List[KeyValuePair[str, str]](len(value))
+                for item in value:
+                    net_list.Add(
+                        KeyValuePair[
+                            CLR.System.String,
+                            CLR.System.String
+                        ](item["Key"], f'{item["Value"]}')
+                    )
+                node_from_node.Parameters = net_list
+                continue
+
+            prop = node_from_node.GetType().GetProperty(key)
+
+            try:
+                setattr(
+                    node_from_node,
+                    key,
+                    convert(value, prop.PropertyType if prop else None)
+                )
+            except (TypeError, ValueError):
                 pass
-        # strict the source dict should have the parameter names as those in APSIM, and most importantly should define the type of the models
-        node_to_loc = self._get_node(self, parent_identifier, parent_type)
-        print(parent_identifier, parent_type)
-        # Validate replacement / rename logic
-        self._check_candidate_node(node_to_loc,
-                                   replace=replace,
-                                   rename=rename,
-                                   node_from_node=node_from_node)
-        # Attach node to parent
+
+        self._check_candidate_node(
+            node_to_loc,
+            replace=replace,
+            rename=rename,
+            node_from_node=node_from_node
+        )
+
         ModelTools.ADD(node_from_node, node_to_loc)
-        # save the model
         self.save()
 
     def add_model_from_apsimx(self, *, source: dict, target: dict, replace=True, rename=None):

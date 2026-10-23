@@ -69,7 +69,7 @@ def run_suite(_bin_path, verbosity_level=2):
         }
         if IS_NEW_APSIM:
             from apsimNGpy.tests.unittests.core import experiment_from_models
-           # modules.add(experiment)
+            # modules.add(experiment)
             modules.add(experiment_from_models)
             modules = (i for i in modules)
 

@@ -304,7 +304,7 @@ class TestCoreModel(BaseTester):
                                "default_rain_duration": 500.0,
                                "Diagnostics": False,
                                # 'WaterTable': 1400
-            }
+}
         )
         swim = mo.inspect_model_parameters('Models.Soils.Swim3', "Swim3")
         sub = mo.inspect_model_parameters('Models.Soils.SwimSubsurfaceDrain', "SwimSubsurfaceDrain")

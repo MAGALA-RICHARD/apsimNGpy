@@ -1,53 +1,62 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Build Sphinx Documentation Pages
+name: Build and Deploy Sphinx Documentation
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches:
+      - main
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Only one concurrent deployment
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   deploy:
+    name: Build and Deploy Documentation
+    runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.12"
+          cache: pip
 
-      - name: Install dependencies
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install documentation dependencies
         run: |
-          pip install sphinx sphinx_rtd_theme myst_parser
+          python -m pip install \
+            sphinx \
+            sphinx-rtd-theme \
+            sphinx-copybutton \
+            myst-parser
 
-      - name: Build documentation with Sphinx
+      - name: Build Sphinx documentation
         run: |
-          sphinx-build . _site
+          python -m sphinx -b html doc _site
 
-      - name: Setup Pages
+      - name: Verify documentation build
+        run: |
+          test -f _site/index.html
+
+      - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload documentation artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site

@@ -49,7 +49,7 @@ def _get_apsim_bin_path() -> Path:
     ``TEST_APSIM_BINARY`` takes precedence when defined. Otherwise,
     apsimNGpy's configured APSIM binary path is used.
     """
-    env_path = os.getenv("DOC_APSIM_BINARIES")
+    env_path = os.getenv("DOC_APSIM_BINARIES", 'tests/apsim_binaries/APSIM2026.7.8087.0/bin')
 
     if env_path:
         return Path(env_path).expanduser().resolve()

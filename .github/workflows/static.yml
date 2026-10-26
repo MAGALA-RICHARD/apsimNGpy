@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+
   workflow_dispatch:
 
 permissions:
@@ -25,18 +26,41 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      # ------------------------------------------------------------
+      # Checkout
+      # ------------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ------------------------------------------------------------
+      # Python
+      # ------------------------------------------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
 
+      # ------------------------------------------------------------
+      # Upgrade pip
+      # ------------------------------------------------------------
       - name: Upgrade pip
-        run: python -m pip install --upgrade pip
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
 
+      # ------------------------------------------------------------
+      # Install apsimNGpy itself
+      #
+      # Required because api_generator.py imports modules directly
+      # from apsimNGpy.
+      # ------------------------------------------------------------
+      - name: Install apsimNGpy
+        run: |
+          python -m pip install -e .
+
+      # ------------------------------------------------------------
+      # Install Sphinx dependencies
+      # ------------------------------------------------------------
       - name: Install documentation dependencies
         run: |
           python -m pip install \
@@ -45,22 +69,77 @@ jobs:
             sphinx-copybutton \
             myst-parser
 
+      # ------------------------------------------------------------
+      # Show environment information
+      # Useful when debugging documentation failures.
+      # ------------------------------------------------------------
+      - name: Show Python environment
+        run: |
+          python --version
+          python -m pip --version
+          python -c "import apsimNGpy; print('apsimNGpy imported from:', apsimNGpy.__file__)"
+
+      # ------------------------------------------------------------
+      # Generate API documentation
+      #
+      # api_generator.py is located in doc/
+      # and should generate doc/api.rst.
+      # ------------------------------------------------------------
+      - name: Generate API reference
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python doc/api_generator.py
+
+      # ------------------------------------------------------------
+      # Verify API generator output
+      # ------------------------------------------------------------
+      - name: Verify generated API reference
+        run: |
+          test -f doc/api.rst
+          echo "Generated API reference:"
+          ls -lh doc/api.rst
+
+      # ------------------------------------------------------------
+      # Build Sphinx HTML
+      #
+      # conf.py is located inside doc/
+      # ------------------------------------------------------------
       - name: Build Sphinx documentation
         run: |
-          python -m sphinx -b html doc _site
+          python -m sphinx \
+            -b html \
+            -W \
+            --keep-going \
+            doc \
+            _site
 
+      # ------------------------------------------------------------
+      # Verify final HTML
+      # ------------------------------------------------------------
       - name: Verify documentation build
         run: |
           test -f _site/index.html
+          echo "Documentation build successful."
+          ls -lh _site/index.html
 
+      # ------------------------------------------------------------
+      # Configure GitHub Pages
+      # ------------------------------------------------------------
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
+      # ------------------------------------------------------------
+      # Upload generated site
+      # ------------------------------------------------------------
       - name: Upload documentation artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
+      # ------------------------------------------------------------
+      # Deploy
+      # ------------------------------------------------------------
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
